@@ -397,13 +397,13 @@ import re as _re
 stage='\n'.join(l.replace('ctx.imageSmoothingEnabled=true','ctx.imageSmoothingEnabled=false') if 'itemsImg' in l else l for l in stage.split('\n'))
 
 R("(WC[wpn.key]??-.3)","(WC[wpn.key]??0)")
-R("  const imgs={forest:new Image(),camp:new Image()};\n  imgs.forest.src=ASSET.forest;imgs.camp.src=ASSET.camp;","  const imgs={forest:new Image(),camp:new Image(),lava:new Image()};\n  imgs.forest.src=ASSET.forest;imgs.camp.src=ASSET.camp;imgs.lava.src=ASSET.lava;")
+R("  const imgs={forest:new Image(),camp:new Image()};\n  imgs.forest.src=ASSET.forest;imgs.camp.src=ASSET.camp;","  const imgs={forest:new Image(),camp:new Image(),lava:new Image(),night:new Image()};\n  imgs.forest.src=ASSET.forest;imgs.camp.src=ASSET.camp;imgs.lava.src=ASSET.lava;imgs.night.src=ASSET.night;")
 R("  const MUSH={idle:7,run:8,attack:10,hit:5,die:15,stun:18};const mushImg={},mushV={};let mushReady=false,mushLeft=Object.keys(MUSH).length;","""  const FAM={mush:{fw:80,fh:64,foot:64,bw:30,bh:33,k:.5,anims:{idle:7,run:8,attack:10,hit:5,die:15,stun:18},src:ASSET.mush},
     blood:{fw:100,fh:100,foot:60,bw:22,bh:19,k:.95,anims:{idle:6,run:8,attack:8,attack2:8,hit:4,die:4},src:ASSET.blood},
     demon:{fw:100,fh:100,foot:60,bw:22,bh:23,k:.95,anims:{idle:6,run:8,attack:7,attack2:7,hit:4,die:4},src:ASSET.demon},
     orc:{fw:100,fh:100,foot:57,bw:20,bh:16,k:.95,anims:{idle:6,run:8,attack:6,attack2:6,hit:4,die:4},src:ASSET.orc},
     soldier:{fw:100,fh:100,foot:57,bw:17,bh:18,k:.95,anims:{idle:6,run:8,attack:6,attack2:6,hit:4,die:4},src:ASSET.soldier},
-    flyer:{fw:64,fh:64,foot:67,bw:30,bh:46,k:.5,anims:{idle:8,run:8,attack:20,attack2:26,hit:4,die:17},src:ASSET.flyer},
+    flyer:{noflip:true,fw:64,fh:64,foot:67,bw:30,bh:46,k:.5,anims:{idle:8,run:8,attack:20,attack2:26,hit:4,die:17},src:ASSET.flyer},
     golemo:{fw:90,fh:64,foot:64,bw:32,bh:38,k:.55,anims:{idle:8,run:10,attack:11,attack2:11,hit:4,die:13},src:ASSET.golemo},
     golemb:{fw:90,fh:64,foot:64,bw:32,bh:38,k:.55,anims:{idle:8,run:10,attack:11,attack2:11,hit:4,die:13},src:ASSET.golemb},
     seeker:{fw:152,fh:82,foot:54,bw:14,bh:24,k:1,anims:{idle:24,run:10,attack:8,attack2:8,hit:9,die:20},src:ASSET.seeker}};
@@ -413,7 +413,7 @@ R("    const V=mushV[e.id],g=S&&S.enemy;let name,i;","    const V=mushV[e.id],g=
 R("    else if(e.act){name='attack';i=Math.max(0,Math.min(MUSH.attack-1,Math.floor((now-e.act.t0)/e.act.dur*MUSH.attack)))}","    else if(e.act){name=(e.act.type==='heavy'&&MUSH.attack2)?'attack2':'attack';i=Math.max(0,Math.min(MUSH[name]-1,Math.floor((now-e.act.t0)/e.act.dur*MUSH[name])))}")
 R("    else if(g&&g.stun){name='stun';i=Math.floor(now/65)%MUSH.stun}","    else if(g&&g.stun&&MUSH.stun){name='stun';i=Math.floor(now/65)%MUSH.stun}\n    else if(g&&g.stun){name='hit';i=1}")
 R("    return{c:V[name],sx:(MUSH[name]-1-i)*80,key:e.id+'-'+name};","    if(!V[name])return null;return{c:V[name],sx:(MUSH[name]-1-i)*F.fw,key:e.id+'-'+name};")
-R("  const FEET=0.818, SPLIT=0.808;","  const BGS={forest:{feet:.818,split:.808,sky:'#7fb6dc',gnd:'#4d8a3e'},lava:{feet:.768,split:.752,sky:'#2a0d16',gnd:'#3a1208'}};")
+R("  const FEET=0.818, SPLIT=0.808;","  const BGS={forest:{feet:.818,split:.808,sky:'#7fb6dc',gnd:'#4d8a3e'},lava:{feet:.768,split:.752,sky:'#2a0d16',gnd:'#3a1208'},night:{feet:.795,split:.758,sky:'#0a2a3a',gnd:'#14505e'}};")
 R("player:{act:null,anim:null,dead:false,flash:0,flashColor:'#ff4b4b'},enemy:null,","bg:'forest',player:{act:null,anim:null,dead:false,flash:0,flashColor:'#ff4b4b'},enemy:null,")
 R("  const feetY=()=>{const g=geom(imgs.forest);return g.dy+g.ih*FEET*g.s};","  const feetY=()=>{const g=geom(imgs[st.bg]||imgs.forest);return g.dy+g.ih*(BGS[st.bg]||BGS.forest).feet*g.s};")
 R("""    const f=imgs.forest;
@@ -497,6 +497,14 @@ R("    // player\n    const P=st.player;let pdx=0;","""    if(st.golem&&golemImg
     const P=st.player;let pdx=0;""")
 R("    setBg(b){st.bg=b||'forest'},","    setBg(b){st.bg=b||'forest'},\n    golem(dur){st.golem={t0:now_(),until:now_()+dur}},")
 R("  const itemsImg=new Image();itemsImg.src=ASSET.items;","  const golemImg=new Image();golemImg.src=ASSET.golemsp;const itemsImg=new Image();itemsImg.src=ASSET.items;")
+
+R("          draw(mf.c,alpha);","          draw(mf.c,alpha);\n          if(st.bg==='night')draw(tintC(mf.key,mf.c,'#081624'),.45*alpha);")
+
+R("  function recolor(img,def){","  function recolor(img,def,noflip){")
+R("    x.translate(c.width,0);x.scale(-1,1);x.drawImage(img,0,0);x.setTransform(1,0,0,1,0,0);","    if(noflip)x.drawImage(img,0,0);else{x.translate(c.width,0);x.scale(-1,1);x.drawImage(img,0,0);x.setTransform(1,0,0,1,0,0)}")
+R("mushV[id][k]=recolor(famImg[fm][k],ENEMIES[id])","mushV[id][k]=recolor(famImg[fm][k],ENEMIES[id],FAM[fm].noflip)")
+R("sx:(MUSH[name]-1-i)*F.fw","sx:(F.noflip?i:MUSH[name]-1-i)*F.fw")
+R("  const FAM={mush:{fw:80,","  const FAM={mush:{noflip:true,fw:80,")
 
 css_add="""
 .item-ic{image-rendering:pixelated}

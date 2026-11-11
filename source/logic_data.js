@@ -133,7 +133,7 @@ const ENEMIES={
 const LEVELS=[
   {name:'Mushroom Woods',pool:['thornling','orc','slime','floatcap','wolf','deserter','knight','orcbrute'],boss:'elder',hp:1,dmg:0},
   {name:'Volcanic Rift',pool:['bloodfiend','seeker','magmafiend','ashdemon','magmagolem','emberdemon'],boss:'infernolord',hp:1.25,dmg:2,bg:'lava'},
-  {name:'Ember Hollow',pool:['golem','harpy','nightseeker','priest','gloomcap','wraith','runegolem'],boss:'wyrm',hp:1.85,dmg:4}];
+  {name:'Ember Hollow',pool:['golem','harpy','nightseeker','priest','gloomcap','wraith','runegolem'],boss:'wyrm',hp:1.85,dmg:4,bg:'night'}];
 const LAYOUT=['m','m','ev','m','chest','m','camp','m','ev','elite','m','chest','ev','camp','boss'];
 const EVENTS={
   shrine:{name:'Wayside Shrine',prop:'altar',text:'A moss-covered altar hums faintly beside a campfire. Old offerings sit in its bowl.'},
