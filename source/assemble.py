@@ -506,6 +506,21 @@ R("mushV[id][k]=recolor(famImg[fm][k],ENEMIES[id])","mushV[id][k]=recolor(famImg
 R("sx:(MUSH[name]-1-i)*F.fw","sx:(F.noflip?i:MUSH[name]-1-i)*F.fw")
 R("  const FAM={mush:{fw:80,","  const FAM={mush:{noflip:true,fw:80,")
 
+R("      const big=R.fx.length===2&&R.fx[0]===R.fx[1];\n","""      const big=R.fx.length===2&&R.fx[0]===R.fx[1];
+      if(R.lstrike){const P=st.player,ch=1200,T=now_();P.anim=null;P.act=null;st.player.aura={els:['lightning'],t0:T,dur:ch};lsAura(0,ch+40);
+        const bx=()=>{const mm=enemyMetrics();return mm?mm.x+mm.w*.5+st.H*.07:st.W*.8};
+        P.tele={t0:T,out:ch,arrive:ch+160,back:ch+760,home:ch+900,x:bx};
+        lsBlink(pm.x,pm.feet,pm.h,ch);flash('#bff4ff',ch,.3);
+        setTimeout(()=>{const x=bx();lsBlink(x,pm.feet,pm.h,0);P.anim={name:'punch',t0:now_(),dur:420}},ch+160);
+        setTimeout(()=>{const mm=enemyMetrics();if(!mm)return;const y=mm.feet-mm.h*.5,hx=mm.x+mm.w*.15;ring(hx,y,mm.h*.8,'#5fd8ff',0,420,2.4);ring(hx,y,mm.h*.5,'#ffffff',60,360,1.6);flash(R.crit?'#ffffff':'#bff4ff',0,R.crit?.45:.25);shake(0,st.ps*(R.crit?3.5:2));bolt(mm.x,mm.feet-mm.h*.2,0);
+          for(let i=0;i<26;i++){const a2=Math.PI+(Math.random()-.5)*2.4,v=(.12+Math.random()*.28)*U();spawn(hx,y,{vx:Math.cos(a2)*v,vy:Math.sin(a2)*v,color:i%3?'#5fd8ff':'#fff6b0',size:st.ps*.7,life:420})}},ch+360);
+        setTimeout(()=>{lsBlink(bx(),pm.feet,pm.h,0)},ch+760);setTimeout(()=>{const p2=playerMetrics();lsBlink(p2.x,p2.feet,p2.h,0)},ch+900);
+        return ch+380;}
+""")
+R("    P.dx=pdx;const px=homeP()+pdx;let ptop;","    P.teleFlip=false;if(P.tele){const tt=now-P.tele.t0;if(tt>P.tele.home)P.tele=null;else if(tt>=P.tele.out&&tt<P.tele.arrive||tt>=P.tele.back)pdx=-1e5;else if(tt>=P.tele.arrive){pdx=P.tele.x()-homeP();P.teleFlip=true}}\n    P.dx=pdx;const px=homeP()+pdx;let ptop;")
+R("else{ctx.translate(px+ox,feet+oy);ctx.rotate(rot);ctx.scale(1,sy)}","else{ctx.translate(px+ox,feet+oy);ctx.rotate(rot);ctx.scale(P.teleFlip?-1:1,sy)}")
+R("ctx.font=`700 ${fs*sc}px","ctx.font=`700 ${fs*sc*(f.sub&&f.sub.startsWith('CRIT')?1.5:1)}px")
+
 css_add="""
 .item-ic{image-rendering:pixelated}
 .card-mana{font-family:var(--f-num);font-weight:700;font-size:14px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:#e8f3ff;background:radial-gradient(circle at 35% 30%,#6cb2ff,#2a5fc0 70%);border:1px solid #9fcaff;box-shadow:0 0 6px #4aa8ff88}
@@ -680,9 +695,9 @@ body.mob #mobDock .drop-layer,body.mob #mobDock .ev-layer{position:static;inset:
 body.mob #mobDock .drop-title{font-size:26px}
 body.mob #mobDock .drop-sub{font-size:14px}
 body.mob #mobDock .drop-row{gap:12px}
-body.mob #mobDock .drop-row .card{width:min(170px,calc(50% - 8px));height:auto;aspect-ratio:.64}
-body.mob #mobDock .icard-face .card-name{font-size:20px}
-body.mob #mobDock .icard-face .card-desc{font-size:13px}
+body.mob #mobDock .drop-row .card{width:min(204px,calc(50% - 8px));height:auto;aspect-ratio:.64}
+body.mob #mobDock .card .card-name{font-size:24px}body.mob #mobDock .card .card-desc{font-size:14.5px}body.mob #mobDock .card .card-cat{font-size:12px}
+body.mob #mobDock .icard-face .card-desc{font-size:15.5px}
 body.mob #mobDock .ev-head h2{font-size:26px}body.mob #mobDock .ev-head p{font-size:15px}
 body.mob #mobDock .ev-opt{width:min(220px,calc(50% - 6px));padding:14px 10px}
 body.mob #mobDock .ev-opt b{font-size:18px}body.mob #mobDock .ev-opt span:not(.ev-ic){font-size:14px}
@@ -691,14 +706,19 @@ body.mob #mobDock .ev-msg{font-size:17px}body.mob #mobDock .btn{font-size:16px;p
 body.mob #mobDock .ev-cards .card.small{width:96px;height:146px}
 body.mob .hand-zone{margin-top:12px}
 body.mob .fan{flex-wrap:wrap;gap:10px;padding:14px 0 0;width:100%}
-body.mob .fan .card{transform:none;margin:0;width:min(150px,calc(33.333% - 7px));height:auto;aspect-ratio:.62;padding:8px}
+body.mob .fan .card{transform:none;margin:0;width:min(180px,calc(40% - 6px));height:auto;aspect-ratio:.62;padding:10px}
 body.mob .fan .card:hover{transform:translateY(-6px)}
 body.mob .fan .card.is-sel{transform:translateY(-10px)}
-body.mob .fan .card .card-desc{display:block;font-size:12px}
-body.mob .fan .card .card-name{font-size:19px}
-body.mob .fan .card .card-cat{white-space:nowrap;font-size:10px;letter-spacing:.06em}
-body.mob .fan .card .card-icon svg{width:40px;height:40px}
+body.mob .fan .card .card-desc{display:block;font-size:14.5px}
+body.mob .fan .card .card-name{font-size:23px}body.mob .card .card-pow{width:28px;height:28px;font-size:16px}
+body.mob .fan .card .card-cat{white-space:nowrap;font-size:12px;letter-spacing:.06em}
+body.mob .fan .card .card-icon svg{width:48px;height:48px}
 body.mob .hand-meta{font-size:14px}body.mob .skip-btn{font-size:15px;padding:8px 14px}
+#mobFuse:empty{display:none}
+#mobFuse{display:flex;flex-direction:column;align-items:flex-end;gap:10px;position:fixed;z-index:30;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+#mobFuse .btn{font-size:22px;font-weight:700;padding:16px 30px;border-radius:14px;box-shadow:0 10px 28px #000c,0 0 0 2px #0d1618}
+body.mob #app{padding-bottom:160px}
+#mobFuse .skip-btn{font-size:17px;padding:10px 18px;background:#0d1618f2}
 """
 head2='<meta charset="utf-8">\n'+head.replace('</style>',css_add+'</style>')
 body_skel=body_skel.replace('<div class="stage-label" id="stageLabel"></div>','<div class="stage-label" id="stageLabel"></div><div id="hudLayer"></div><div id="resultLayer"></div><div id="dropLayer"></div>')

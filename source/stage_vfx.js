@@ -130,3 +130,16 @@
       if(depth<1){const q=pts[2+Math.floor(rnd()*2)];crack(q[0],q[1],ang+(rnd()<.5?.8:-.8),len*.5,w*.6,depth+1)}};
     for(let k=0;k<6;k++){const side=k%2?1:-1,base=side>0?.25:Math.PI-.25;crack(x+(rnd()-.5)*st.ps*3,feet+st.ps*.3,base+side*(rnd()*.5),W2*(.28+rnd()*.25)*grow,Math.max(2,st.ps*(.75-k*.06)),0)}
     ctx.restore()}
+  // Lightning Strike: blue aura strip (5 frames: 4 growth + 1 loop) and teleport flashes
+  const lsImg=new Image();lsImg.src=ASSET.lstrike;
+  function lsAura(delay,dur){const N=5;
+    addFx(delay,dur,(p,now)=>{if(!lsImg.complete||!lsImg.naturalWidth)return;const t=p*dur,pm=playerMetrics(),FW=lsImg.naturalWidth/N,FH=lsImg.naturalHeight;
+      let f=t<640?Math.min(3,Math.floor(t/160)):3+Math.floor((t-640)/90)%2;
+      const h=pm.h*1.35,w=h*FW/FH,x=pm.x-w/2,y=pm.feet+st.ps*.5-h,a=Math.min(1,t/120)*(p>.92?(1-p)/.08:1);
+      ctx.save();ctx.imageSmoothingEnabled=false;ctx.globalAlpha=.9*a;ctx.globalCompositeOperation='lighter';ctx.drawImage(lsImg,f*FW,0,FW,FH,x,y,w,h);
+      ctx.globalAlpha=.35*a;const g=ctx.createRadialGradient(pm.x,pm.feet-pm.h*.5,0,pm.x,pm.feet-pm.h*.5,pm.h*.9);g.addColorStop(0,'#5fd8ff'); g.addColorStop(1,'#5fd8ff00');ctx.fillStyle=g;ctx.fillRect(pm.x-pm.h,pm.feet-pm.h*1.4,pm.h*2,pm.h*1.5);ctx.restore();
+      if(Math.random()<.5)spawn(pm.x+(Math.random()-.5)*w*.8,pm.feet-Math.random()*h*.9,{vy:-(.05+Math.random()*.08)*U(),color:Math.random()<.5?'#bff4ff':'#38b8ff',size:st.ps*(.4+Math.random()*.4),life:420})})}
+  function lsBlink(x,feet,h,delay){
+    addFx(delay,260,p=>{ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=1-p;const w=st.ps*(5-4*p);const g=ctx.createLinearGradient(x-w*3,0,x+w*3,0);g.addColorStop(0,'#38b8ff00');g.addColorStop(.5,'#e8fbff');g.addColorStop(1,'#38b8ff00');ctx.fillStyle=g;ctx.fillRect(x-w*3,feet-h*1.3,w*6,h*1.3);
+      ctx.strokeStyle='#bff4ff';ctx.shadowColor='#38b8ff';ctx.shadowBlur=st.ps*4;ctx.lineWidth=st.ps*.8;ctx.beginPath();let cx=x;ctx.moveTo(cx,feet-h*1.3);for(let i=1;i<=7;i++){cx=x+(Math.random()-.5)*st.ps*7;ctx.lineTo(cx,feet-h*1.3+h*1.3*i/7)}ctx.stroke();ctx.restore()});
+    setTimeout(()=>{for(let i=0;i<16;i++){const a=Math.random()*6.283,v=(.08+Math.random()*.2)*U();spawn(x,feet-h*.5+(Math.random()-.5)*h*.6,{vx:Math.cos(a)*v,vy:Math.sin(a)*v,color:i%3?'#5fd8ff':'#ffffff',size:st.ps*.6,life:360})}},delay)}
