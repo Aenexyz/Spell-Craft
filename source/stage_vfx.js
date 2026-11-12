@@ -130,16 +130,29 @@
       if(depth<1){const q=pts[2+Math.floor(rnd()*2)];crack(q[0],q[1],ang+(rnd()<.5?.8:-.8),len*.5,w*.6,depth+1)}};
     for(let k=0;k<6;k++){const side=k%2?1:-1,base=side>0?.25:Math.PI-.25;crack(x+(rnd()-.5)*st.ps*3,feet+st.ps*.3,base+side*(rnd()*.5),W2*(.28+rnd()*.25)*grow,Math.max(2,st.ps*(.75-k*.06)),0)}
     ctx.restore()}
-  // Lightning Strike: blue aura strip (5 frames: 4 growth + 1 loop) and teleport flashes
-  const lsImg=new Image();lsImg.src=ASSET.lstrike;
-  function lsAura(delay,dur){const N=5;
-    addFx(delay,dur,(p,now)=>{if(!lsImg.complete||!lsImg.naturalWidth)return;const t=p*dur,pm=playerMetrics(),FW=lsImg.naturalWidth/N,FH=lsImg.naturalHeight;
-      let f=t<640?Math.min(3,Math.floor(t/160)):3+Math.floor((t-640)/90)%2;
-      const h=pm.h*1.35,w=h*FW/FH,x=pm.x-w/2,y=pm.feet+st.ps*.5-h,a=Math.min(1,t/120)*(p>.92?(1-p)/.08:1);
-      ctx.save();ctx.imageSmoothingEnabled=false;ctx.globalAlpha=.9*a;ctx.globalCompositeOperation='lighter';ctx.drawImage(lsImg,f*FW,0,FW,FH,x,y,w,h);
-      ctx.globalAlpha=.35*a;const g=ctx.createRadialGradient(pm.x,pm.feet-pm.h*.5,0,pm.x,pm.feet-pm.h*.5,pm.h*.9);g.addColorStop(0,'#5fd8ff'); g.addColorStop(1,'#5fd8ff00');ctx.fillStyle=g;ctx.fillRect(pm.x-pm.h,pm.feet-pm.h*1.4,pm.h*2,pm.h*1.5);ctx.restore();
-      if(Math.random()<.5)spawn(pm.x+(Math.random()-.5)*w*.8,pm.feet-Math.random()*h*.9,{vy:-(.05+Math.random()*.08)*U(),color:Math.random()<.5?'#bff4ff':'#38b8ff',size:st.ps*(.4+Math.random()*.4),life:420})})}
+  // Lightning Strike: hand-drawn crackling lightning aura that builds up around the hero
+  function lsAura(delay,dur){let arcs=[],lastA=0;
+    const jag=(x1,y1,x2,y2,n,amp)=>{const pts=[[x1,y1]];for(let i=1;i<n;i++){const t=i/n;pts.push([x1+(x2-x1)*t+(Math.random()-.5)*amp,y1+(y2-y1)*t+(Math.random()-.5)*amp])}pts.push([x2,y2]);return pts};
+    addFx(delay,dur,(p,now)=>{const t=p*dur,pm=playerMetrics(),cx=pm.x,cy=pm.feet-pm.h*.5,g=Math.min(1,t/(dur*.75)),fade=p>.94?(1-p)/.06:1;
+      ctx.save();ctx.globalCompositeOperation='lighter';
+      // glow column
+      ctx.globalAlpha=(.18+.32*g)*fade*(.85+.15*Math.sin(now/40));const rg=ctx.createRadialGradient(cx,cy,0,cx,cy,pm.h*(.55+.35*g));rg.addColorStop(0,'#fff6b0');rg.addColorStop(.45,'#f2d24b88');rg.addColorStop(1,'#f2d24b00');ctx.fillStyle=rg;ctx.beginPath();ctx.ellipse(cx,cy,pm.h*(.4+.25*g),pm.h*(.6+.35*g),0,0,6.283);ctx.fill();
+      // ground ring
+      ctx.globalAlpha=(.4+.5*g)*fade;ctx.strokeStyle='#fff6b0';ctx.lineWidth=st.ps*(.4+.4*g);ctx.beginPath();ctx.ellipse(cx,pm.feet-st.ps*.3,pm.w*(.6+.5*g),pm.h*.05,0,0,6.283);ctx.stroke();
+      // regenerate arcs every ~55ms (flicker), more and taller as it charges
+      if(now-lastA>55){lastA=now;arcs=[];const n=2+Math.round(5*g),H=pm.h*(.55+.6*g);
+        for(let i=0;i<n;i++){const side=i%2?1:-1,x0=cx+side*pm.w*(.25+Math.random()*.45),y0=pm.feet,x1=cx+side*pm.w*(Math.random()*.3)+(Math.random()-.5)*pm.w*.3,y1=pm.feet-H*(.6+Math.random()*.4);arcs.push({pts:jag(x0,y0,x1,y1,7,st.ps*3.5),w:st.ps*(.35+Math.random()*.45),c:Math.random()<.35?'#ffffff':'#ffe866'})}
+        for(let i=0;i<Math.round(1+3*g);i++){const a0=Math.random()*6.283,r=pm.h*(.35+.25*g),a1=a0+(Math.random()-.5)*1.6;arcs.push({pts:jag(cx+Math.cos(a0)*r*.6,cy+Math.sin(a0)*r,cx+Math.cos(a1)*r*.6,cy+Math.sin(a1)*r,5,st.ps*2.5),w:st.ps*.35,c:'#ffffff'})}}
+      ctx.lineJoin='round';ctx.lineCap='round';ctx.shadowColor='#f2d24b';ctx.shadowBlur=st.ps*4;
+      arcs.forEach(a=>{ctx.globalAlpha=(.55+.45*g)*fade;ctx.strokeStyle=a.c;ctx.lineWidth=a.w*(1+g*.6);ctx.beginPath();ctx.moveTo(...a.pts[0]);a.pts.forEach(q=>ctx.lineTo(...q));ctx.stroke()});
+      ctx.restore();
+      if(Math.random()<.35+.5*g)spawn(cx+(Math.random()-.5)*pm.w*1.4,pm.feet-Math.random()*pm.h*(.4+.7*g),{vy:-(.04+Math.random()*.1)*U(),vx:(Math.random()-.5)*.05*U(),color:Math.random()<.5?'#ffffff':'#ffe866',size:st.ps*(.35+Math.random()*.4),life:380});
+    })}
+  // white flash burst on the hero just before the blink
+  function lsWhite(delay,dur){addFx(delay,dur,p=>{const pm=playerMetrics(),cx=pm.x,cy=pm.feet-pm.h*.5,a=p<.6?p/.6:1-(p-.6)/.4;
+    ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=a;const r=pm.h*(.4+.9*p);const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,'#ffffff');g.addColorStop(.5,'#ffffffcc');g.addColorStop(1,'#ffffff00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,r,0,6.283);ctx.fill();ctx.restore()});
+    flash('#ffffff',delay+dur*.5,.55)}
   function lsBlink(x,feet,h,delay){
-    addFx(delay,260,p=>{ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=1-p;const w=st.ps*(5-4*p);const g=ctx.createLinearGradient(x-w*3,0,x+w*3,0);g.addColorStop(0,'#38b8ff00');g.addColorStop(.5,'#e8fbff');g.addColorStop(1,'#38b8ff00');ctx.fillStyle=g;ctx.fillRect(x-w*3,feet-h*1.3,w*6,h*1.3);
-      ctx.strokeStyle='#bff4ff';ctx.shadowColor='#38b8ff';ctx.shadowBlur=st.ps*4;ctx.lineWidth=st.ps*.8;ctx.beginPath();let cx=x;ctx.moveTo(cx,feet-h*1.3);for(let i=1;i<=7;i++){cx=x+(Math.random()-.5)*st.ps*7;ctx.lineTo(cx,feet-h*1.3+h*1.3*i/7)}ctx.stroke();ctx.restore()});
-    setTimeout(()=>{for(let i=0;i<16;i++){const a=Math.random()*6.283,v=(.08+Math.random()*.2)*U();spawn(x,feet-h*.5+(Math.random()-.5)*h*.6,{vx:Math.cos(a)*v,vy:Math.sin(a)*v,color:i%3?'#5fd8ff':'#ffffff',size:st.ps*.6,life:360})}},delay)}
+    addFx(delay,260,p=>{ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=1-p;const w=st.ps*(5-4*p);const g=ctx.createLinearGradient(x-w*3,0,x+w*3,0);g.addColorStop(0,'#f2d24b00');g.addColorStop(.5,'#ffffff');g.addColorStop(1,'#f2d24b00');ctx.fillStyle=g;ctx.fillRect(x-w*3,feet-h*1.3,w*6,h*1.3);
+      ctx.strokeStyle='#fff6b0';ctx.shadowColor='#f2d24b';ctx.shadowBlur=st.ps*4;ctx.lineWidth=st.ps*.8;ctx.beginPath();let cx=x;ctx.moveTo(cx,feet-h*1.3);for(let i=1;i<=7;i++){cx=x+(Math.random()-.5)*st.ps*7;ctx.lineTo(cx,feet-h*1.3+h*1.3*i/7)}ctx.stroke();ctx.restore()});
+    setTimeout(()=>{for(let i=0;i<16;i++){const a=Math.random()*6.283,v=(.08+Math.random()*.2)*U();spawn(x,feet-h*.5+(Math.random()-.5)*h*.6,{vx:Math.cos(a)*v,vy:Math.sin(a)*v,color:i%3?'#ffe866':'#ffffff',size:st.ps*.6,life:360})}},delay)}

@@ -507,13 +507,13 @@ R("sx:(MUSH[name]-1-i)*F.fw","sx:(F.noflip?i:MUSH[name]-1-i)*F.fw")
 R("  const FAM={mush:{fw:80,","  const FAM={mush:{noflip:true,fw:80,")
 
 R("      const big=R.fx.length===2&&R.fx[0]===R.fx[1];\n","""      const big=R.fx.length===2&&R.fx[0]===R.fx[1];
-      if(R.lstrike){const P=st.player,ch=1200,T=now_();P.anim=null;P.act=null;st.player.aura={els:['lightning'],t0:T,dur:ch};lsAura(0,ch+40);
+      if(R.lstrike){const P=st.player,ch=1200,T=now_();P.anim=null;P.act=null;lsAura(0,ch);
         const bx=()=>{const mm=enemyMetrics();return mm?mm.x+mm.w*.5+st.H*.07:st.W*.8};
         P.tele={t0:T,out:ch,arrive:ch+160,back:ch+760,home:ch+900,x:bx};
-        lsBlink(pm.x,pm.feet,pm.h,ch);flash('#bff4ff',ch,.3);
+        lsWhite(ch-220,260);lsBlink(pm.x,pm.feet,pm.h,ch);
         setTimeout(()=>{const x=bx();lsBlink(x,pm.feet,pm.h,0);P.anim={name:'punch',t0:now_(),dur:420}},ch+160);
-        setTimeout(()=>{const mm=enemyMetrics();if(!mm)return;const y=mm.feet-mm.h*.5,hx=mm.x+mm.w*.15;ring(hx,y,mm.h*.8,'#5fd8ff',0,420,2.4);ring(hx,y,mm.h*.5,'#ffffff',60,360,1.6);flash(R.crit?'#ffffff':'#bff4ff',0,R.crit?.45:.25);shake(0,st.ps*(R.crit?3.5:2));bolt(mm.x,mm.feet-mm.h*.2,0);
-          for(let i=0;i<26;i++){const a2=Math.PI+(Math.random()-.5)*2.4,v=(.12+Math.random()*.28)*U();spawn(hx,y,{vx:Math.cos(a2)*v,vy:Math.sin(a2)*v,color:i%3?'#5fd8ff':'#fff6b0',size:st.ps*.7,life:420})}},ch+360);
+        setTimeout(()=>{const mm=enemyMetrics();if(!mm)return;const y=mm.feet-mm.h*.5,hx=mm.x+mm.w*.15;ring(hx,y,mm.h*.8,'#ffe866',0,420,2.4);ring(hx,y,mm.h*.5,'#ffffff',60,360,1.6);flash(R.crit?'#ffffff':'#bff4ff',0,R.crit?.45:.25);shake(0,st.ps*(R.crit?3.5:2));bolt(mm.x,mm.feet-mm.h*.2,0);
+          for(let i=0;i<26;i++){const a2=Math.PI+(Math.random()-.5)*2.4,v=(.12+Math.random()*.28)*U();spawn(hx,y,{vx:Math.cos(a2)*v,vy:Math.sin(a2)*v,color:i%3?'#ffe866':'#ffffff',size:st.ps*.7,life:420})}},ch+360);
         setTimeout(()=>{lsBlink(bx(),pm.feet,pm.h,0)},ch+760);setTimeout(()=>{const p2=playerMetrics();lsBlink(p2.x,p2.feet,p2.h,0)},ch+900);
         return ch+380;}
 """)
