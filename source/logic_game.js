@@ -871,7 +871,7 @@ function render(){
   else if(ph==='over')main=endHTML(false);
   else if(ph==='win')main=endHTML(true);
   const toast=S.toast?`<div class="toast" role="status">${S.toast}</div>`:'';
-  $top.innerHTML=`<header class="top"><div class="brand"><h1>Fusebound</h1><span class="eyebrow">Level ${S.level+1} · ${LEVELS[S.level].name}</span></div>
+  $top.innerHTML=`<header class="top"><div class="brand"><h1>SpellCraft</h1><span class="eyebrow">Level ${S.level+1} · ${LEVELS[S.level].name}</span></div>
     <div class="top-actions">${ph!=='title'?'<button type="button" class="btn" data-act="char">Character</button>':''}<button type="button" class="btn mob-btn ${MOB?'on':''}" data-act="mobile" aria-pressed="${MOB}" title="Show card options and your hand larger, below the battle">Mobile</button><button type="button" class="btn" data-act="codex">Codex <span class="num">${S.codex.length}</span></button>${ph!=='title'?'<button type="button" class="btn" data-act="restart">Restart</button>':''}</div></header>${routeHTML()}${toast}`;
   $main.innerHTML=main;
   $result.innerHTML=resultHTML();

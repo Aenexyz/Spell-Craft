@@ -1,4 +1,4 @@
-# Spell Craft (Fusebound)
+# SpellCraft
 
 A linear card-fusion RPG. Combine two cards each turn — physical, elemental, defensive or support — to create an attack or spell, then fight your way through three floors of monsters, events, camps and bosses.
 

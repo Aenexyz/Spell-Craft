@@ -733,7 +733,7 @@ body.mob #app{padding-bottom:160px}
 .icard-face.epic .card-name,.ichoice.epic b,.icard.epic b{text-shadow:0 0 10px color-mix(in srgb,var(--glow-epic) 80%,transparent)}
 @media (prefers-reduced-motion:reduce){.icard-face.rare,.ichoice.rare,.icard.rare,.slotbox.rare,.loot.rare,.icard-face.epic,.ichoice.epic,.icard.epic,.slotbox.epic,.loot.epic{animation:none;box-shadow:0 0 0 1px currentColor,0 0 16px 3px color-mix(in srgb,var(--glow-rare) 60%,transparent)}}
 """
-head2='<meta charset="utf-8">\n'+head.replace('</style>',css_add+'</style>')
+head2='<meta charset="utf-8">\n'+head.replace('</style>',css_add+'</style>').replace('<title>Fusebound</title>','<title>SpellCraft</title>')
 body_skel=body_skel.replace('<div class="stage-label" id="stageLabel"></div>','<div class="stage-label" id="stageLabel"></div><div id="hudLayer"></div><div id="resultLayer"></div><div id="dropLayer"></div>')
 js='<script>\n/*__ASSETS__*/\n(()=>{\ntry{const rs=document.documentElement.style;rs.setProperty(\'--items-url\',`url("${ASSET.items}")`);[[\'frame\',\'hbFrame\'],[\'g\',\'hbG\'],[\'b\',\'hbB\'],[\'r\',\'hbR\']].forEach(([k,a])=>rs.setProperty(\'--hb-\'+k,`url("${ASSET[a]}")`))}catch(e){}\n'+open('logic_data.js').read()+'\n'+sprites+atlas+'\nlet S;\n'+stage+'\n'+open('logic_game.js').read()+'\n})();\n</script>\n'
 open('fusebound.src.html','w').write(head2+body_skel+js)
