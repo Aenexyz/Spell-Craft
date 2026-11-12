@@ -156,3 +156,30 @@
     addFx(delay,260,p=>{ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=1-p;const w=st.ps*(5-4*p);const g=ctx.createLinearGradient(x-w*3,0,x+w*3,0);g.addColorStop(0,'#f2d24b00');g.addColorStop(.5,'#ffffff');g.addColorStop(1,'#f2d24b00');ctx.fillStyle=g;ctx.fillRect(x-w*3,feet-h*1.3,w*6,h*1.3);
       ctx.strokeStyle='#fff6b0';ctx.shadowColor='#f2d24b';ctx.shadowBlur=st.ps*4;ctx.lineWidth=st.ps*.8;ctx.beginPath();let cx=x;ctx.moveTo(cx,feet-h*1.3);for(let i=1;i<=7;i++){cx=x+(Math.random()-.5)*st.ps*7;ctx.lineTo(cx,feet-h*1.3+h*1.3*i/7)}ctx.stroke();ctx.restore()});
     setTimeout(()=>{for(let i=0;i<16;i++){const a=Math.random()*6.283,v=(.08+Math.random()*.2)*U();spawn(x,feet-h*.5+(Math.random()-.5)*h*.6,{vx:Math.cos(a)*v,vy:Math.sin(a)*v,color:i%3?'#ffe866':'#ffffff',size:st.ps*.6,life:360})}},delay)}
+  // Supercharged Pebbles: levitating pebbles crackling with lightning, fired one per tick
+  function pebbleRock(x,y,s,rot,c){ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.fillStyle='#2a2018';ctx.fillRect(-s*.6,-s*.5,s*1.2,s);ctx.fillStyle=c;ctx.fillRect(-s*.5,-s*.4,s,s*.8);ctx.fillStyle='#d9c49a';ctx.fillRect(-s*.4,-s*.4,s*.45,s*.25);ctx.restore()}
+  function pebbleBolt(x1,y1,x2,y2,w,a){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=a;ctx.strokeStyle='#fff6b0';ctx.shadowColor='#f2d24b';ctx.shadowBlur=st.ps*3;ctx.lineWidth=w;ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(x1,y1);const n=4;for(let i=1;i<n;i++){const t=i/n;ctx.lineTo(x1+(x2-x1)*t+(Math.random()-.5)*st.ps*2.5,y1+(y2-y1)*t+(Math.random()-.5)*st.ps*2.5)}ctx.lineTo(x2,y2);ctx.stroke();ctx.restore()}
+  function pebbleStorm(ch,ticks){
+    const D=2000+3000*Math.min(1,Math.max(0,(ticks-30)/120)),lev=600,N=12,COLS=['#8a5a2b','#7a7470','#a8763e','#6b4a2a','#9a9a9a'];
+    const peb=Array.from({length:N},(_,i)=>({ox:(Math.random()-.2)*1.3,oy:.25+Math.random()*.75,ph:Math.random()*6.283,s:.8+Math.random()*.6,c:COLS[i%COLS.length],rot:Math.random()*3}));
+    addFx(ch,D+250,(p,now)=>{const pm=playerMetrics(),t=p*(D+250),rise=Math.min(1,t/lev),fade=t>D?1-(t-D)/250:1;
+      const pts=peb.map((q,i)=>{const x=pm.x+pm.w*.6+q.ox*pm.w*.9,yb=pm.feet-st.ps,yt=pm.feet-pm.h*(.15+q.oy*.75)+Math.sin(now/220+q.ph)*st.ps*1.5;return[x,yb+(yt-yb)*ease(rise),q]});
+      ctx.save();ctx.globalAlpha=fade;
+      // ground glow where they rise
+      const g=ctx.createRadialGradient(pm.x+pm.w*.9,pm.feet,0,pm.x+pm.w*.9,pm.feet,pm.w*1.6);g.addColorStop(0,'#f2d24b55');g.addColorStop(1,'#f2d24b00');ctx.fillStyle=g;ctx.fillRect(pm.x-pm.w,pm.feet-pm.w*1.6,pm.w*3.8,pm.w*1.8);
+      pts.forEach(([x,y,q])=>pebbleRock(x,y,st.ps*2.2*q.s,q.rot+now/400*(q.s-1),q.c));ctx.restore();
+      if(Math.random()<.8){const a=pts[Math.floor(Math.random()*N)],b=pts[Math.floor(Math.random()*N)];if(a!==b)pebbleBolt(a[0],a[1],b[0],b[1],st.ps*.35,.9*fade)}
+      if(Math.random()<.4){const a=pts[Math.floor(Math.random()*N)];spawn(a[0],a[1],{vx:(Math.random()-.5)*.08*U(),vy:-(.03+Math.random()*.06)*U(),color:Math.random()<.5?'#fff6b0':'#f2d24b',size:st.ps*.45,life:260})}
+      if(rise<1&&Math.random()<.5)spawn(pm.x+pm.w*(.2+Math.random()*1.2),pm.feet,{vy:-(.04+Math.random()*.08)*U(),color:'#8a5a2b',size:st.ps*.6,life:400});
+    });
+    const fly=260,span=D-lev,times=Array.from({length:ticks},(_,i)=>ch+lev+fly+span*(i+.5)/ticks);
+    times.forEach((tm,i)=>{const q=peb[i%N],sz=st.ps*1.8*q.s;
+      addFx(tm-fly,fly,p=>{const pm=playerMetrics(),mm=enemyMetrics();if(!mm)return;const sx=pm.x+pm.w*.6+q.ox*pm.w*.9,sy=pm.feet-pm.h*(.15+q.oy*.75),tx=mm.x+(((i*37)%10)/10-.5)*mm.w*.5,ty=mm.feet-mm.h*(.3+((i*53)%10)/10*.45);
+        const e=p,x=sx+(tx-sx)*e,y=sy+(ty-sy)*e-Math.sin(e*Math.PI)*st.H*.03,e0=Math.max(0,e-.25),x0=sx+(tx-sx)*e0,y0=sy+(ty-sy)*e0-Math.sin(e0*Math.PI)*st.H*.03;
+        pebbleBolt(x0,y0,x,y,st.ps*.55,.95);pebbleRock(x,y,sz,e*9,q.c)});
+      setTimeout(()=>{const mm=enemyMetrics();if(!mm)return;const x=mm.x+(((i*37)%10)/10-.5)*mm.w*.5,y=mm.feet-mm.h*(.3+((i*53)%10)/10*.45);
+        for(let k=0;k<4;k++){const a2=Math.random()*6.283,v=(.06+Math.random()*.14)*U();spawn(x,y,{vx:Math.cos(a2)*v,vy:Math.sin(a2)*v,color:k%2?'#fff6b0':'#a8763e',size:st.ps*.5,life:240})}
+        if(i%6===0)shake(0,st.ps*.8)},tm)});
+    setTimeout(()=>{const mm=enemyMetrics();if(!mm)return;ring(mm.x,mm.feet-mm.h*.5,mm.h*.7,'#f2d24b',0,380,1.8);flash('#fff3a0',0,.16)},times[times.length-1]);
+    return times;
+  }

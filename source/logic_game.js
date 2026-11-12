@@ -76,6 +76,7 @@ function fuse(c1,c2){
       if(r.key==='fire+water'){r.fx=[];r.blind=25+5*Math.min(10,(effLv(a)-1)+(effLv(b)-1))}
       if(r.key==='earth+fire'){const le=effLv(a),lf=effLv(b),u=le+lf,n=u>=10?3:u>=6?2:1;r.name=n>1?'Meteor Shower':'Meteor';r.meteor=n;r.fx=[];r.kind='cast';r.dmg=[{t:'earth',p:5*le*n,k:'meteor'},{t:'fire',p:2*lf*n,k:'meteor'}];r.segs=Array.from({length:n},()=>({k:'meteor'}));r.burnSet=3}
       if(r.key==='lightning+water')r.stun=true;
+      if(r.key==='earth+lightning'){const u=effLv(a)+effLv(b),n=u*15;r.name='Supercharged Pebbles';r.pebbles=true;r.ticks=n;r.tickFlat=true;r.floatEvery=Math.max(1,Math.ceil(n/25));r.verb='Hurls a storm of supercharged pebbles';r.dmg=[{t:'lightning',p:n}];r.fx=[];r.stun=false}
       if(r.key==='earth+water'){r.name='Mudslide';r.fx=[];r.dmg=[{t:'earth',p:3*(effLv(a)+effLv(b))}];r.mud=1}
       if(r.key==='earth+ice'){r.name='Ice Age';r.dmg=[];r.fx=[];r.kind='support';r.iceAge=3}
       if(['fire+light','fire+lightning','light+lightning'].includes(r.key)){const u=effLv(a)+effLv(b);r.ticks=8;r.tickW=[1,1,1,1,1,2,2,3];r.tickCap=20;r.verb='Fires a searing laser beam';r.dmg=[{t:r.key==='light+lightning'?'lightning':'fire',p:u*12}];r.fx=[];r.stun=false;r.breaker=false;if(u>=6){r.phoenix=.5;r.verb='A phoenix rises as you fire a searing laser beam'}}
@@ -291,7 +292,7 @@ function doFuse(){
   if(R.holyRain&&R.tickTimes)R.tickTimes.forEach((t,i)=>setTimeout(()=>{if(S.phase==='battle')healTick(R.holyRain,i,R.rainFlat)},t));
   if(R.segs&&R.hitTimes)R.hitTimes.slice(0,-1).forEach((t,i)=>setTimeout(()=>preHit(R,i),t));
   if(R.fslash&&R.hitTimes)R.hitTimes.forEach(t=>setTimeout(()=>{if(S.phase==='battle'){fslashMana();render()}},t));
-  if(R.ticks&&R.tickTimes)R.tickTimes.slice(0,-1).forEach((t,i)=>setTimeout(()=>{const E=S.enemy;if(!E)return;const td=tickDmg(E,R,i);Stage.float('enemy',td,hexOf(tickType(R,i)),'',0);Stage.hitEnemy([tickType(R,i)]);tickStun(R,E);if(R.phoenix)phoenixHeal(R,td);if(R.quake)aliveFoes().filter(F=>F!==E).forEach(F=>Stage.withFoe(F.slot,()=>{Stage.float('enemy',tickDmg(F,R,i),hexOf('earth'),'',0);Stage.hitEnemy(['earth'])}))},t));
+  if(R.ticks&&R.tickTimes)R.tickTimes.slice(0,-1).forEach((t,i)=>setTimeout(()=>{const E=S.enemy;if(!E)return;const td=tickDmg(E,R,i);const fe=R.floatEvery||1;R._acc=(R._acc||0)+td;if((i+1)%fe===0){Stage.float('enemy',R._acc,hexOf(tickType(R,i)),'',0);Stage.hitEnemy([tickType(R,i)]);R._acc=0}tickStun(R,E);if(R.phoenix)phoenixHeal(R,td);if(R.quake)aliveFoes().filter(F=>F!==E).forEach(F=>Stage.withFoe(F.slot,()=>{Stage.float('enemy',tickDmg(F,R,i),hexOf('earth'),'',0);Stage.hitEnemy(['earth'])}))},t));
   setTimeout(()=>applyFuse(c1,c2,R),delay);
 }
 function phoenixHeal(R,d,last){const h=Math.min(Math.round(d*R.phoenix),S.maxHp-S.hp);if(h>0){S.hp+=h;Stage.float('player',`+${h}`,'#ffb04a',last?'PHOENIX':'',0);render()}}
@@ -315,7 +316,7 @@ function applyFuse(c1,c2,R){
   let total=0;const notes=[];
   R.dmg.forEach((part,i)=>{
     const m=modOf(E,part.t);if(!E.known.includes(part.t))E.known.push(part.t);if(R.tickTypes)R.tickTypes.forEach(t=>{if(!E.known.includes(t))E.known.push(t)});
-    let d;if(R.ticks){R._td=tickDmg(E,R,R.ticks-1);d=0;for(let q=0;q<R.ticks;q++)d+=tickDmg(E,R,q)}else{d=part.p*m;if(E.soak&&(part.t==='lightning'||part.t==='ice'))d*=1.5;if(E.curse>0)d*=1.3;if(E.shocked)d*=1.1;if(E.vuln)d*=1+E.vuln/100;if(E.mud>0&&part.t==='lightning')d*=2;d=Math.round(d)}total+=d;
+    let d;if(R.ticks){R._td=tickDmg(E,R,R.ticks-1);if(R.floatEvery>1)R._td*=R.ticks-Math.floor((R.ticks-1)/R.floatEvery)*R.floatEvery;d=0;for(let q=0;q<R.ticks;q++)d+=tickDmg(E,R,q)}else{d=part.p*m;if(E.soak&&(part.t==='lightning'||part.t==='ice'))d*=1.5;if(E.curse>0)d*=1.3;if(E.shocked)d*=1.1;if(E.vuln)d*=1+E.vuln/100;if(E.mud>0&&part.t==='lightning')d*=2;d=Math.round(d)}total+=d;
     const tag=m===0?'IMMUNE':m>=2?'WEAK!':m>1?'WEAK':m<1?'RESIST':'';
     if(tag==='IMMUNE')notes.push(`<span class="r">${TYPENAME[part.t]} had no effect</span>`);
     else if(m>1)notes.push(`<span class="w">${TYPENAME[part.t]} hit a weakness</span>`);
