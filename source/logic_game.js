@@ -65,6 +65,7 @@ function fuse(c1,c2){
   }else if(cat==='phys+elem'){
     addPhys(a,pa);r.dmg.push({t:b.key,p:pb+2});r.fx=[b.key];r.name=`${ADJ[b.key]} ${NOUN[a.key]}`;r.anim=animOf(a.key);r.trail=b.key;
     if(['punch','stab','kick','slash'].includes(a.key)&&b.key==='lightning'){const u=effLv(a)+effLv(b);r.name='Lightning Strike';r.lstrike=a.key;r.fx=[];r.trail=null;r.kind='melee';r.anim=a.key==='stab'?'punch':a.key;r.charged={sum:u,ilo:3,ihi:6,crit:5,add:5+u};r.dmg=[{t:'lightning',p:5+u+u*4,k:a.key}];r.phys=[a.key];r.block=0;r.stunChance=Math.min(100,10*u);r.stunType='lightning'}
+    if(a.key==='arrowshot'&&ESPELL[r.key]){const sp=ESPELL[r.key],u=effLv(a)+effLv(b);r.name=sp.name;r.spell=r.key;r.fx=[];r.trail=null;r.kind='ranged';r.phys=['arrowshot'];r.block=0;r.stun=false;sp.build(r,u);r.charge=[b.key]}
     if(a.key==='punch'&&b.key==='earth'){const lp=effLv(a),le=effLv(b),n=lp>=5?3:1;r.name='Stone Punch';r.stonePunch=n;r.fx=[];r.trail=null;r.kind='ranged';r.dmg=[{t:'blunt',p:5*(lp+le)*n,k:'spunch'}];r.segs=Array.from({length:n},()=>({k:'spunch'}));r.freeEarth=lp>le}
   }else if(cat==='elem+elem'){
     r.kind='cast';r.pure=true;

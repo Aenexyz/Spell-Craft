@@ -64,3 +64,26 @@ const ESPELL={
   desc:R=>`A roaring water vortex hits every enemy 4 times for ${Math.round(sumP(R)/4)} Water damage each, ignoring shields and soaking them all for 2 turns.`,
   apply:(R,E,n)=>{const set=F=>{F.block=0;if(modOf(F,'water')!==0)F.soak=Math.max(F.soak,2)};spellHitOthers(R,E,n,set);if(E.hp>0)set(E);n.push('<span class="w">everything is soaked</span>')}},
 };
+// ===== Arrow Shot + element: bow spells =====
+Object.assign(ESPELL,{
+ 'arrowshot+fire':{name:'Phoenix Arrow',build:(r,u)=>{r.dmg=[{t:'fire',p:7*u}]},
+  desc:R=>`Draws a blazing arrow that takes flight as a phoenix and explodes for ${sumP(R)} Fire damage, setting it burning for 3 turns. The blast splashes other enemies for half damage.`,
+  apply:(R,E,n)=>{if(E.hp>0&&modOf(E,'fire')!==0)E.burn=Math.max(E.burn,3);const half={...R,name:'The blast',dmg:R.dmg.map(p=>({...p,p:Math.round(p.p/2)}))};spellHitOthers(half,E,n);n.push('<span class="w">set it burning for 3 turns</span>')}},
+ 'arrowshot+water':{name:'Tide Piercer',build:(r,u)=>{r.ticks=3;r.dmg=[{t:'water',p:6*u}];r.heal=u*2},
+  desc:R=>`Floats up and fires a water arrow that splits into 3 tide arrows for ${Math.round(sumP(R)/3)} Water damage each, soaking it for 2 turns. The spray heals you ${R.heal} HP.`,
+  apply:(R,E,n)=>{if(E.hp>0&&modOf(E,'water')!==0){E.soak=Math.max(E.soak,2);n.push('<span class="w">soaked it</span>')}}},
+ 'arrowshot+ice':{name:'Frost Comet',build:(r,u)=>{r.dmg=[{t:'ice',p:8*u}]},
+  desc:R=>`Shoots a frost arrow into the sky that returns as a falling ice comet for ${sumP(R)} Ice damage, with a 40% chance to freeze it.`,
+  apply:(R,E,n)=>{if(E.hp>0&&canFreeze(E)&&Math.random()<(S.iceAge>0?.7:.4)){E.frozen=true;n.push('<span class="w">froze it solid</span>')}}},
+ 'arrowshot+earth':{name:'Quake Arrow',build:(r,u)=>{r.dmg=[{t:'earth',p:7*u}];r.breaker=true;r.stunChance=30;r.stunType='earth'},
+  desc:R=>`Fires an arrow into the ground that tears a line of stone spikes up to it for ${sumP(R)} Earth damage, smashing through its shield with a 30% chance to stun.`},
+ 'arrowshot+wind':{name:'Gale Barrage',build:(r,u)=>{r.ticks=5;r.dmg=[{t:'wind',p:6*u}];r.dodgeAdd=30},
+  desc:R=>`Rides the wind into the air and fires a fan of 5 gale arrows for ${Math.round(sumP(R)/5)} Wind damage each. The tailwind gives you +30% dodge chance.`},
+ 'arrowshot+lightning':{name:'Thunder Rain',build:(r,u)=>{r.ticks=6;r.dmg=[{t:'lightning',p:7*u}];r.stunTick=15},
+  desc:R=>`Fires a charged arrow skyward that bursts into 6 falling lightning arrows for ${Math.round(sumP(R)/6)} Lightning damage each, each with a 15% chance to stun.`},
+ 'arrowshot+dark':{name:'Soul Reaper Arrow',build:(r,u)=>{r.dmg=[{t:'dark',p:7*u}];r.breaker=true},
+  desc:R=>`Looses a shadow arrow that tears straight through it for ${sumP(R)} Dark damage, ignoring shields. It is cursed for 2 turns and Marked: it takes 25% more damage for 2 turns.`,
+  apply:(R,E,n)=>{if(E.hp<=0)return;if(modOf(E,'dark')!==0)E.curse+=2;E.vuln=Math.min(100,(E.vuln||0)+25);E.vulnT=Math.max(E.vulnT||0,2);n.push('<span class="w">marked it: +25% damage taken</span>')}},
+ 'arrowshot+light':{name:'Seraph Arrow',build:(r,u)=>{r.dmg=[{t:'light',p:7*u}];r.lifesteal=.5},
+  desc:R=>`Spreads wings of light, rises and fires a radiant arrow for ${sumP(R)} Light damage. You heal for half the damage dealt.`},
+});
