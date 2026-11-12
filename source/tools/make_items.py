@@ -278,9 +278,11 @@ ITEMS = {
  'phoenix_amulet': ('amulet', {'a': '#ff6a2a', 'b': '#a8301a', 'c': '#ffe08a', 'd': '#d8a93a', 'e': '#ff9a3a'}, 'pendant'),
  'ember_staff': ('staff', {'a': '#ff7b3a', 'b': '#c8402f', 'c': '#ffe08a', 'd': '#d8a93a', 'e': '#6b4423'}, 'weapon'),
  'frost_wand': ('wand', {'a': '#6cc4f2', 'b': '#2f6ad8', 'c': '#e8fbff', 'd': '#c0c8d0', 'e': '#d8d2c0'}, 'weapon'),
+ 'storm_rod': ('wand', {'a': '#f2d24b', 'b': '#a8700f', 'c': '#fff6b0', 'd': '#c0c8d0', 'e': '#5a5f68'}, 'weapon'),
+ 'soul_lantern': ('lantern', {'d': '#3a3e45', 'e': '#5a5f68', 'c': '#b18bff', 'f': '#e8d8ff', 'b': '#6a3a8e'}, 'lantern'),
  'archmage_staff': ('crook', {'a': '#9a4ad8', 'b': '#5b2a9a', 'c': '#e8c8ff', 'd': '#d8a93a', 'e': '#3a2a5a'}, 'weapon'),
 }
-idx = json.load(open('items.json'))['idx']; idx['starter_sword'] = 36; idx['ember_staff'] = 37; idx['frost_wand'] = 38; idx['archmage_staff'] = 39; idx['phoenix_amulet'] = 40
+idx = json.load(open('items.json'))['idx']; idx['starter_sword'] = 36; idx['ember_staff'] = 37; idx['frost_wand'] = 38; idx['archmage_staff'] = 39; idx['phoenix_amulet'] = 40; idx['storm_rod'] = 41; idx['soul_lantern'] = 42
 atlas = Image.new('RGBA', (8 * 64, 6 * 64), (0, 0, 0, 0))
 look = {}
 def hexrgb(h): return tuple(int(h[i:i + 2], 16) for i in (1, 3, 5)) + (255,)

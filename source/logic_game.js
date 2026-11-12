@@ -63,7 +63,7 @@ function fuse(c1,c2){
     r.anim=(a.key==='shieldbash'||b.key==='shieldbash')?'shield':(a.key==='slash'||b.key==='slash')?'slash':(a.key==='kick'||b.key==='kick')?'kick':'punch';
   }else if(cat==='phys+elem'){
     addPhys(a,pa);r.dmg.push({t:b.key,p:pb+2});r.fx=[b.key];r.name=`${ADJ[b.key]} ${NOUN[a.key]}`;r.anim=animOf(a.key);r.trail=b.key;
-    if(a.key==='punch'&&b.key==='lightning'){const u=effLv(a)+effLv(b);r.name='Lightning Strike';r.lstrike=true;r.fx=[];r.trail=null;r.kind='melee';r.anim='punch';r.charged={sum:u,ilo:3,ihi:6,crit:5};r.dmg=[{t:'lightning',p:u*5,k:'punch'}];r.phys=['punch'];r.block=0;r.stunChance=Math.min(100,10*u);r.stunType='lightning'}
+    if(['punch','stab','kick','slash'].includes(a.key)&&b.key==='lightning'){const u=effLv(a)+effLv(b);r.name='Lightning Strike';r.lstrike=a.key;r.fx=[];r.trail=null;r.kind='melee';r.anim=a.key==='stab'?'punch':a.key;r.charged={sum:u,ilo:3,ihi:6,crit:5,add:5+u};r.dmg=[{t:'lightning',p:5+u+u*4,k:a.key}];r.phys=[a.key];r.block=0;r.stunChance=Math.min(100,10*u);r.stunType='lightning'}
     if(a.key==='punch'&&b.key==='earth'){const lp=effLv(a),le=effLv(b),n=lp>=5?3:1;r.name='Stone Punch';r.stonePunch=n;r.fx=[];r.trail=null;r.kind='ranged';r.dmg=[{t:'blunt',p:5*(lp+le)*n,k:'spunch'}];r.segs=Array.from({length:n},()=>({k:'spunch'}));r.freeEarth=lp>le}
   }else if(cat==='elem+elem'){
     r.kind='cast';r.pure=true;
@@ -132,7 +132,7 @@ function gearFuse(c1,c2){
   R.dmg=R.dmg.map(p=>({t:p.t,p:p.p+(g[p.t]||0),k:p.k}));
   if(R.combo)R.seq=[c1.key,c2.key];
   const BASIC=['slash','stab','punch','kick'],pc=[c1,c2].filter(c=>CARDS[c.key].cat==='phys');
-  if(R.kind==='melee'&&pc.length&&pc.every(c=>BASIC.includes(c.key))){const sg=[];pc.forEach(c=>{const n=c.key==='slash'?effLv(c):1;for(let i=0;i<n;i++)sg.push({k:c.key})});if(sg.length>1){R.segs=sg;R.double=false;R.combo=false}}
+  if(R.kind==='melee'&&!R.lstrike&&pc.length&&pc.every(c=>BASIC.includes(c.key))){const sg=[];pc.forEach(c=>{const n=c.key==='slash'?effLv(c):1;for(let i=0;i<n;i++)sg.push({k:c.key})});if(sg.length>1){R.segs=sg;R.double=false;R.combo=false}}
   if(c1.key==='slash'&&c2.key==='slash'&&effLv(c1)+effLv(c2)>=3)R.name='Omnislash';
   const sc=[c1,c2].find(c=>c.key==='slash'),ic=[c1,c2].find(c=>ESLASH[c.key]);
   if(sc&&ic&&c1.key!==c2.key){const n=effLv(sc),el=ic.key,sk=ESLASH[el];R.name={ice:'Freezing Slash',fire:'Burning Slash',water:'Aqua Slash',dark:'Abyssal Slash'}[el];R.fslash=true;R.eslash=el;R.segs=Array.from({length:n},()=>({k:sk}));R.double=false;R.combo=false;R.fx=[];R.trail=el;if(el==='ice')R.freezeChance=10+(S.iceAge>0?30:0)+(S.enemy&&S.enemy.mud>0?50:0);if(el==='fire')R.burnHit=2;if(el==='water')R.healHit=3;if(el==='dark')R.vulnHit=10;
@@ -154,7 +154,7 @@ function rollLoot(boost,minR){
   for(const s in ITEMS[k].stats){if(s==='revive'){st.revive=1}else if(s==='elv'){st.elv=rarity==='epic'?2:1}else if(s==='lv'){st.lv={};for(const e in ITEMS[k].stats.lv)st.lv[e]=rarity==='epic'?2:1}else st[s]=Math.max(1,Math.round(ITEMS[k].stats[s]*mult))}
   return{key:k,rarity,stats:st};
 }
-const STAT_TEXT={revive:()=>'If you fall, revive once with 50% HP and 30% mana (the amulet then shatters)',elv:v=>`+${v} level to all Element cards`,mcost:v=>`Element cards cost ${v} less mana`,atk:v=>`+${v} damage on every attack`,def:v=>`+${v} block at the start of each turn`,hp:v=>`+${v} max HP`,regen:v=>`Heal ${v} more after each fight`,
+const STAT_TEXT={addl:v=>`+${v} Lightning damage added to every attack`,soul:v=>`Each kill adds +${v} Dark damage to every attack`,souls:v=>`Souls gathered: +${v} Dark damage now`,revive:()=>'If you fall, revive once with 50% HP and 30% mana (the amulet then shatters)',elv:v=>`+${v} level to all Element cards`,mcost:v=>`Element cards cost ${v} less mana`,atk:v=>`+${v} damage on every attack`,def:v=>`+${v} block at the start of each turn`,hp:v=>`+${v} max HP`,regen:v=>`Heal ${v} more after each fight`,
   heal:v=>`Restores ${v} HP now`,pdef:v=>`+${v} block each turn, permanently`,php:v=>`+${v} max HP, permanently`,patk:v=>`+${v} damage on every attack, permanently`};
 function statLines(st,key){
   const out=[];
@@ -266,8 +266,8 @@ function applyElem(f,E,def){
 
 function manaCost(c){if(!c||!CARDS[c.key])return 0;const cat=CARDS[c.key].cat;if(cat==='elem')return Math.max(0,10-(stats().mcost||0));if(cat==='phys')return -(5+Math.max(0,effLv(c)-1));return 0}
 const ESLASH={ice:'fslash',fire:'bslash',water:'aslash',dark:'dslash'};
-function chgLo(R){return R.charged.float?Math.round(R.charged.sum*R.charged.lo):R.charged.sum*(R.charged.ilo||3)}
-function chgHi(R){return R.charged.float?Math.round(R.charged.sum*R.charged.hi):R.charged.sum*(R.charged.ihi||7)}
+function chgLo(R){return R.charged.float?Math.round(R.charged.sum*R.charged.lo):R.charged.sum*(R.charged.ilo||3)+(R.charged.add||0)}
+function chgHi(R){return R.charged.float?Math.round(R.charged.sum*R.charged.hi):R.charged.sum*(R.charged.ihi||7)+(R.charged.add||0)}
 function fuseCost(c1,c2){if(!c1||!c2)return 0;const ks=[c1.key,c2.key],e=ks.find(k=>ESLASH[k]);if(ks.includes('punch')&&ks.includes('earth')){const pc=c1.key==='punch'?c1:c2,ec=c1.key==='earth'?c1:c2;if(effLv(pc)>effLv(ec))return manaCost(pc)}if(ks.includes('slash')&&e)return manaCost(c1.key===e?c1:c2);return manaCost(c1)+manaCost(c2)}
 function fslashFreeze(R,E){if(!R.fslash||!E)return;if(R.healHit){const h=Math.min(R.healHit,S.maxHp-S.hp);if(h>0)S.hp+=h;R._healed=(R._healed||0)+h;Stage.float('player',`+${h}`,'#7fe08a','HEAL',280);render();return}if(E.hp<=0)return;if(R.vulnHit){R._vuln=(R._vuln||0)+R.vulnHit;Stage.float('enemy',`+${R._vuln}%`,'#b18bff','DMG TAKEN',220);return}if(R.burnHit){if(modOf(E,'fire')===0){R._resist=true;return}E.burn+=R.burnHit;R._burned=(R._burned||0)+R.burnHit;return}if(E.frozen)return;if(!canFreeze(E)){R._resist=true;return}if(Math.random()*100<R.freezeChance){E.frozen=true;R._froze=true;Stage.float('enemy','FROZEN','#82d4ff','',150)}}
 function fslashMana(){const g=Math.min(3,S.maxMana-S.mana);S.mana+=g;Stage.float('player','+3','#6cb2ff','MANA',0)}
@@ -282,7 +282,7 @@ function doFuse(){
   const cost=fuseCost(...S.sel.map(card));if(cost>S.mana){S.toast=`Not enough mana. This needs ${cost}, you have ${S.mana}.`;render();return}
   S.busy=true;S.mana=Math.min(S.maxMana,S.mana-cost);if(cost<0)setTimeout(()=>Stage.float('player',`+${-cost}`,'#6cb2ff','MANA',0),250);
   const[c1,c2]=S.sel.map(card);const R=gearFuse(c1,c2);
-  if(R.charged){if(R.charged.float){R.mult=R.charged.lo+Math.random()*(R.charged.hi-R.charged.lo);R.dmg[0].p=Math.round(R.charged.sum*R.mult)+R.bonus}else{const lo=R.charged.ilo||3,hi=R.charged.ihi||7;R.mult=lo+Math.floor(Math.random()*(hi-lo+1));R.dmg[0].p=R.charged.sum*R.mult+R.bonus;if(R.charged.crit&&R.mult>=R.charged.crit)R.crit=true}}
+  if(R.charged){if(R.charged.float){R.mult=R.charged.lo+Math.random()*(R.charged.hi-R.charged.lo);R.dmg[0].p=Math.round(R.charged.sum*R.mult)+R.bonus}else{const lo=R.charged.ilo||3,hi=R.charged.ihi||7;R.mult=lo+Math.floor(Math.random()*(hi-lo+1));R.dmg[0].p=R.charged.sum*R.mult+(R.charged.add||0)+R.bonus;if(R.charged.crit&&R.mult>=R.charged.crit)R.crit=true}}
   render();
   const delay=Stage.perform(R);
   if([c1,c2].some(c=>c.key==='earth'&&effLv(c)>=5))Stage.golem(delay+450);
@@ -326,6 +326,7 @@ function applyFuse(c1,c2,R){
   if(R.dmg.length&&!R.breaker&&E.block>0){const ab=Math.min(E.block,total);E.block-=ab;total-=ab;if(ab)notes.push(`${ab} absorbed by its shield`)}
   else if(R.breaker&&E.block>0&&R.dmg.length)notes.push('broke through its shield');
   E.hp-=total;if(E.vulnT>0&&--E.vulnT===0)E.vuln=0;
+  if(R.dmg.length&&E.hp>0)itemProcs(E,notes);
   if(R.crit)notes.push('<span class="w">critical hit!</span>');
   if(R.stunChance&&E.hp>0&&modOf(E,R.stunType||'earth')!==0&&!E.stun&&Math.random()*100<R.stunChance){E.stun=true;notes.push('<span class="w">stunned it</span>');Stage.float('enemy','STUN','#f2d24b','',300)}
   if(R.quake)(S.foes||[]).filter(F=>F!==E&&F.hp>0).forEach(F=>{let d=0;for(let q=0;q<R.ticks;q++)d+=tickDmg(F,R,q);if(!F.known.includes('earth'))F.known.push('earth');F.hp-=d;const fn=ENEMIES[F.id].name;notes.push(`the quake hits ${fn} for ${d}`);
@@ -438,8 +439,9 @@ function finishEnemyTurn(){
   render();
   if(S.rainNext){const lv=S.rainNext,flat=S.rainFlat;S.rainNext=0;S.busy=true;render();const ts=flat?Stage.healRain(150):Stage.holyRain(150);ts.forEach((t,i)=>setTimeout(()=>{if(S.phase!=='battle')return;healTick(lv,i,flat);if(i===4){S.busy=false;render()}},t))}
 }
+function itemProcs(E,notes){const g=stats();[['lightning',g.addl],['dark',g.souls]].forEach(([t,v],i)=>{if(!v||E.hp<=0)return;const{d,m}=partDmg(E,{t,p:v});if(!E.known.includes(t))E.known.push(t);E.hp-=d;Stage.float('enemy',d,hexOf(t),t==='dark'?'SOULS':'STORM',260+i*160);if(t==='lightning')Stage.zap();notes.push(m===0?`<span class="r">${TYPENAME[t]} had no effect</span>`:`+${d} ${TYPENAME[t]} from your gear`)})}
 function winBattle(){
-  const n=curNode(),def=ENEMIES[S.enemy.id],fs=S.foes||[S.enemy];S.kills+=fs.length;const fname=fs.map(f=>ENEMIES[f.id].name).join(' & ');
+  const n=curNode(),def=ENEMIES[S.enemy.id],fs=S.foes||[S.enemy];S.kills+=fs.length;{const sl=Object.values(S.gear).find(g=>g&&g.key==='soul_lantern');if(sl){const add=sl.stats.soul*fs.length;sl.stats.souls=(sl.stats.souls||0)+add;S.toast=`Soul Lantern gathers ${add} soul${add>1?'s':''}: +${sl.stats.souls} Dark damage on every attack.`}}const fname=fs.map(f=>ENEMIES[f.id].name).join(' & ');
   const h=Math.min(5+(stats().regen||0),S.maxHp-S.hp);S.hp+=h;
   const boss=n.k==='boss',elite=n.k==='elite';
   const offers=rollOffers(3,{minItem:boss||elite?1:0,minR:boss?'epic':elite?'rare':null,boost:boss?6:elite?3:0});
@@ -580,7 +582,7 @@ function describe(R){
   const fx=[...new Set(R.fx)];let s='';
   if(R.dmg.length){
     const tl=joinList([...new Set(R.dmg.map(p=>TYPENAME[p.t]))]);
-    let f=R.charged?(R.lstrike?`Charges up with lightning, teleports behind it and punches for ${chgLo(R)+R.bonus}–${chgHi(R)+R.bonus} Lightning damage (card levels × a random 3 to 6; ×5 or ×6 is a critical hit)`:R.ranged==='volley'?`Leaps into the air and fires a volley of arrows for ${chgLo(R)+R.bonus}–${chgHi(R)+R.bonus} Pierce damage (card levels × a random 0.8 to 10)`:`Charges a glowing arrow for ${R.charged.sum*3+R.bonus}–${R.charged.sum*7+R.bonus} Pierce damage (card levels × a random 3 to 7)`):R.ticks?`${R.verb} that hits ${R.ticks} times`:R.segs?(()=>{const gs=[];R.segs.forEach(o=>{const l=gs[gs.length-1];if(l&&l.k===o.k)l.n++;else gs.push({k:o.k,n:1})});return gs.map((q,i)=>(i?low(V[q.k]):V[q.k])+(q.n>1?(q.n===2?' twice':` ${q.n} times`):'')).join(', then ')})():R.double?`${V[R.phys[0]]} twice`:R.combo?`${V[R.seq[0]]}, then ${low(V[R.seq[1]])}`:R.kind==='cast'?'Casts a spell':R.phys.length?V[R.phys[0]]:'Hits';
+    let f=R.charged?(R.lstrike?`Teleports behind it and ${{stab:'stabs',punch:'punches',kick:'kicks',slash:'slashes'}[R.lstrike]} for ${chgLo(R)+R.bonus}–${chgHi(R)+R.bonus} Lightning damage`:R.ranged==='volley'?`Leaps into the air and fires a volley of arrows for ${chgLo(R)+R.bonus}–${chgHi(R)+R.bonus} Pierce damage (card levels × a random 0.8 to 10)`:`Charges a glowing arrow for ${R.charged.sum*3+R.bonus}–${R.charged.sum*7+R.bonus} Pierce damage (card levels × a random 3 to 7)`):R.ticks?`${R.verb} that hits ${R.ticks} times`:R.segs?(()=>{const gs=[];R.segs.forEach(o=>{const l=gs[gs.length-1];if(l&&l.k===o.k)l.n++;else gs.push({k:o.k,n:1})});return gs.map((q,i)=>(i?low(V[q.k]):V[q.k])+(q.n>1?(q.n===2?' twice':` ${q.n} times`):'')).join(', then ')})():R.double?`${V[R.phys[0]]} twice`:R.combo?`${V[R.seq[0]]}, then ${low(V[R.seq[1]])}`:R.kind==='cast'?'Casts a spell':R.phys.length?V[R.phys[0]]:'Hits';
     if(R.tickW){const bs=R.tickW.map((_,q)=>Math.round(tickBase(R,q)));f+=` for ${Math.min(...bs)}–${Math.max(...bs)} ${tl} damage per hit, growing stronger at the end${R.tickCap&&bs.includes(R.tickCap)?` (max ${R.tickCap} per hit)`:''}`}
     else if(R.tickTypes)f+=` for ${Math.round(tickBase(R,0))} damage each, alternating Dark and Light`
     else if(!R.charged)f+=R.ticks?` for ${Math.round(R.dmg[0].p/R.ticks)} ${tl} damage each`:` for ${tl} damage`;if(R.breaker)f+=', ignoring its shield';
@@ -623,8 +625,9 @@ function resultHTML(){
     L(p.t==='pierce'?'stab':p.t==='blunt'?'punch':p.t,typeColor(p.t),`${R.tickTypes?'Dark + Light':TYPENAME[p.t]} ${R.charged?`${chgLo(R)+R.bonus}–${chgHi(R)+R.bonus}`:R.ticks?Math.round(Array.from({length:R.ticks},(_,q)=>tickBase(R,q)).reduce((x,y)=>x+y,0)):p.p}${R.tickTypes?'':tag.replace(' · ',' ')}`);
   });
   L('water','#4aa8ff',(cost>0?`Mana −${cost}`:cost<0?`Mana +${-cost}`:'No mana')+(R.fslash?`, +${3*R.segs.length} back`:''));
-  if(R.charged)L(R.lstrike?'punch':'arrowshot','var(--phys)',R.charged.float?'Power ×0.8–10':`Power ×${R.charged.ilo||3}–${R.charged.ihi||7}`);
-  if(R.charged&&R.charged.crit)L('lightning','var(--lightning)',`Critical on ×${R.charged.crit}+`);
+  if(R.charged&&!R.lstrike)L('arrowshot','var(--phys)',R.charged.float?'Power ×0.8–10':`Power ×${R.charged.ilo||3}–${R.charged.ihi||7}`);
+  if(R.charged&&R.charged.crit)L('lightning','var(--lightning)','Crit chance 50%');
+  {const g=stats();if(R.dmg.length&&g.addl)L('lightning','var(--lightning)',`+${g.addl} Lightning (item)`);if(R.dmg.length&&g.souls)L('dark','var(--dark)',`+${g.souls} Dark (souls)`)}
   if(R.dodgeAdd)L('dodge','var(--guard)',`Dodge +${R.dodgeAdd}%`);
   if(R.segs)L('multi','var(--phys)',`Hits ×${R.segs.length}`);
   if(R.double)L('multi','var(--phys)','Hits twice');

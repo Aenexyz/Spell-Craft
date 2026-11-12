@@ -6,7 +6,7 @@ lines=src.split('\n')
 def grab(start,end):
   i=src.index(start);j=src.index(end,i);return src[i:j]
 sprites=grab('const PLAYER_TOP=[','const ITEM_ATLAS=')
-atlas=re.search(r'const ITEM_ATLAS=.*?;\n',src).group(0).replace('"rows": 5','"rows": 6').replace('"purple_potion": 35}}','"purple_potion": 35, "starter_sword": 36, "ember_staff": 37, "frost_wand": 38, "archmage_staff": 39, "phoenix_amulet": 40}}')
+atlas=re.search(r'const ITEM_ATLAS=.*?;\n',src).group(0).replace('"rows": 5','"rows": 6').replace('"purple_potion": 35}}','"purple_potion": 35, "starter_sword": 36, "ember_staff": 37, "frost_wand": 38, "archmage_staff": 39, "phoenix_amulet": 40, "storm_rod": 41, "soul_lantern": 42}}')
 hero=re.search(r'const HERO=\{.*?\};\n',src,re.S).group(0)
 sprites=sprites.replace(hero,'const HERO='+open('hero2.json').read()+';\n');assert 'fslash' in sprites
 stage=grab('const Stage=(()=>{','/* ================= fusion')
@@ -459,7 +459,7 @@ R("by2=by-bht-fsz*.45","by2=duoB?feet+st.ps*2.2:by-bht-fsz*.45")
 
 R("    playerDie(){st.player.dead=true;st.player.act=null;st.player.anim={name:'die',t0:performance.now(),dur:700,hold:true}},","    playerDie(){st.player.dead=true;st.player.act=null;st.player.seq=null;st.player.anim={name:'die',t0:performance.now(),dur:HERO.die?1900:700,hold:true}},")
 
-R("ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(x0+hf.f.hx*k,y0+hf.f.hy*k);ctx.rotate(th);ctx.drawImage(itemsImg,(wi%wc)*64,Math.floor(wi/wc)*64,64,64,-sz/2,-sz*.8,sz,sz);ctx.restore()}","const stf=['ember_staff','frost_wand','archmage_staff'].includes(wpn.key),dpS=Math.min(2,window.devicePixelRatio||1),up=stf&&hf.n==='idle',sh=stf?sz+20*dpS:sz;ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(x0+hf.f.hx*k+(up?7*dpS:0),y0+hf.f.hy*k);ctx.rotate(th);ctx.drawImage(itemsImg,(wi%wc)*64,Math.floor(wi/wc)*64,64,64,-sz/2,stf?-sh*.5:-sz*.8,sz,sh);ctx.restore()}")
+R("ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(x0+hf.f.hx*k,y0+hf.f.hy*k);ctx.rotate(th);ctx.drawImage(itemsImg,(wi%wc)*64,Math.floor(wi/wc)*64,64,64,-sz/2,-sz*.8,sz,sz);ctx.restore()}","const stf=['ember_staff','frost_wand','archmage_staff','storm_rod'].includes(wpn.key),dpS=Math.min(2,window.devicePixelRatio||1),up=stf&&hf.n==='idle',sh=stf?sz+20*dpS:sz;ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(x0+hf.f.hx*k+(up?7*dpS:0),y0+hf.f.hy*k);ctx.rotate(th);ctx.drawImage(itemsImg,(wi%wc)*64,Math.floor(wi/wc)*64,64,64,-sz/2,stf?-sh*.5:-sz*.8,sz,sh);ctx.restore()}")
 
 R("    drawBg();\n    const feet=feetY();\n    // prop\n","""    drawBg();
     const feet=feetY();
@@ -511,8 +511,8 @@ R("      const big=R.fx.length===2&&R.fx[0]===R.fx[1];\n","""      const big=R.f
         const bx=()=>{const mm=enemyMetrics();return mm?mm.x+mm.w*.5+st.H*.07:st.W*.8};
         P.tele={t0:T,out:ch,arrive:ch+160,back:ch+760,home:ch+900,x:bx};
         lsWhite(ch-220,260);lsBlink(pm.x,pm.feet,pm.h,ch);
-        setTimeout(()=>{const x=bx();lsBlink(x,pm.feet,pm.h,0);P.anim={name:'punch',t0:now_(),dur:420}},ch+160);
-        setTimeout(()=>{const mm=enemyMetrics();if(!mm)return;const y=mm.feet-mm.h*.5,hx=mm.x+mm.w*.15;ring(hx,y,mm.h*.8,'#ffe866',0,420,2.4);ring(hx,y,mm.h*.5,'#ffffff',60,360,1.6);flash(R.crit?'#ffffff':'#bff4ff',0,R.crit?.45:.25);shake(0,st.ps*(R.crit?3.5:2));bolt(mm.x,mm.feet-mm.h*.2,0);
+        setTimeout(()=>{const x=bx();lsBlink(x,pm.feet,pm.h,0);P.anim={name:R.lstrike==='stab'?'punch':R.lstrike,t0:now_(),dur:420}},ch+160);
+        setTimeout(()=>{const mm=enemyMetrics();if(!mm)return;const y=mm.feet-mm.h*.5,hx=mm.x+mm.w*.15;ring(hx,y,mm.h*.8,'#ffe866',0,420,2.4);ring(hx,y,mm.h*.5,'#ffffff',60,360,1.6);flash(R.crit?'#ffffff':'#bff4ff',0,R.crit?.45:.25);shake(0,st.ps*(R.crit?3.5:2));bolt(mm.x,mm.feet-mm.h*.2,0);if(R.lstrike!=='punch')physFx(R.lstrike,mm,0,'#fff6b0');
           for(let i=0;i<26;i++){const a2=Math.PI+(Math.random()-.5)*2.4,v=(.12+Math.random()*.28)*U();spawn(hx,y,{vx:Math.cos(a2)*v,vy:Math.sin(a2)*v,color:i%3?'#ffe866':'#ffffff',size:st.ps*.7,life:420})}},ch+360);
         setTimeout(()=>{lsBlink(bx(),pm.feet,pm.h,0)},ch+760);setTimeout(()=>{const p2=playerMetrics();lsBlink(p2.x,p2.feet,p2.h,0)},ch+900);
         return ch+380;}
