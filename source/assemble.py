@@ -672,6 +672,33 @@ css_add="""
   .drop-row{gap:8px}.drop-row .card{width:96px;height:156px}.drop-title{font-size:18px}
   .hand-zone{margin-top:-70px}.fan{padding:28px 8px 0}.fan .card{width:80px;height:124px;margin:0 -2px;padding:6px}.fan .card .card-desc{display:none}.fan .card .card-icon svg{width:30px;height:30px}.fan .card .card-name{font-size:15px}
   #resultLayer{top:6px}.rcard{padding:8px 10px}.rcard h3{font-size:19px}.rcard ul{font-size:11.5px;margin:4px 0 6px}.rcard h3{font-size:18px}.rc-desc{font-size:11.5px}.rc-actions .btn{padding:5px 10px;font-size:13px}.rc-dmg{font-size:18px}}
+
+.mob-btn.on{background:var(--brass);color:#141a1c;border-color:var(--brass)}
+#mobDock:empty{display:none}
+body.mob #mobDock{margin-top:12px}
+body.mob #mobDock .drop-layer,body.mob #mobDock .ev-layer{position:static;inset:auto;border-radius:12px;border:1px solid var(--line);padding:16px 10px;gap:14px;overflow:visible;background:var(--felt-2,#0d1618)}
+body.mob #mobDock .drop-title{font-size:26px}
+body.mob #mobDock .drop-sub{font-size:14px}
+body.mob #mobDock .drop-row{gap:12px}
+body.mob #mobDock .drop-row .card{width:min(170px,calc(50% - 8px));height:auto;aspect-ratio:.64}
+body.mob #mobDock .icard-face .card-name{font-size:20px}
+body.mob #mobDock .icard-face .card-desc{font-size:13px}
+body.mob #mobDock .ev-head h2{font-size:26px}body.mob #mobDock .ev-head p{font-size:15px}
+body.mob #mobDock .ev-opt{width:min(220px,calc(50% - 6px));padding:14px 10px}
+body.mob #mobDock .ev-opt b{font-size:18px}body.mob #mobDock .ev-opt span:not(.ev-ic){font-size:14px}
+body.mob #mobDock .ev-ic{width:62px;height:62px}body.mob #mobDock .ev-ic svg{width:34px;height:34px}
+body.mob #mobDock .ev-msg{font-size:17px}body.mob #mobDock .btn{font-size:16px;padding:10px 18px}
+body.mob #mobDock .ev-cards .card.small{width:96px;height:146px}
+body.mob .hand-zone{margin-top:12px}
+body.mob .fan{flex-wrap:wrap;gap:10px;padding:14px 0 0;width:100%}
+body.mob .fan .card{transform:none;margin:0;width:min(150px,calc(33.333% - 7px));height:auto;aspect-ratio:.62;padding:8px}
+body.mob .fan .card:hover{transform:translateY(-6px)}
+body.mob .fan .card.is-sel{transform:translateY(-10px)}
+body.mob .fan .card .card-desc{display:block;font-size:12px}
+body.mob .fan .card .card-name{font-size:19px}
+body.mob .fan .card .card-cat{white-space:nowrap;font-size:10px;letter-spacing:.06em}
+body.mob .fan .card .card-icon svg{width:40px;height:40px}
+body.mob .hand-meta{font-size:14px}body.mob .skip-btn{font-size:15px;padding:8px 14px}
 """
 head2='<meta charset="utf-8">\n'+head.replace('</style>',css_add+'</style>')
 body_skel=body_skel.replace('<div class="stage-label" id="stageLabel"></div>','<div class="stage-label" id="stageLabel"></div><div id="hudLayer"></div><div id="resultLayer"></div><div id="dropLayer"></div>')

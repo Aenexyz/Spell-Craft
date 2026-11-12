@@ -850,6 +850,8 @@ function codexHTML(){
     <table class="guide"><tbody>${Object.entries(DEFTEXT).map(([k,v])=>`<tr><td style="color:${typeColor(k)}">${CARDS[k].name}</td><td>${v}</td></tr>`).join('')}</tbody></table>
   </div></div>`;
 }
+let MOB=false;try{MOB=localStorage.getItem('fb_mobile')==='1'}catch(e){}
+const $dock=document.createElement('div');$dock.id='mobDock';document.querySelector('.stage-wrap').after($dock);
 const $drop=document.getElementById('dropLayer'),$top=document.getElementById('top'),$main=document.getElementById('main'),$modal=document.getElementById('modal'),$label=document.getElementById('stageLabel'),$result=document.getElementById('resultLayer'),$hud=document.getElementById('hudLayer');
 function render(){
   let main='';const ph=S.phase;
@@ -862,13 +864,13 @@ function render(){
   else if(ph==='win')main=endHTML(true);
   const toast=S.toast?`<div class="toast" role="status">${S.toast}</div>`:'';
   $top.innerHTML=`<header class="top"><div class="brand"><h1>Fusebound</h1><span class="eyebrow">Level ${S.level+1} · ${LEVELS[S.level].name}</span></div>
-    <div class="top-actions">${ph!=='title'?'<button type="button" class="btn" data-act="char">Character</button>':''}<button type="button" class="btn" data-act="codex">Codex <span class="num">${S.codex.length}</span></button>${ph!=='title'?'<button type="button" class="btn" data-act="restart">Restart</button>':''}</div></header>${routeHTML()}${toast}`;
+    <div class="top-actions">${ph!=='title'?'<button type="button" class="btn" data-act="char">Character</button>':''}<button type="button" class="btn mob-btn ${MOB?'on':''}" data-act="mobile" aria-pressed="${MOB}" title="Show card options and your hand larger, below the battle">Mobile</button><button type="button" class="btn" data-act="codex">Codex <span class="num">${S.codex.length}</span></button>${ph!=='title'?'<button type="button" class="btn" data-act="restart">Restart</button>':''}</div></header>${routeHTML()}${toast}`;
   $main.innerHTML=main;
   $result.innerHTML=resultHTML();
   $hud.innerHTML=hudHTML();
-  const dh=dropHTML()||eventLayerHTML();$drop.innerHTML=dh;
+  const dh=dropHTML()||eventLayerHTML();document.body.classList.toggle('mob',MOB);if(MOB){$drop.innerHTML='';$dock.innerHTML=dh}else{$dock.innerHTML='';$drop.innerHTML=dh}
   document.querySelector('.stage-wrap').classList.toggle('in-battle',ph==='battle');
-  document.querySelector('.stage-wrap').classList.toggle('in-drop',!!dh);
+  document.querySelector('.stage-wrap').classList.toggle('in-drop',!!dh&&!MOB);
   $modal.innerHTML=acqHTML()||charHTML()||codexHTML();
   const n=curNode();
   $label.textContent=ph==='title'?'':ph==='win'?'Adventure complete':ph==='travel'?`Level ${S.level+1} · ${LEVELS[S.level].name}`:nodeName(n);
@@ -882,6 +884,7 @@ document.getElementById('app').addEventListener('click',e=>{
   const act=b.dataset.act,id=b.dataset.id;
   if((act==='closecodex'||act==='closechar')&&e.target.closest('[data-stop]')&&!e.target.closest('button'))return;
   if(act.startsWith('acq')){acqAction(act,id);return}
+  if(act==='mobile'){MOB=!MOB;try{localStorage.setItem('fb_mobile',MOB?'1':'0')}catch(e){}render();if(MOB&&$dock.innerHTML)$dock.scrollIntoView({block:'nearest',behavior:'smooth'});return}
   if(act==='target'){if(S.phase==='battle'&&!S.busy&&S.foes){const F=S.foes[+id];if(F&&F.hp>0){setTarget(F);S.sel=S.sel;render()}}return}
   switch(act){
     case 'start':S.node=0;travel();break;
