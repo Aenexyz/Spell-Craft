@@ -194,7 +194,7 @@ const ITEMS={
   purple_potion:{name:'Fury Tonic',stats:{patk:1}}
 };
 const GEAR_KEYS=Object.keys(ITEMS).filter(k=>ITEMS[k].slot&&!ITEMS[k].starter),POTION_KEYS=Object.keys(ITEMS).filter(k=>!ITEMS[k].slot);
-const RARITY_GLOW={common:'#ffffff',rare:'#7db8ff',epic:'#cf9bff'};
+const RARITY_GLOW={common:'#ffffff',rare:'#8fd3ff',epic:'#d9b8ff'};
 const RANK={common:0,rare:1,epic:2};
 const PROP_OF={};
 

@@ -719,6 +719,15 @@ body.mob .hand-meta{font-size:14px}body.mob .skip-btn{font-size:15px;padding:8px
 #mobFuse .btn{font-size:22px;font-weight:700;padding:16px 30px;border-radius:14px;box-shadow:0 10px 28px #000c,0 0 0 2px #0d1618}
 body.mob #app{padding-bottom:160px}
 #mobFuse .skip-btn{font-size:17px;padding:10px 18px;background:#0d1618f2}
+
+:root{--glow-rare:#8fd3ff;--glow-epic:#d9b8ff}
+@keyframes glowRare{0%,100%{box-shadow:0 0 0 1px var(--glow-rare),0 0 10px 1px color-mix(in srgb,var(--glow-rare) 55%,transparent),0 10px 24px #000b}50%{box-shadow:0 0 0 1px var(--glow-rare),0 0 22px 5px color-mix(in srgb,var(--glow-rare) 75%,transparent),0 10px 24px #000b}}
+@keyframes glowEpic{0%,100%{box-shadow:0 0 0 1px var(--glow-epic),0 0 12px 2px color-mix(in srgb,var(--glow-epic) 60%,transparent),0 10px 24px #000b}50%{box-shadow:0 0 0 1px var(--glow-epic),0 0 28px 7px color-mix(in srgb,var(--glow-epic) 80%,transparent),0 10px 24px #000b}}
+.icard-face.rare,.ichoice.rare,.icard.rare,.slotbox.rare,.loot.rare{border-color:var(--glow-rare);animation:glowRare 2.2s ease-in-out infinite}
+.icard-face.epic,.ichoice.epic,.icard.epic,.slotbox.epic,.loot.epic{border-color:var(--glow-epic);animation:glowEpic 1.8s ease-in-out infinite}
+.icard-face.rare .card-name,.ichoice.rare b,.icard.rare b{text-shadow:0 0 8px color-mix(in srgb,var(--glow-rare) 70%,transparent)}
+.icard-face.epic .card-name,.ichoice.epic b,.icard.epic b{text-shadow:0 0 10px color-mix(in srgb,var(--glow-epic) 80%,transparent)}
+@media (prefers-reduced-motion:reduce){.icard-face.rare,.ichoice.rare,.icard.rare,.slotbox.rare,.loot.rare,.icard-face.epic,.ichoice.epic,.icard.epic,.slotbox.epic,.loot.epic{animation:none;box-shadow:0 0 0 1px currentColor,0 0 16px 3px color-mix(in srgb,var(--glow-rare) 60%,transparent)}}
 """
 head2='<meta charset="utf-8">\n'+head.replace('</style>',css_add+'</style>')
 body_skel=body_skel.replace('<div class="stage-label" id="stageLabel"></div>','<div class="stage-label" id="stageLabel"></div><div id="hudLayer"></div><div id="resultLayer"></div><div id="dropLayer"></div>')

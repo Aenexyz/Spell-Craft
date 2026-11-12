@@ -154,13 +154,13 @@ function rollLoot(boost,minR){
   for(const s in ITEMS[k].stats){if(s==='revive'){st.revive=1}else if(s==='elv'){st.elv=rarity==='epic'?2:1}else if(s==='lv'){st.lv={};for(const e in ITEMS[k].stats.lv)st.lv[e]=rarity==='epic'?2:1}else st[s]=Math.max(1,Math.round(ITEMS[k].stats[s]*mult))}
   return{key:k,rarity,stats:st};
 }
-const STAT_TEXT={addl:v=>`+${v} Lightning damage added to every attack`,soul:v=>`Each kill adds +${v} Dark damage to every attack`,souls:v=>`Souls gathered: +${v} Dark damage now`,revive:()=>'If you fall, revive once with 50% HP and 30% mana (the amulet then shatters)',elv:v=>`+${v} level to all Element cards`,mcost:v=>`Element cards cost ${v} less mana`,atk:v=>`+${v} damage on every attack`,def:v=>`+${v} block at the start of each turn`,hp:v=>`+${v} max HP`,regen:v=>`Heal ${v} more after each fight`,
+const STAT_TEXT={addl:v=>`+${v} Lightning damage added to every attack`,soul:v=>`Each kill adds +${v} Dark damage to every attack`,souls:v=>v?`Souls gathered: +${v} Dark damage now`:null,revive:()=>'If you fall, revive once with 50% HP and 30% mana (the amulet then shatters)',elv:v=>`+${v} level to all Element cards`,mcost:v=>`Element cards cost ${v} less mana`,atk:v=>`+${v} damage on every attack`,def:v=>`+${v} block at the start of each turn`,hp:v=>`+${v} max HP`,regen:v=>`Heal ${v} more after each fight`,
   heal:v=>`Restores ${v} HP now`,pdef:v=>`+${v} block each turn, permanently`,php:v=>`+${v} max HP, permanently`,patk:v=>`+${v} damage on every attack, permanently`};
 function statLines(st,key){
   const out=[];
   for(const[k,v]of Object.entries(st)){
     if(k==='lv'){for(const e in v)out.push(`+${v[e]} level to ${CARDS[e].name} cards`)}
-    else out.push(STAT_TEXT[k]?STAT_TEXT[k](v):`+${v} ${TYPENAME[k]} damage`);
+    else{const t=STAT_TEXT[k]?STAT_TEXT[k](v):`+${v} ${TYPENAME[k]} damage`;if(t)out.push(t)}
   }
   if(key&&ITEMS[key].grant)out.push(`Unlocks the ${CARDS[ITEMS[key].grant].name} card`);
   return out;
