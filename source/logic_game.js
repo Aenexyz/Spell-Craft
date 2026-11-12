@@ -56,7 +56,8 @@ function fuse(c1,c2){
   const addPhys=(c,p)=>{const d=CARDS[c.key];r.dmg.push({t:d.type,p,k:c.key});r.phys.push(c.key);if(d.block)r.block+=d.block;if(d.breaker)r.breaker=true;if(d.ranged){r.kind='ranged';r.ranged=d.ranged}};
   if(cat==='phys+phys'){
     r.breaker=true;
-    if(same){r.name=SAMEN[a.key];r.dmg=[{t:A.type,p:Math.round((pa+pb)*1.15),k:a.key}];r.phys=[a.key,a.key];if(['slash','stab','punch','kick'].includes(a.key)){r.double=true;r.gap=a.key==='slash'?100:(a.key==='punch'||a.key==='kick')?250:500}if(A.block)r.block=A.block*2;if(A.ranged){r.kind='ranged';r.ranged=A.ranged}}
+    if(same){r.name=SAMEN[a.key];r.dmg=[{t:A.type,p:Math.round((pa+pb)*1.15),k:a.key}];r.phys=[a.key,a.key];if(['slash','stab','punch','kick'].includes(a.key)){r.double=true;r.gap=a.key==='slash'?100:(a.key==='punch'||a.key==='kick')?250:500}
+      if(a.key==='punch'&&effLv(a)+effLv(b)>5){const u=effLv(a)+effLv(b),d0=Math.round((pa+pb)*1.15/2),W=Array.from({length:u},(_,i)=>i<5?1:Math.max(.05,1-.05*(i-4)));r.name='Gatling Punch';r.gatling=u;r.double=false;r.segW=W;r.segs=W.map(()=>({k:'gpunch'}));r.dmg=[{t:'blunt',p:Math.round(d0*W.reduce((x,y)=>x+y,0)),k:'gpunch'}]}if(A.block)r.block=A.block*2;if(A.ranged){r.kind='ranged';r.ranged=A.ranged}}
     else if(r.key==='arrowshot+kick'){r.name='Air Volley';r.charged={sum:effLv(a)+effLv(b),lo:.8,hi:10,float:true};r.dmg=[{t:'pierce',p:Math.round(r.charged.sum*5.4),k:'arrowshot'}];r.phys=['arrowshot'];r.kind='ranged';r.ranged='volley';r.block=0;r.breaker=false;r.dodgeAdd=40}
     else if(['arrowshot+punch','arrowshot+stab','arrowshot+shieldthrow','arrowshot+shieldbash'].includes(r.key)){r.name='Charged Shot';r.charged={sum:effLv(a)+effLv(b)};r.dmg=[{t:'pierce',p:r.charged.sum*5,k:'arrowshot'}];r.phys=['arrowshot'];r.kind='ranged';r.ranged='charged';r.block=0;r.breaker=false}
     else{addPhys(a,pa);addPhys(b,pb);r.name=PAIRN[r.key]||`${NOUN[a.key]}-${NOUN[b.key]} Combo`;const BASIC=['slash','stab','punch','kick'];if(BASIC.includes(a.key)&&BASIC.includes(b.key)){r.combo=true;r.gap=0}}
@@ -132,7 +133,7 @@ function gearFuse(c1,c2){
   R.dmg=R.dmg.map(p=>({t:p.t,p:p.p+(g[p.t]||0),k:p.k}));
   if(R.combo)R.seq=[c1.key,c2.key];
   const BASIC=['slash','stab','punch','kick'],pc=[c1,c2].filter(c=>CARDS[c.key].cat==='phys');
-  if(R.kind==='melee'&&!R.lstrike&&pc.length&&pc.every(c=>BASIC.includes(c.key))){const sg=[];pc.forEach(c=>{const n=c.key==='slash'?effLv(c):1;for(let i=0;i<n;i++)sg.push({k:c.key})});if(sg.length>1){R.segs=sg;R.double=false;R.combo=false}}
+  if(R.kind==='melee'&&!R.lstrike&&!R.gatling&&pc.length&&pc.every(c=>BASIC.includes(c.key))){const sg=[];pc.forEach(c=>{const n=c.key==='slash'?effLv(c):1;for(let i=0;i<n;i++)sg.push({k:c.key})});if(sg.length>1){R.segs=sg;R.double=false;R.combo=false}}
   if(c1.key==='slash'&&c2.key==='slash'&&effLv(c1)+effLv(c2)>=3)R.name='Omnislash';
   const sc=[c1,c2].find(c=>c.key==='slash'),ic=[c1,c2].find(c=>ESLASH[c.key]);
   if(sc&&ic&&c1.key!==c2.key){const n=effLv(sc),el=ic.key,sk=ESLASH[el];R.name={ice:'Freezing Slash',fire:'Burning Slash',water:'Aqua Slash',dark:'Abyssal Slash'}[el];R.fslash=true;R.eslash=el;R.segs=Array.from({length:n},()=>({k:sk}));R.double=false;R.combo=false;R.fx=[];R.trail=el;if(el==='ice')R.freezeChance=10+(S.iceAge>0?30:0)+(S.enemy&&S.enemy.mud>0?50:0);if(el==='fire')R.burnHit=2;if(el==='water')R.healHit=3;if(el==='dark')R.vulnHit=10;
@@ -306,7 +307,7 @@ const RAIN=[1,2,2,3];
 function rainAmt(lv,i){return i<4?RAIN[i]:lv}
 function healTick(lv,i,flat){const h=Math.min(flat?lv:rainAmt(lv,i),S.maxHp-S.hp);if(h>0)S.hp+=h;Stage.float('player',`+${h}`,flat&&i%2?'#6cc8ff':'#7fe08a',i===4?(flat?'HEALING RAIN':'HOLY RAIN'):'',0);render()}
 function segAmounts(E,R){const n=R.segs.length,out=Array.from({length:n},()=>({a:0,t:null,m:1}));
-  R.dmg.forEach(p=>{const{d,m}=partDmg(E,p);let idx=R.segs.map((o,i)=>o.k===p.k?i:-1).filter(i=>i>=0);if(!idx.length)idx=[n-1];const b=Math.floor(d/idx.length);idx.forEach((si,j)=>{out[si].a+=j===idx.length-1?d-b*(idx.length-1):b;if(!out[si].t||!p.k){out[si].t=p.t;out[si].m=m}})});return out}
+  R.dmg.forEach(p=>{const{d,m}=partDmg(E,p);let idx=R.segs.map((o,i)=>o.k===p.k?i:-1).filter(i=>i>=0);if(!idx.length)idx=[n-1];const w=idx.map(si=>R.segW?R.segW[si]:1),ws=w.reduce((x,y)=>x+y,0);let acc=0;idx.forEach((si,j)=>{const v=j===idx.length-1?d-acc:Math.floor(d*w[j]/ws);acc+=v;out[si].a+=v;if(!out[si].t||!p.k){out[si].t=p.t;out[si].m=m}})});return out}
 function preHit(R,i){const E=S.enemy;if(!E)return;const o=segAmounts(E,R)[i];if(!o)return;Stage.float('enemy',o.a,hexOf(R.meteor?'fire':R.fslash?R.eslash:(o.t||'slash')),hitTag(o.m),0);Stage.hitEnemy(R.meteor?['earth','fire']:R.fslash?['slash',R.eslash]:[o.t||'slash']);fslashFreeze(R,E)}
 function applyFuse(c1,c2,R){
   const E=S.enemy,def=ENEMIES[E.id];
@@ -575,14 +576,14 @@ function playerStatusHTML(){
 }
 function joinList(a){return a.length<2?(a[0]||''):a.slice(0,-1).join(', ')+' and '+a[a.length-1]}
 function describe(R){
-  const V={spunch:'Launches a stone fist',meteor:'Calls down a meteor',fslash:'Slashes with a freezing blade',bslash:'Slashes with a burning blade',aslash:'Slashes with a surging water blade',dslash:'Slashes with an abyssal blade',slash:'Slashes',stab:'Stabs',kick:'Kicks',punch:'Punches',shieldbash:'Bashes with your shield',shieldthrow:'Hurls your shield',arrowshot:'Shoots an arrow',spearthrow:'Throws a spear'};
+  const V={gpunch:'Unleashes a rapid punch',spunch:'Launches a stone fist',meteor:'Calls down a meteor',fslash:'Slashes with a freezing blade',bslash:'Slashes with a burning blade',aslash:'Slashes with a surging water blade',dslash:'Slashes with an abyssal blade',slash:'Slashes',stab:'Stabs',kick:'Kicks',punch:'Punches',shieldbash:'Bashes with your shield',shieldthrow:'Hurls your shield',arrowshot:'Shoots an arrow',spearthrow:'Throws a spear'};
   const low=s=>s.charAt(0).toLowerCase()+s.slice(1);
   const FX={fire:'sets it burning',water:'soaks it',ice:'chills its next attack',earth:'gives you 4 block',wind:'helps you dodge its next attack',lightning:'may stun it',dark:'curses it',light:'heals you 3'};
   const FXY={fire:'set it burning',water:'soak it',ice:'chill its next attack',earth:'gain 4 block',wind:'get a 30% dodge chance',lightning:'may stun it',dark:'curse it',light:'heal 3'};
   const fx=[...new Set(R.fx)];let s='';
   if(R.dmg.length){
     const tl=joinList([...new Set(R.dmg.map(p=>TYPENAME[p.t]))]);
-    let f=R.charged?(R.lstrike?`Teleports behind it and ${{stab:'stabs',punch:'punches',kick:'kicks',slash:'slashes'}[R.lstrike]} for ${chgLo(R)+R.bonus}–${chgHi(R)+R.bonus} Lightning damage`:R.ranged==='volley'?`Leaps into the air and fires a volley of arrows for ${chgLo(R)+R.bonus}–${chgHi(R)+R.bonus} Pierce damage (card levels × a random 0.8 to 10)`:`Charges a glowing arrow for ${R.charged.sum*3+R.bonus}–${R.charged.sum*7+R.bonus} Pierce damage (card levels × a random 3 to 7)`):R.ticks?`${R.verb} that hits ${R.ticks} times`:R.segs?(()=>{const gs=[];R.segs.forEach(o=>{const l=gs[gs.length-1];if(l&&l.k===o.k)l.n++;else gs.push({k:o.k,n:1})});return gs.map((q,i)=>(i?low(V[q.k]):V[q.k])+(q.n>1?(q.n===2?' twice':` ${q.n} times`):'')).join(', then ')})():R.double?`${V[R.phys[0]]} twice`:R.combo?`${V[R.seq[0]]}, then ${low(V[R.seq[1]])}`:R.kind==='cast'?'Casts a spell':R.phys.length?V[R.phys[0]]:'Hits';
+    let f=R.charged?(R.lstrike?`Teleports behind it and ${{stab:'stabs',punch:'punches',kick:'kicks',slash:'slashes'}[R.lstrike]} for ${chgLo(R)+R.bonus}–${chgHi(R)+R.bonus} Lightning damage`:R.ranged==='volley'?`Leaps into the air and fires a volley of arrows for ${chgLo(R)+R.bonus}–${chgHi(R)+R.bonus} Pierce damage (card levels × a random 0.8 to 10)`:`Charges a glowing arrow for ${R.charged.sum*3+R.bonus}–${R.charged.sum*7+R.bonus} Pierce damage (card levels × a random 3 to 7)`):R.ticks?`${R.verb} that hits ${R.ticks} times`:R.gatling?`Unleashes ${R.gatling} rapid-fire punches (each one after the 5th hits 5% weaker)`:R.segs?(()=>{const gs=[];R.segs.forEach(o=>{const l=gs[gs.length-1];if(l&&l.k===o.k)l.n++;else gs.push({k:o.k,n:1})});return gs.map((q,i)=>(i?low(V[q.k]):V[q.k])+(q.n>1?(q.n===2?' twice':` ${q.n} times`):'')).join(', then ')})():R.double?`${V[R.phys[0]]} twice`:R.combo?`${V[R.seq[0]]}, then ${low(V[R.seq[1]])}`:R.kind==='cast'?'Casts a spell':R.phys.length?V[R.phys[0]]:'Hits';
     if(R.tickW){const bs=R.tickW.map((_,q)=>Math.round(tickBase(R,q)));f+=` for ${Math.min(...bs)}–${Math.max(...bs)} ${tl} damage per hit, growing stronger at the end${R.tickCap&&bs.includes(R.tickCap)?` (max ${R.tickCap} per hit)`:''}`}
     else if(R.tickTypes)f+=` for ${Math.round(tickBase(R,0))} damage each, alternating Dark and Light`
     else if(!R.charged)f+=R.ticks?` for ${Math.round(R.dmg[0].p/R.ticks)} ${tl} damage each`:` for ${tl} damage`;if(R.breaker)f+=', ignoring its shield';

@@ -521,6 +521,10 @@ R("    P.dx=pdx;const px=homeP()+pdx;let ptop;","    P.teleFlip=false;if(P.tele)
 R("else{ctx.translate(px+ox,feet+oy);ctx.rotate(rot);ctx.scale(1,sy)}","else{ctx.translate(px+ox,feet+oy);ctx.rotate(rot);ctx.scale(P.teleFlip?-1:1,sy)}")
 R("ctx.font=`700 ${fs*sc}px","ctx.font=`700 ${fs*sc*(f.sub&&f.sub.startsWith('CRIT')?1.5:1)}px")
 
+R("WP=k=>(k==='punch'||k==='kick')?'back':'hand',GAP={slash:100,","WP=k=>(k==='punch'||k==='kick'||k==='gpunch')?'back':'hand',GAP={gpunch:0,slash:100,")
+R("DD=k=>ES(k)?630:360,HO=k=>ES(k)?470:160;","DD=k=>k==='gpunch'?150:ES(k)?630:360,HO=k=>k==='gpunch'?75:ES(k)?470:160;")
+R("else physFx(kk,mm,0,col);if(i===segs.length-1)","else if(kk==='gpunch'){const ox=(Math.random()-.5)*mm.w*.5,oy=(Math.random()-.5)*mm.h*.35,fm={...mm,x:mm.x+ox,feet:mm.feet+oy};physFx('punch',fm,0,'#ffffff');shake(0,st.ps*(i>=segs.length-1?2.4:.9));for(let q=0;q<5;q++){const a2=Math.PI+(Math.random()-.5)*1.8,v=(.08+Math.random()*.16)*U();spawn(fm.x-mm.w*.2,fm.feet-mm.h*.5,{vx:-Math.cos(a2)*v,vy:Math.sin(a2)*v,color:q%2?'#ffffff':'#ffe6a8',size:st.ps*.5,life:260})}if(i===segs.length-1){ring(mm.x,mm.feet-mm.h*.5,mm.h*.7,'#ffffff',0,380,2);flash('#ffffff',0,.18)}}else physFx(kk,mm,0,col);if(i===segs.length-1)")
+
 css_add="""
 .item-ic{image-rendering:pixelated}
 .card-mana{font-family:var(--f-num);font-weight:700;font-size:14px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:#e8f3ff;background:radial-gradient(circle at 35% 30%,#6cb2ff,#2a5fc0 70%);border:1px solid #9fcaff;box-shadow:0 0 6px #4aa8ff88}
