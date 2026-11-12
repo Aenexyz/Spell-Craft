@@ -1000,6 +1000,14 @@ const Stage=(()=>{
     ctx.save();ctx.lineJoin='round';ctx.lineCap='round';const lw=Math.max(1,r*.13),OL='#1b1820';
     const poly=(pts,fill)=>{ctx.beginPath();ctx.moveTo(...pts[0]);for(let i=1;i<pts.length;i++)ctx.lineTo(...pts[i]);ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=OL;ctx.lineWidth=lw;ctx.stroke()};
     const line=(p,q,col,w)=>{ctx.beginPath();ctx.moveTo(...p);ctx.lineTo(...q);ctx.strokeStyle=col;ctx.lineWidth=w;ctx.stroke()};
+    // glowing specks around rare (light blue) / epic (light purple) gear
+    const SPK={rare:['#8fd3ff','#e2f6ff'],epic:['#d9b8ff','#f6ecff']};
+    const spk=(slot,p,sw,sh,seed)=>{const it=g[slot];if(!it||!SPK[it.rarity]||P_DEAD())return;const cols=SPK[it.rarity],n=it.rarity==='epic'?8:5,sz=Math.max(2,r*.2);
+      ctx.save();ctx.globalCompositeOperation='lighter';ctx.shadowColor=cols[0];ctx.shadowBlur=sz*3;
+      for(let i=0;i<n;i++){const h=Math.sin((seed+1)*12.9898+i*78.233)*43758.5453,fr=h-Math.floor(h),per=1100+fr*700,ph=((now+fr*per*3)/per)%1,cyc=Math.floor((now+fr*per*3)/per),h2=Math.sin(cyc*3.7+i*9.1+seed)*1e4,jx=(h2-Math.floor(h2)-.5)*sw;
+        ctx.globalAlpha=Math.min(1,1.6*Math.sin(ph*Math.PI))*(.75+.25*Math.sin(now/90+i));ctx.fillStyle=i%2?cols[1]:cols[0];const q=sz*(i%3===0?1.3:1);ctx.fillRect(p[0]+jx-q/2,p[1]+sh*.5-ph*sh-q/2,q,q)}
+      ctx.restore()};
+    const P_DEAD=()=>st.player&&st.player.dead;
     if(back){
       const c=LK('cape');
       if(c){const C=(a,b)=>A(nk,(ul+a)*.9,b);const sw=Math.sin(now/260)*r*(moving?.7:.25),sw2=Math.sin(now/260+1.3)*r*(moving?.5:.2);
@@ -1007,7 +1015,7 @@ const Stage=(()=>{
         ctx.beginPath();ctx.moveTo(...t1);ctx.lineTo(...t2);ctx.quadraticCurveTo(...C(.3*r,.15*r),...b1);ctx.lineTo(...b2);ctx.quadraticCurveTo(...mid,...t1);ctx.closePath();
         ctx.fillStyle=c.a;ctx.fill();ctx.strokeStyle=OL;ctx.lineWidth=lw;ctx.stroke();
         ctx.save();ctx.clip();line(A(nk,.2*r,-1.05*r),C(2.0*r,-2.5*r-sw),c.b,r*.7);line(A(nk,.3*r,-.1*r),C(1.6*r,-.35*r),c.c,r*.14);ctx.restore();
-        ctx.beginPath();ctx.arc(...A(nk,0,0),r*.22,0,6.283);ctx.fillStyle=c.d;ctx.fill();ctx.strokeStyle=OL;ctx.lineWidth=lw*.8;ctx.stroke()}
+        ctx.beginPath();ctx.arc(...A(nk,0,0),r*.22,0,6.283);ctx.fillStyle=c.d;ctx.fill();ctx.strokeStyle=OL;ctx.lineWidth=lw*.8;ctx.stroke();spk('cape',A(nk,1.1*r,-1.3*r),r*1.6,r*2.4,7)}
       ctx.restore();return;
     }
     const ch=LK('chest');
@@ -1045,6 +1053,13 @@ const Stage=(()=>{
     if(hk&&typeof itemsImg!=='undefined'&&itemsImg.complete&&itemsImg.naturalWidth&&ITEM_ATLAS.idx[hk]!=null){
       const TOP={iron_helm:8,mystic_hood:8,gold_helm:18,plumed_helm:20}[hk]??8,ii=ITEM_ATLAS.idx[hk],cs=ITEM_ATLAS.cols,sc=r*2.5/48;
       ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(itemsImg,(ii%cs)*64,Math.floor(ii/cs)*64,64,64,hx-32*sc,hy-r*1.2-TOP*sc,64*sc,64*sc);ctx.restore()}
+    spk('head',[hx,hy-r*.6],r*2.2,r*2,1);
+    spk('chest',[(nk[0]+hp[0])/2,(nk[1]+hp[1])/2],r*1.6,r*2.4,2);
+    spk('belt',hp,r*1.4,r*1.2,3);spk('neck',A(nk,.8*r,.12*r),r*1.1,r*1.4,4);spk('shoulders',nk,r*2,r*1.4,5);
+    spk('charm',A(hp,.75*r,-.72*r),r*1.1,r*1.6,6);
+    if(f.ft)f.ft.forEach((q,i)=>spk('feet',[x0+q[0]*k,y0+q[1]*k-r*.4],r*1.1,r*1.2,8+i));
+    if(f.hx!=null){const hd=[x0+f.hx*k,y0+f.hy*k];spk('hands',hd,r*1.1,r*1.2,10);spk('weapon',[hd[0],hd[1]-r*1.4],r*1.6,r*3.4,11)}
+    spk('shield',A(nk,1.3*r,-.7*r),r*1.6,r*2,12);
     ctx.restore();
   }
 
