@@ -528,7 +528,7 @@ R("else physFx(kk,mm,0,col);if(i===segs.length-1)","else if(kk==='gpunch'){const
 
 R("      if(R.lstrike){","      if(R.pebbles){const ch=700;st.player.aura={els:R.charge,t0:now_(),dur:ch+400};setTimeout(()=>{st.player.anim={name:'punch',t0:now_(),dur:520}},ch+500);R.tickTimes=pebbleStorm(ch,R.ticks);return R.tickTimes[R.tickTimes.length-1]+60;}\n      if(R.lstrike){")
 
-R("      if(R.pebbles){","      if(R.spell&&SPELLFX[R.spell]){if(R.spell.startsWith('arrowshot+')){st.player.anim=null;st.player.act=null;st.player.aura={els:R.charge||[],t0:now_(),dur:900};return SPELLFX[R.spell](R)}const ch=700;st.player.anim=null;st.player.act=null;st.player.aura={els:R.charge||[],t0:now_(),dur:ch+250};return SPELLFX[R.spell](R,ch);}\n      if(R.pebbles){")
+R("      if(R.pebbles){","      if(R.spell&&SPELLFX[R.spell]){if(R.spell.startsWith('arrowshot+')||R.spell.startsWith('spearthrow+')){st.player.anim=null;st.player.act=null;st.player.aura={els:R.charge||[],t0:now_(),dur:900};return SPELLFX[R.spell](R)}const ch=700;st.player.anim=null;st.player.act=null;st.player.aura={els:R.charge||[],t0:now_(),dur:ch+250};return SPELLFX[R.spell](R,ch);}\n      if(R.pebbles){")
 R("    // enemy\n    st.foes.filter(f=>!f.gone)","    if(st.gfx&&st.gfx.length)st.gfx=st.gfx.filter(f=>{const p=(now-f.t0)/f.dur;if(p<0)return true;if(p>=1)return false;ctx.save();f.draw(p,now);ctx.restore();return true});\n    // enemy\n    st.foes.filter(f=>!f.gone)")
 
 css_add="""

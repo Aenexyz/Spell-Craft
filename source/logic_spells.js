@@ -87,3 +87,26 @@ Object.assign(ESPELL,{
  'arrowshot+light':{name:'Seraph Arrow',build:(r,u)=>{r.dmg=[{t:'light',p:7*u}];r.lifesteal=.5},
   desc:R=>`Spreads wings of light, rises and fires a radiant arrow for ${sumP(R)} Light damage. You heal for half the damage dealt.`},
 });
+// ===== Spear Throw + element: lance spells =====
+Object.assign(ESPELL,{
+ 'spearthrow+fire':{name:'Dragonfire Lance',build:(r,u)=>{r.dmg=[{t:'fire',p:8*u}]},
+  desc:R=>`Ignites the spear and hurls it as a roaring fire dragon for ${sumP(R)} Fire damage, setting it burning for 3 turns.`,
+  apply:(R,E,n)=>{if(E.hp>0&&modOf(E,'fire')!==0){E.burn=Math.max(E.burn,3);n.push('<span class="w">set it burning for 3 turns</span>')}}},
+ 'spearthrow+water':{name:'Trident of the Deep',build:(r,u)=>{r.dmg=[{t:'water',p:7*u}];r.breaker=true},
+  desc:R=>`Rises on a geyser and throws a trident that erupts a water spout beneath it for ${sumP(R)} Water damage, washing away its shield and soaking it for 2 turns.`,
+  apply:(R,E,n)=>{if(E.hp<=0)return;E.block=0;if(modOf(E,'water')!==0)E.soak=Math.max(E.soak,2);n.push('<span class="w">soaked it</span>')}},
+ 'spearthrow+ice':{name:'Glacial Javelin',build:(r,u)=>{r.ticks=5;r.dmg=[{t:'ice',p:8*u}]},
+  desc:R=>`Throws the spear skyward where it splits into 5 ice javelins that rain down for ${Math.round(sumP(R)/5)} Ice damage each, chilling it with a 30% chance to freeze.`,
+  apply:(R,E,n)=>{if(E.hp<=0)return;if(modOf(E,'ice')!==0)E.chill=2;if(canFreeze(E)&&Math.random()<(S.iceAge>0?.6:.3)){E.frozen=true;n.push('<span class="w">froze it solid</span>')}else n.push('<span class="w">chilled it</span>')}},
+ 'spearthrow+earth':{name:'Titan Spear',build:(r,u)=>{r.dmg=[{t:'earth',p:9*u}];r.stunChance=40;r.stunType='earth';r.block=3*u},
+  desc:R=>`Fuses orbiting boulders onto the spear and hurls a giant stone lance for ${sumP(R)} Earth damage with a 40% chance to stun. The leftover stone shields you for ${R.block}.`},
+ 'spearthrow+wind':{name:'Cyclone Javelin',build:(r,u)=>{r.dmg=[{t:'wind',p:6*u}];r.dodgeAdd=20;r.breaker=true},
+  desc:R=>`Floats on the wind and launches a spinning drill javelin that pierces every enemy for ${sumP(R)} Wind damage each, ignoring shields. You gain +20% dodge chance.`,
+  apply:(R,E,n)=>spellHitOthers(R,E,n)},
+ 'spearthrow+lightning':{name:'Thunder Spear',build:(r,u)=>{r.dmg=[{t:'lightning',p:9*u}];r.stunChance=40;r.stunType='lightning'},
+  desc:R=>`Throws the spear into the storm clouds and it returns as a colossal lightning lance for ${sumP(R)} Lightning damage with a 40% chance to stun.`},
+ 'spearthrow+dark':{name:'Void Pike',build:(r,u)=>{r.ticks=3;r.dmg=[{t:'dark',p:7*u}];r.lifesteal=.3},
+  desc:R=>`Hurls a shadow pike that pierces it 3 times, whipping back around after each pass, for ${Math.round(sumP(R)/3)} Dark damage each. You drain 30% of the damage as health.`},
+ 'spearthrow+light':{name:"Heaven's Lance",build:(r,u)=>{r.dmg=[{t:'light',p:8*u}];r.heal=2*u;r.blind=30},
+  desc:R=>`Rises crowned by a halo and calls a lance of light down from the heavens for ${sumP(R)} Light damage. It heals you ${R.heal} HP and blinds the enemy (30% miss on its next attack).`},
+});
