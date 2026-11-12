@@ -138,6 +138,7 @@ R("""    st.parts=st.parts.filter(p=>{const a=now-p.t0;if(a>p.life)return false;
 R("      ctx.restore();return true});\n    requestAnimationFrame(frame);\n",
   "      ctx.restore();return true});\n    ctx.restore();\n    if(st.flash){const fp=(now-st.flash.t0)/160;if(fp>=1)st.flash=null;else{ctx.globalAlpha=st.flash.a*(1-fp);ctx.fillStyle=st.flash.color;ctx.fillRect(0,0,W,H);ctx.globalAlpha=1}}\n    requestAnimationFrame(frame);\n")
 R("  let last=performance.now();",open('stage_vfx.js').read()+"\n  let last=performance.now();")
+R("  let last=performance.now();",open('spells_vfx.js').read()+"\n  let last=performance.now();")
 R("    enemyAttack(dur){if(st.enemy)st.enemy.act={t0:performance.now(),dur:dur||560}},",
 """    enemyAttack(dur,type){if(!st.enemy)return;st.enemy.act={t0:now_(),dur:dur||560,type};if(type==='heavy'){const m=enemyMetrics();ring(m.x,m.feet-m.h*.5,m.h,'#e8574d',0,500,2.4);flash('#ff3a2a',260,.18);shake(280,st.ps*2.2)}},
     perform(R){const d=this._perform(R);
@@ -527,6 +528,9 @@ R("else physFx(kk,mm,0,col);if(i===segs.length-1)","else if(kk==='gpunch'){const
 
 R("      if(R.lstrike){","      if(R.pebbles){const ch=700;st.player.aura={els:R.charge,t0:now_(),dur:ch+400};setTimeout(()=>{st.player.anim={name:'punch',t0:now_(),dur:520}},ch+500);R.tickTimes=pebbleStorm(ch,R.ticks);return R.tickTimes[R.tickTimes.length-1]+60;}\n      if(R.lstrike){")
 
+R("      if(R.pebbles){","      if(R.spell&&SPELLFX[R.spell]){const ch=700;st.player.anim=null;st.player.act=null;st.player.aura={els:R.charge||[],t0:now_(),dur:ch+250};return SPELLFX[R.spell](R,ch);}\n      if(R.pebbles){")
+R("    // enemy\n    st.foes.filter(f=>!f.gone)","    if(st.gfx&&st.gfx.length)st.gfx=st.gfx.filter(f=>{const p=(now-f.t0)/f.dur;if(p<0)return true;if(p>=1)return false;ctx.save();f.draw(p,now);ctx.restore();return true});\n    // enemy\n    st.foes.filter(f=>!f.gone)")
+
 css_add="""
 .item-ic{image-rendering:pixelated}
 .card-mana{font-family:var(--f-num);font-weight:700;font-size:14px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:#e8f3ff;background:radial-gradient(circle at 35% 30%,#6cb2ff,#2a5fc0 70%);border:1px solid #9fcaff;box-shadow:0 0 6px #4aa8ff88}
@@ -737,6 +741,6 @@ body.mob #app{padding-bottom:160px}
 """
 head2='<meta charset="utf-8">\n'+head.replace('</style>',css_add+'</style>').replace('<title>Fusebound</title>','<title>SpellCraft</title>')
 body_skel=body_skel.replace('<div class="stage-label" id="stageLabel"></div>','<div class="stage-label" id="stageLabel"></div><div id="hudLayer"></div><div id="resultLayer"></div><div id="dropLayer"></div>')
-js='<script>\n/*__ASSETS__*/\n(()=>{\ntry{const rs=document.documentElement.style;rs.setProperty(\'--items-url\',`url("${ASSET.items}")`);[[\'frame\',\'hbFrame\'],[\'g\',\'hbG\'],[\'b\',\'hbB\'],[\'r\',\'hbR\']].forEach(([k,a])=>rs.setProperty(\'--hb-\'+k,`url("${ASSET[a]}")`))}catch(e){}\n'+open('logic_data.js').read()+'\n'+sprites+atlas+'\nlet S;\n'+stage+'\n'+open('logic_game.js').read()+'\n})();\n</script>\n'
+js='<script>\n/*__ASSETS__*/\n(()=>{\ntry{const rs=document.documentElement.style;rs.setProperty(\'--items-url\',`url("${ASSET.items}")`);[[\'frame\',\'hbFrame\'],[\'g\',\'hbG\'],[\'b\',\'hbB\'],[\'r\',\'hbR\']].forEach(([k,a])=>rs.setProperty(\'--hb-\'+k,`url("${ASSET[a]}")`))}catch(e){}\n'+open('logic_data.js').read()+'\n'+open('logic_spells.js').read()+'\n'+sprites+atlas+'\nlet S;\n'+stage+'\n'+open('logic_game.js').read()+'\n})();\n</script>\n'
 open('fusebound.src.html','w').write(head2+body_skel+js)
 print('ok')

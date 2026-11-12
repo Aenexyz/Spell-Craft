@@ -8,7 +8,7 @@ Open `index.html` in any modern browser. It is a single self-contained file (all
 
 ## Highlights
 
-- Card fusion with dozens of unique combinations (Laser Beam with phoenix, Lightning Strike, Gatling Punch, Meteor, Earthquake, Ice Age, Freezing/Burning/Aqua/Abyssal Slash, Air Volley, Stone Punch, Healing Rain, Bulwark and more)
+- Card fusion with dozens of unique combinations (Laser Beam with phoenix, Lightning Strike, Gatling Punch, Solar Flare, Tidal Wave, Void Rift, Judgment, Grave Grasp, Hellfire, Thermal Shock, Shatter Bolt, Aurora, Typhoon, Meteor, Earthquake, Ice Age, Freezing/Burning/Aqua/Abyssal Slash, Air Volley, Stone Punch, Healing Rain, Bulwark and more)
 - Mana system: element cards cost mana, physical cards restore it, skip a turn to recover
 - Gear that shows on the hero (helmets, chest armour, capes, staffs, amulets) with stat bonuses
 - Three floors: Mushroom Woods, Volcanic Rift and Ember Hollow, with elite two-monster fights
@@ -20,7 +20,7 @@ The playable file is generated from the files in `source/`:
 
 ```
 cd source
-python3 assemble.py   # stitches the stage, logic and effects into fusebound.src.html
+python3 assemble.py   # stitches the stage, logic, spells and effects into fusebound.src.html
 python3 build.py      # embeds all images and writes fusebound.html
 ```
 

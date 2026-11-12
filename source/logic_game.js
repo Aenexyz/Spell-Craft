@@ -86,6 +86,7 @@ function fuse(c1,c2){
       if(r.key==='ice+wind'){r.ticks=5;r.verb='Calls down a blizzard';r.dmg=[{t:'ice',p:Math.min(10,effLv(a)+effLv(b))*5}];r.fx=['ice','ice']}
       if(r.key==='lightning+wind'){r.ticks=5;r.verb='Summons a thunderstorm';r.dmg=[{t:'lightning',p:(effLv(a)+effLv(b))*5}];r.fx=[];r.stunTick=25}
       if(r.key==='earth+wind'){const la=effLv(a),lb=effLv(b);r.ticks=3;r.verb='Whips up a sandstorm';r.dmg=[{t:'earth',p:(la+lb)*3}];r.fx=[];r.dodge=Math.min(50,5*(la+lb))}}
+    if(ESPELL[r.key]){const sp=ESPELL[r.key],u=effLv(a)+effLv(b);r.name=sp.name;r.spell=r.key;r.fx=[];r.stun=false;r.ticks=0;r.tickTypes=null;r.tickW=null;sp.build(r,u);r.charge=[a.key,b.key]}
   }else if(cat==='phys+def'||cat==='phys+sup'){
     addPhys(a,Math.round(pa*.75));r.anim=animOf(a.key);const N=NOUN[a.key];
     if(b.key==='block'){r.block+=pb;r.name=`${A.name} and Block`}
@@ -141,7 +142,7 @@ function gearFuse(c1,c2){
     R.dmg=R.dmg.map(p=>p.t===el?{t:el,p:effLv(ic)*n+(g[el]||0),k:sk}:{...p,k:sk});R.base=R.dmg.reduce((a,p)=>a+p.p,0)-(g[el]||0)-(g.slash||0)}
   if(R.dmg.length&&g.atk)R.dmg[0].p+=g.atk;
   R.bonus=R.dmg.reduce((a,p)=>a+p.p,0)-R.base;
-  return R;
+  if(R.spell&&ESPELL[R.spell].prep&&S.enemy)ESPELL[R.spell].prep(R,S.enemy);return R;
 }
 
 /* ================= loot ================= */
@@ -360,6 +361,7 @@ function applyFuse(c1,c2,R){
   R.fx.forEach(f=>{const n=applyElem(f,E,def);if(n){notes.push(`<span class="w">${n}</span>`);Stage.float('enemy','STUN','#f2d24b','',300)}});
   if(R.stunTick)tickStun(R,E);if(R._stunned)notes.push('<span class="w">stunned it</span>');
   if(R.stun&&modOf(E,'lightning')!==0&&!E.stun){E.stun=true;notes.push('<span class="w">stunned it</span>')}
+  if(R.spell&&ESPELL[R.spell].apply)ESPELL[R.spell].apply(R,E,notes,total);
   log(`${CARDS[c1.key].name} + ${CARDS[c2.key].name} → <b>${R.name}</b>${R.dmg.length?` for ${total}`:''}${notes.length?'. '+notes.join(', '):''}.`);
   S.hand=S.hand.filter(id=>!S.sel.includes(id));S.disc.push(...S.sel);S.sel=[];
   if(def.boss&&!E.enraged&&E.hp>0&&E.hp<=E.max/2){E.enraged=true;E.str+=3;log(`<span class="r">${def.name} enrages! Its attacks grow stronger.</span>`);Stage.enemyBurst('#ff5040',30)}
@@ -369,7 +371,7 @@ function applyFuse(c1,c2,R){
 function hurtPlayer(raw,delay,pierce){
   const E=S.enemy;
   if(S.embrace){Stage.float('player','IMMUNE','#9fe2ff','FROZEN',delay);return 0}
-  if(S.stoneSkin){Stage.float('player','IMMUNE','#e0c08a','STONE SKIN',delay);setTimeout(()=>Stage.stoneFx&&Stage.stoneFx(),delay||0);return 0}let x=raw;if(E.chill)x=Math.round(x*.6);if(iceAgeHits(E))x=Math.round(x*.5);
+  if(S.stoneSkin){Stage.float('player','IMMUNE','#e0c08a','STONE SKIN',delay);setTimeout(()=>Stage.stoneFx&&Stage.stoneFx(),delay||0);return 0}let x=raw;if(E.chill)x=Math.round(x*.6);if(E.weak>0)x=Math.round(x*.7);if(iceAgeHits(E))x=Math.round(x*.5);
   if(E.blind&&Math.random()*100<E.blind){Stage.float('player','MISS','#cfd6dd','BLINDED',delay);return 0}
   if(S.lava)dealToEnemy(S.lava,'fire','LAVA',(delay||0)+200);
   if(S.reflect&&x>0&&E.hp>0){E.hp-=x;Stage.float('enemy',x,'#bfe9ff','REFLECT',(delay||0)+180);Stage.reflectFx(delay||0)}
@@ -399,13 +401,13 @@ function nextFoe(){
   S.enemy=E;Stage.focus(E.slot||0);
   const def=ENEMIES[E.id];
   E.block=0;E.shocked=false;let wait=0;
-  if(E.burn>0){const d=Math.round(3*modOf(E,'fire'));E.hp-=d;E.burn--;log(`Burn deals ${d} to ${def.name}.`);Stage.float('enemy',d,'#ff7b3a','BURN');Stage.enemyBurst('#ff7b3a',14);
+  if(E.burn>0){const d=Math.round(3*(E.hell?3:1)*modOf(E,'fire'));E.hp-=d;E.burn--;if(!E.burn)E.hell=false;log(`${E.hell?'Hellfire':'Burn'} deals ${d} to ${def.name}.`);Stage.float('enemy',d,E.hell?'#c060ff':'#ff7b3a',E.hell?'HELLFIRE':'BURN');Stage.enemyBurst('#ff7b3a',14);
     render();if(E.hp<=0){Stage.enemyDie();setTimeout(nextFoe,1100);return}wait=550}
   render();setTimeout(enemyAct,wait);
   },gap);
 }
 function tryRevive(){const n=S.gear.neck;if(S.hp>0||!n||!(n.stats&&n.stats.revive))return false;delete S.gear.neck;recalc();S.hp=Math.max(1,Math.ceil(S.maxHp*.5));S.mana=Math.round(S.maxMana*.3);log(`<span class="w">The ${ITEMS[n.key].name} shatters in a burst of flame and you rise again with ${S.hp} HP and ${S.mana} mana!</span>`);Stage.reviveFx();Stage.float('player','REVIVED','#ffb04a',`+${S.hp} HP`,300);render();return true}
-function foeEnd(){const E=S.enemy;E.chill=Math.max(0,E.chill-1);E.soak=Math.max(0,E.soak-1);E.blind=0;if(S.hp<=0&&tryRevive()){setTimeout(nextFoe,1800);return}if(S.hp<=0){finishEnemyTurn();return}nextFoe()}
+function foeEnd(){const E=S.enemy;if(E.root>0)E.root--;if(E.weak>0)E.weak--;E.chill=Math.max(0,E.chill-1);E.soak=Math.max(0,E.soak-1);E.blind=0;if(S.hp<=0&&tryRevive()){setTimeout(nextFoe,1800);return}if(S.hp<=0){finishEnemyTurn();return}nextFoe()}
 function enemyAct(){
   const E=S.enemy,def=ENEMIES[E.id];
   if(E.frozen){E.frozen=false;log(`${def.name} is frozen solid and loses its turn.`);E.step++;Stage.float('enemy','FROZEN','#82d4ff','');Stage.shatter();render();setTimeout(foeEnd,800);return}
@@ -425,7 +427,8 @@ function enemyAct(){
     },t==='heavy'?300:240);
     return;
   }
-  if(t==='def'){E.block+=v;log(`${def.name} raises a shield of ${v}.`);Stage.enemyRing('#59c9c2');Stage.float('enemy',`+${v}`,'#59c9c2','SHIELD')}
+  if((t==='def'||t==='heal')&&E.root>0){log(`${def.name} is rooted by bone hands and can't ${t==='def'?'raise a shield':'heal'}.`);Stage.float('enemy','ROOTED','#b18bff','')}
+  else if(t==='def'){E.block+=v;log(`${def.name} raises a shield of ${v}.`);Stage.enemyRing('#59c9c2');Stage.float('enemy',`+${v}`,'#59c9c2','SHIELD')}
   else if(t==='buff'){E.str+=v;log(`${def.name} grows stronger (+${v} attack).`);Stage.enemyBurst('#e8574d',16);Stage.float('enemy',`+${v}`,'#e8574d','ATTACK UP')}
   else if(t==='heal'){const h=Math.min(v,E.max-E.hp);E.hp+=h;log(`${def.name} heals ${h} HP.`);Stage.enemyBurst('#7fe08a',16);Stage.float('enemy',`+${h}`,'#7fe08a','HEAL')}
   render();setTimeout(foeEnd,500);
@@ -438,6 +441,7 @@ function finishEnemyTurn(){
   if(S.hp<=0&&tryRevive()){}
   if(S.hp<=0){S.hp=0;Stage.playerDie();render();setTimeout(()=>{S.phase='over';render()},1100);return}
   S.block=stats().def;S.turns++;drawHand();S.busy=false;
+  if(S.regen&&S.regen.t>0){const h=Math.min(S.regen.amt,S.maxHp-S.hp);if(h>0)S.hp+=h;Stage.float('player',`+${h}`,'#ffd36b','SANCTUM',150);if(--S.regen.t<=0)S.regen=null}
   render();
   if(S.rainNext){const lv=S.rainNext,flat=S.rainFlat;S.rainNext=0;S.busy=true;render();const ts=flat?Stage.healRain(150):Stage.holyRain(150);ts.forEach((t,i)=>setTimeout(()=>{if(S.phase!=='battle')return;healTick(lv,i,flat);if(i===4){S.busy=false;render()}},t))}
 }
@@ -577,6 +581,7 @@ function playerStatusHTML(){
 }
 function joinList(a){return a.length<2?(a[0]||''):a.slice(0,-1).join(', ')+' and '+a[a.length-1]}
 function describe(R){
+  if(R.spell&&ESPELL[R.spell].desc)return ESPELL[R.spell].desc(R);
   const V={gpunch:'Unleashes a rapid punch',spunch:'Launches a stone fist',meteor:'Calls down a meteor',fslash:'Slashes with a freezing blade',bslash:'Slashes with a burning blade',aslash:'Slashes with a surging water blade',dslash:'Slashes with an abyssal blade',slash:'Slashes',stab:'Stabs',kick:'Kicks',punch:'Punches',shieldbash:'Bashes with your shield',shieldthrow:'Hurls your shield',arrowshot:'Shoots an arrow',spearthrow:'Throws a spear'};
   const low=s=>s.charAt(0).toLowerCase()+s.slice(1);
   const FX={fire:'sets it burning',water:'soaks it',ice:'chills its next attack',earth:'gives you 4 block',wind:'helps you dodge its next attack',lightning:'may stun it',dark:'curses it',light:'heals you 3'};
@@ -586,7 +591,7 @@ function describe(R){
     const tl=joinList([...new Set(R.dmg.map(p=>TYPENAME[p.t]))]);
     let f=R.charged?(R.lstrike?`Teleports behind it and ${{stab:'stabs',punch:'punches',kick:'kicks',slash:'slashes'}[R.lstrike]} for ${chgLo(R)+R.bonus}–${chgHi(R)+R.bonus} Lightning damage`:R.ranged==='volley'?`Leaps into the air and fires a volley of arrows for ${chgLo(R)+R.bonus}–${chgHi(R)+R.bonus} Pierce damage (card levels × a random 0.8 to 10)`:`Charges a glowing arrow for ${R.charged.sum*3+R.bonus}–${R.charged.sum*7+R.bonus} Pierce damage (card levels × a random 3 to 7)`):R.ticks?`${R.verb} that hits ${R.ticks} times`:R.gatling?`Unleashes ${R.gatling} rapid-fire punches (each one after the 5th hits 5% weaker)`:R.segs?(()=>{const gs=[];R.segs.forEach(o=>{const l=gs[gs.length-1];if(l&&l.k===o.k)l.n++;else gs.push({k:o.k,n:1})});return gs.map((q,i)=>(i?low(V[q.k]):V[q.k])+(q.n>1?(q.n===2?' twice':` ${q.n} times`):'')).join(', then ')})():R.double?`${V[R.phys[0]]} twice`:R.combo?`${V[R.seq[0]]}, then ${low(V[R.seq[1]])}`:R.kind==='cast'?'Casts a spell':R.phys.length?V[R.phys[0]]:'Hits';
     if(R.tickW){const bs=R.tickW.map((_,q)=>Math.round(tickBase(R,q)));f+=` for ${Math.min(...bs)}–${Math.max(...bs)} ${tl} damage per hit, growing stronger at the end${R.tickCap&&bs.includes(R.tickCap)?` (max ${R.tickCap} per hit)`:''}`}
-    else if(R.tickTypes)f+=` for ${Math.round(tickBase(R,0))} damage each, alternating Dark and Light`
+    else if(R.tickTypes)f+=` for ${Math.round(tickBase(R,0))} damage each, alternating ${joinList([...new Set(R.tickTypes)].map(t=>TYPENAME[t]))}`
     else if(!R.charged)f+=R.ticks?` for ${Math.round(R.dmg[0].p/R.ticks)} ${tl} damage each`:` for ${tl} damage`;if(R.breaker)f+=', ignoring its shield';
     const ex=fx.filter(e=>!(R.stun&&e==='lightning')).map(e=>FX[e]);if(R.freeze)ex.push(`freezes it so it skips its next turn${S.enemy&&!canFreeze(S.enemy)&&S.enemy.known.some(t=>t==='ice'||t==='water')?' (it resists this)':' (monsters that resist Ice or Water are immune)'}`);if(R.burnSet)ex.push(`sets it burning for ${R.burnSet} turns`);if(R.stunChance)ex.push(`has a ${R.stunChance}% chance to stun it`);if(R.quake)ex.push('hits every monster on the field');if(R.freeEarth)ex.push('the Earth card costs no mana because your Punch is the higher level');if(R.mud)ex.push('turns the ground under it to mud until your next attack: Lightning deals double damage and freeze chance is +50%');if(R.fslash){if(R.vulnHit)ex.push(`each slash makes it take ${R.vulnHit}% more damage for your next 3 turns (+${R.vulnHit*R.segs.length}% after this attack)`);else if(R.healHit)ex.push(`each slash heals you ${R.healHit} HP`);else if(R.burnHit)ex.push(`each slash sets it burning for ${R.burnHit} more turns (3 Fire damage per turn)`);else ex.push(`each slash has a ${R.freezeChance}% chance to freeze it for a turn${S.enemy&&!canFreeze(S.enemy)&&S.enemy.known.some(t=>t==='ice'||t==='water')?' (it resists this)':''}`);ex.push('restores 3 mana per slash')}if(R.stunTick)ex.push(`each strike has a ${R.stunTick}% chance to stun it`);if(R.blind)ex.push(`blinds it, giving it a ${R.blind}% chance to miss its next attack`);if(R.stun)ex.push('always stuns it');if(R.lifesteal)ex.push('heals you for part of the damage');if(R.phoenix)ex.push(`heals you for ${Math.round(R.phoenix*100)}% of the damage dealt`);if(R.drain)ex.push('heals you for all of it');
     s=f+(ex.length?', and '+joinList(ex):'')+'.';
@@ -624,7 +629,7 @@ function resultHTML(){
     const known=E.known.includes(p.t);const m=known?modOf(E,p.t):1;if(!known)unk=true;
     let d;if(R.ticks){d=0;for(let q=0;q<R.ticks;q++)d+=tickDmg(E,R,q,true);if(R.tickTypes&&R.tickTypes.some(t=>!E.known.includes(t)))unk=true}else{d=p.p*m;if(E.soak&&(p.t==='lightning'||p.t==='ice'))d*=1.5;if(E.curse>0)d*=1.3;if(E.shocked)d*=1.1;if(E.vuln)d*=1+E.vuln/100;if(E.mud>0&&p.t==='lightning')d*=2;d=Math.round(d)}est+=d;
     const tag=known?(m===0?' · immune':m>1?` · weak ×${m}`:m<1?` · resists ×${m}`:''):' · ?';
-    L(p.t==='pierce'?'stab':p.t==='blunt'?'punch':p.t,typeColor(p.t),`${R.tickTypes?'Dark + Light':TYPENAME[p.t]} ${R.charged?`${chgLo(R)+R.bonus}–${chgHi(R)+R.bonus}`:R.ticks?Math.round(Array.from({length:R.ticks},(_,q)=>tickBase(R,q)).reduce((x,y)=>x+y,0)):p.p}${R.tickTypes?'':tag.replace(' · ',' ')}`);
+    L(p.t==='pierce'?'stab':p.t==='blunt'?'punch':p.t,typeColor(p.t),`${R.tickTypes?[...new Set(R.tickTypes)].map(t=>TYPENAME[t]).join(' + '):TYPENAME[p.t]} ${R.charged?`${chgLo(R)+R.bonus}–${chgHi(R)+R.bonus}`:R.ticks?Math.round(Array.from({length:R.ticks},(_,q)=>tickBase(R,q)).reduce((x,y)=>x+y,0)):p.p}${R.tickTypes?'':tag.replace(' · ',' ')}`);
   });
   L('water','#4aa8ff',(cost>0?`Mana −${cost}`:cost<0?`Mana +${-cost}`:'No mana')+(R.fslash?`, +${3*R.segs.length} back`:''));
   if(R.charged&&!R.lstrike)L('arrowshot','var(--phys)',R.charged.float?'Power ×0.8–10':`Power ×${R.charged.ilo||3}–${R.charged.ihi||7}`);
