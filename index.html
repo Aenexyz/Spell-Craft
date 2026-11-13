@@ -496,6 +496,21 @@ body.mob .class-layer .pcard{height:400px}
 body.mob .cc-art{flex-basis:30%}
 body.mob .cc-list{font-size:10.5px;padding-left:12px}
 body.mob .cc-ult{display:none}
+
+.start-layer{position:absolute;inset:0;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(ellipse at center,#0d161855 0%,#0d1618b0 80%);pointer-events:none}
+.start-layer>*{pointer-events:auto}
+.start-sub{font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:#e8f0ee;text-shadow:0 2px 4px #000}
+.start-hint{font-size:13px;color:#cfdad8;text-shadow:0 1px 3px #000}
+.start-btn{position:relative;font:inherit;font-family:var(--serif,Georgia,serif);font-size:30px;font-weight:700;color:#2a1a04;padding:20px 48px;border:2px solid #fff3c0;border-radius:14px;cursor:pointer;
+  background:linear-gradient(180deg,#ffe9a8 0%,#f2c04a 55%,#d99a1a 100%);box-shadow:0 0 0 3px #7a5410,0 0 22px 6px #ffd36baa,0 0 60px 18px #ffb34755,inset 0 2px 0 #fffbe8;
+  text-shadow:0 1px 0 #fff4c8;animation:sglow 2.2s ease-in-out infinite;overflow:hidden;transition:transform .15s}
+.start-btn::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,#ffffffaa,transparent);transform:skewX(-20deg);animation:sshine 2.8s ease-in-out infinite}
+.start-btn:hover,.start-btn:focus-visible{transform:scale(1.06);outline:none}
+.start-btn span{position:relative;z-index:1}
+@keyframes sglow{0%,100%{box-shadow:0 0 0 3px #7a5410,0 0 18px 4px #ffd36b99,0 0 46px 12px #ffb34744,inset 0 2px 0 #fffbe8}50%{box-shadow:0 0 0 3px #7a5410,0 0 30px 10px #ffd36bdd,0 0 80px 28px #ffb34777,inset 0 2px 0 #fffbe8}}
+@keyframes sshine{0%,55%{left:-60%}100%{left:130%}}
+body.mob .start-btn{font-size:24px;padding:16px 30px}
+@media (prefers-reduced-motion:reduce){.start-btn,.start-btn::after{animation:none}}
 </style>
 
 <div id="app">
@@ -4088,12 +4103,13 @@ function battleHTML(){
   <div class="pstatus">${playerStatusHTML()}<button type="button" class="btn btn-sm skip-btn" data-act="skipturn" ${S.busy?'disabled':''} title="End your turn without combining and recover 20 mana">Skip turn <span class="num">+20 mana</span></button></div></section>
   `;
 }
+function startHTML(){return `<div class="start-layer"><button type="button" class="start-btn" data-act="start"><span>Begin the adventure</span></button><div class="start-hint">Choose a class, pick your path, combine your cards</div></div>`}
 function titleHTML(){
   const ex=k=>cardHTML({key:k,lvl:1});
   return `<section class="screen">
     <div class="eyebrow">A combination card adventure</div>
     <h2>Two cards. One move.</h2>
-    <p>Fight through three levels of 15 stops each: monsters, events, camps and treasure. Every turn, combine two cards from your hand into one action. You start with a Traveler's Sword (which gives you Slash), plus Stab, Punch, Block and one random element. You can hold up to 8 skill cards.</p>
+    <p>Fight through four levels of 15 stops each, choosing your path as you go: monsters, elites, events, camps, treasure and locked vaults. Every turn, combine two cards from your hand into one action. Pick a class to start: Aegis Warden, Arcanist or Swordsman, each with its own gear, passive and 3-card ultimate. You can hold up to 8 skill cards.</p>
     <div class="example">${ex('slash')}<span class="eq">+</span>${ex('fire')}<span class="eq">=</span><div><div class="eyebrow">Combination</div><h3 style="font-size:26px;color:var(--brass)">Fire Slash</h3><span style="color:var(--muted);font-size:13px">Slash damage, fire damage, and a burn.</span></div></div>
     <div class="rules">
       <div class="rule"><b>Attack + Element</b>Both damage types hit, plus the element's effect. Slash + Ice is Frost Slash.</div>
@@ -4103,7 +4119,6 @@ function titleHTML(){
       <div class="rule"><b>Item cards</b>Gear goes in its own slots. Rare items unlock new skills, like Shield Bash or Arrow Shot.</div>
       <div class="rule"><b>Read the intent</b>Every monster shows its next move. Shield up before an Ultimate.</div>
     </div>
-    <div><button type="button" class="btn btn-primary" data-act="start">Begin the adventure</button></div>
   </section>`;
 }
 const EV_BRIEF={shrine:'Pray at a humming altar. The old gods may bless a card, or your health.',smith:'A travelling smith tempers one of your cards for free.',merchant:'Spend your gold on new cards and gleaming gear.',mimic:'A lone chest by a dying fire. Is it… breathing?'};
@@ -4287,7 +4302,7 @@ function render(){
   $result.innerHTML=resultHTML();
   $fdock.innerHTML='';if(MOB){const sk=$main.querySelector('.skip-btn'),fb=$result.querySelector('[data-act=fuse]');if(sk)$fdock.appendChild(sk);if(fb)$fdock.appendChild(fb)}
   $hud.innerHTML=hudHTML();
-  const dh=dropHTML()||eventLayerHTML()||(ph==='path'?pathHTML():ph==='class'?classHTML():'');document.body.classList.toggle('mob',MOB);const toDock=(MOB&&ph!=='path'&&ph!=='class')||dh.includes('ev-layer shop');$dock.classList.toggle('shopdock',!MOB&&toDock);if(toDock){$drop.innerHTML='';$dock.innerHTML=dh}else{$dock.innerHTML='';$drop.innerHTML=dh}
+  const dh=dropHTML()||eventLayerHTML()||(ph==='path'?pathHTML():ph==='class'?classHTML():ph==='title'?startHTML():'');document.body.classList.toggle('mob',MOB);const toDock=(MOB&&ph!=='path'&&ph!=='class'&&ph!=='title')||dh.includes('ev-layer shop');$dock.classList.toggle('shopdock',!MOB&&toDock);if(toDock){$drop.innerHTML='';$dock.innerHTML=dh}else{$dock.innerHTML='';$drop.innerHTML=dh}
   document.querySelector('.stage-wrap').classList.toggle('in-battle',ph==='battle');
   document.querySelector('.stage-wrap').classList.toggle('in-drop',!!dh&&!toDock);
   $modal.innerHTML=acqHTML()||charHTML()||codexHTML();

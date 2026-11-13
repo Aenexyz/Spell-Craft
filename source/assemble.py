@@ -925,6 +925,21 @@ body.mob .class-layer .pcard{height:400px}
 body.mob .cc-art{flex-basis:30%}
 body.mob .cc-list{font-size:10.5px;padding-left:12px}
 body.mob .cc-ult{display:none}
+
+.start-layer{position:absolute;inset:0;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(ellipse at center,#0d161855 0%,#0d1618b0 80%);pointer-events:none}
+.start-layer>*{pointer-events:auto}
+.start-sub{font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:#e8f0ee;text-shadow:0 2px 4px #000}
+.start-hint{font-size:13px;color:#cfdad8;text-shadow:0 1px 3px #000}
+.start-btn{position:relative;font:inherit;font-family:var(--serif,Georgia,serif);font-size:30px;font-weight:700;color:#2a1a04;padding:20px 48px;border:2px solid #fff3c0;border-radius:14px;cursor:pointer;
+  background:linear-gradient(180deg,#ffe9a8 0%,#f2c04a 55%,#d99a1a 100%);box-shadow:0 0 0 3px #7a5410,0 0 22px 6px #ffd36baa,0 0 60px 18px #ffb34755,inset 0 2px 0 #fffbe8;
+  text-shadow:0 1px 0 #fff4c8;animation:sglow 2.2s ease-in-out infinite;overflow:hidden;transition:transform .15s}
+.start-btn::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,#ffffffaa,transparent);transform:skewX(-20deg);animation:sshine 2.8s ease-in-out infinite}
+.start-btn:hover,.start-btn:focus-visible{transform:scale(1.06);outline:none}
+.start-btn span{position:relative;z-index:1}
+@keyframes sglow{0%,100%{box-shadow:0 0 0 3px #7a5410,0 0 18px 4px #ffd36b99,0 0 46px 12px #ffb34744,inset 0 2px 0 #fffbe8}50%{box-shadow:0 0 0 3px #7a5410,0 0 30px 10px #ffd36bdd,0 0 80px 28px #ffb34777,inset 0 2px 0 #fffbe8}}
+@keyframes sshine{0%,55%{left:-60%}100%{left:130%}}
+body.mob .start-btn{font-size:24px;padding:16px 30px}
+@media (prefers-reduced-motion:reduce){.start-btn,.start-btn::after{animation:none}}
 """
 head2='<meta charset="utf-8">\n'+head.replace('</style>',css_add+'</style>').replace('<title>Fusebound</title>','<title>SpellCraft</title>')
 body_skel=body_skel.replace('<div class="stage-label" id="stageLabel"></div>','<div class="stage-label" id="stageLabel"></div><div id="hudLayer"></div><div id="resultLayer"></div><div id="dropLayer"></div>')
