@@ -140,6 +140,7 @@ R("      ctx.restore();return true});\n    requestAnimationFrame(frame);\n",
 R("  let last=performance.now();",open('stage_vfx.js').read()+open('path_art.js').read()+"\n  let last=performance.now();")
 R("  let last=performance.now();",open('spells_vfx.js').read()+"\n  let last=performance.now();")
 R("  let last=performance.now();",open('phys_vfx.js').read()+"\n  let last=performance.now();")
+R("  let last=performance.now();",open('def_vfx.js').read()+"\n  let last=performance.now();")
 R("    enemyAttack(dur){if(st.enemy)st.enemy.act={t0:performance.now(),dur:dur||560}},",
 """    enemyAttack(dur,type){if(!st.enemy)return;st.enemy.act={t0:now_(),dur:dur||560,type};if(type==='heavy'){const m=enemyMetrics();ring(m.x,m.feet-m.h*.5,m.h,'#e8574d',0,500,2.4);flash('#ff3a2a',260,.18);shake(280,st.ps*2.2)}},
     perform(R){const d=this._perform(R);
@@ -597,6 +598,9 @@ R("    st.foes.filter(f=>!f.gone).sort((a,b)=>(b.ox||0)-(a.ox||0)).forEach(e=>{\
 R("          shadow(ex,feet,F.bw*mps,alpha);","          shadow(ex,FEET0,F.bw*mps*(e.oy?.55:1),alpha*(e.oy?.5:1));")
 R("          const F=famOf(e),mps=mpsOf(e),fw=F.fw*mps,fh=F.fh*mps,x0=Math.round(ex-fw/2),y0=Math.round(feet-F.foot*mps);","          const F=famOf(e),mps=mpsOf(e),fw=F.fw*mps,fh=F.fh*mps,x0=Math.round(ex-fw/2),y0=Math.round(feet-F.foot*mps+fly);")
 R("    poisonFx(){","    cleaveFx(){const m=enemyMetrics();if(!m)return;ring(m.x,m.feet-m.h*.5,m.h*1.2,'#e6eaf0',0,380,2);shake(160,st.ps*1.2)},\n    explodeFx(){st.foes.forEach(f=>{if(f.gone||f.state==='die')return;const m=enemyMetricsOf(f);burst(m.x,m.feet-m.h*.5,'#ff9a3a',22,.32*st.H/400,.04*st.H/400);burst(m.x,m.feet-m.h*.5,'#fff2b0',10,.22*st.H/400);ring(m.x,m.feet-m.h*.5,m.h*1.5,'#ffb347',120,520,3)});flash('#ff8a2a',220,.22);shake(380,st.ps*2.6)},\n    poisonFx(){")
+
+R("    poisonFx(){","    defFx:(k,d)=>window.__defFx&&window.__defFx(k,d),\n    poisonFx(){")
+R("      if(P.gh&&P.gh.length){P.gh=P.gh.filter(g=>now-g.t<260);","      P.lastHF={c:hf.c,key:hf.key,w:hf.f.w||hf.c.width,h:hf.f.h||hf.c.height,ax:hf.f.ax,fy:hf.f.fy||hf.c.height,k,x:px+ox,y:feet+oy,fl:P.teleFlip};\n      if(P.gh&&P.gh.length){P.gh=P.gh.filter(g=>now-g.t<260);")
 
 css_add="""
 .item-ic{image-rendering:pixelated}

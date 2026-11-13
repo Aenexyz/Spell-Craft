@@ -901,6 +901,55 @@ physSpell('punch','spearthrow','Spear Rush',['punch','spearthrow','spearthrow','
 physSpell('shieldbash','spearthrow','Hoplite Charge',['spearthrow','shieldbash','spearthrow'],7,{block:3,d:(R,h)=>`Charges with spear and shield together: ${h}. You keep ${R.block} block.`});
 physSpell('shieldthrow','spearthrow','Twin Projectiles',['shieldthrow','spearthrow'],8,{breaker:true,d:(R,h)=>`Throws your shield and spear at once so they cross on the enemy: ${h}, ignoring shields.`});
 
+/* ===== Defense + Defense techniques ===== */
+const DEFN=(p)=>`<b>${p}</b>`;
+Object.assign(ESPELL,{
+ 'block+block':{def:true,name:'Bulwark',build:(r,u)=>{r.block=Math.round(6.5*u);r.bulwark=true},
+  desc:R=>`Slams down a wall of tower shields: block ${R.block} damage. Half of any block left after the enemy's turn carries over to your next turn.`,
+  apply:(R,E,n)=>{S.bulwark=true;n.push('<span class="w">leftover block carries over</span>')}},
+ 'shield+shield':{def:true,name:'Aegis Dome',build:(r,u)=>{r.barrier=4*u},
+  desc:R=>`Raises a shimmering hex dome: a ${R.barrier}-point barrier for 3 turns. While the dome holds, poison and bleeding can't hurt you.`,
+  apply:(R,E,n)=>{S.aegis=true;n.push('<span class="w">poison and bleeding are warded off</span>')}},
+ 'parry+parry':{def:true,name:'Perfect Deflect',build:(r,u)=>{r.deflect=2;r.deflectP=2*u+2},
+  desc:R=>`Takes a flawless stance: the next 2 hits are deflected completely, and each deflection slashes back for ${R.deflectP}.`,
+  apply:(R,E,n)=>{S.deflect=2;S.deflectP=R.deflectP;n.push('<span class="w">ready to deflect 2 hits</span>')}},
+ 'dodge+dodge':{def:true,name:'Mirage',build:(r,u)=>{r.mirage=u>=6?3:2},
+  desc:R=>`Splits into ${R.mirage} shimmering mirror images. Each one takes a hit in your place this turn, then vanishes.`,
+  apply:(R,E,n)=>{S.mirage=R.mirage;n.push(`<span class="w">${R.mirage} mirror images appear</span>`)}},
+ 'counter+counter':{def:true,name:'Vengeance',build:(r,u)=>{r.venge=2*u+2},
+  desc:R=>`Wreathes you in crimson fury. This turn, every hit you take is answered with a strike for ${R.venge} plus half the damage you took.`,
+  apply:(R,E,n)=>{S.venge={p:R.venge};n.push('<span class="w">every hit will be avenged</span>')}},
+ 'block+shield':{def:true,name:'Mana Bastion',build:(r,u)=>{r.block=3*u;r.barrier=2*u;r.manaGuard=.5},
+  desc:R=>`Raises blue crystal ramparts: block ${R.block} this turn and a ${R.barrier}-point barrier for 3 turns. Half of all damage they absorb flows back as mana.`},
+ 'block+parry':{def:true,name:'Iron Riposte',build:(r,u)=>{r.block=4*u;r.iron=2*u},
+  desc:R=>`Braces behind your guard: block ${R.block}. The next hit is halved, then you strike back for ${R.iron} plus everything your block soaked up.`,
+  apply:(R,E,n)=>{S.parry={p:R.iron,t:'blunt',iron:true};n.push('<span class="w">your guard will hit back</span>')}},
+ 'block+dodge':{def:true,name:'Tumble Guard',build:(r,u)=>{r.tumble=Math.min(60,35+u*2);r.tumbleB=2*u},
+  desc:R=>`Rolls into a low guard: ${R.tumble}% chance to dodge each attack this turn. Every hit that lands raises that chance by 20% and gives you ${R.tumbleB} block.`,
+  apply:(R,E,n)=>{S.tumble={ch:R.tumble,b:R.tumbleB};n.push(`<span class="w">${R.tumble}% evasive tumble</span>`)}},
+ 'block+counter':{def:true,name:'Spike Wall',build:(r,u)=>{r.block=4*u;r.spikes=u>=6?75:50},
+  desc:R=>`Iron spikes burst from the ground in front of you: block ${R.block}. Attackers are pierced for ${R.spikes}% of the damage the wall stops.`,
+  apply:(R,E,n)=>{S.spikes=R.spikes/100;n.push('<span class="w">the wall bristles with spikes</span>')}},
+ 'dodge+shield':{def:true,name:'Phase Veil',build:(r,u)=>{r.barrier=2*u;r.veil=25+Math.min(15,u)},
+  desc:R=>`Shifts half out of this world: a ${R.barrier}-point barrier, and +${R.veil}% dodge chance on every enemy turn for 3 turns.`,
+  apply:(R,E,n)=>{S.veilT=3;S.veil=R.veil;S.dodge=Math.max(S.dodge||0,R.veil);n.push(`<span class="w">phased: +${R.veil}% dodge for 3 turns</span>`)}},
+ 'counter+shield':{def:true,name:'Retribution Aegis',build:(r,u)=>{r.barrier=3*u+2},
+  desc:R=>`Summons a golden sigil shield: a ${R.barrier}-point barrier for 3 turns. When it breaks, it detonates for ${R.barrier} damage to every enemy.`,
+  apply:(R,E,n)=>{S.retri={p:R.barrier};n.push('<span class="w">the shield will detonate when broken</span>')}},
+ 'parry+shield':{def:true,name:'Mirror Guard',build:(r,u)=>{r.barrier=2*u;r.mirrorX=1.5},
+  desc:R=>`Conjures a gleaming mirror pane and a ${R.barrier}-point barrier. The next hit is completely negated and thrown back at 150% damage.`,
+  apply:(R,E,n)=>{S.mirror=1.5;n.push('<span class="w">the next hit will be mirrored</span>')}},
+ 'dodge+parry':{def:true,name:'Shadow Step',build:(r,u)=>{r.sstep=3*u+2},
+  desc:R=>`Melts into shadow: 60% chance to slip the next attack. If you do, you reappear behind it with a riposte for ${R.sstep} and leave it exposed (+25% damage taken for 2 turns).`,
+  apply:(R,E,n)=>{S.shadowStep={p:R.sstep};n.push('<span class="w">waiting in the shadows</span>')}},
+ 'counter+parry':{def:true,name:'Riposte Storm',build:(r,u)=>{r.storm=u+2},
+  desc:R=>`Three spectral blades orbit you. The next hit is halved, and the blades answer with 3 slashes of ${R.storm} each.`,
+  apply:(R,E,n)=>{S.parry={p:0,t:'slash',storm:R.storm};n.push('<span class="w">3 blades wait to strike</span>')}},
+ 'counter+dodge':{def:true,name:'Wind Dancer',build:(r,u)=>{r.dance=45;r.danceP=u+3},
+  desc:R=>`Dances on the wind: 45% chance to dodge every attack this turn. Each dodge spins into a counter for ${R.danceP} and restores 6 mana.`,
+  apply:(R,E,n)=>{S.windDance={ch:45,p:R.danceP};n.push('<span class="w">dancing on the wind</span>')}}
+});
+
 const PLAYER_TOP=[
 "......kkkk....k.",
 ".....khhhhk..kwk",
@@ -1976,6 +2025,148 @@ window.__cardArt=cardArt;
   });
   function groundGlyphs(m){const s=PX();for(let i=0;i<5;i++)glyph(m.x+(i-2)*st.ps*5,m.feet+st.ps*2,i+3,s*.8)}
 
+  // ===== Defense + Defense techniques: 15 pixel-art guard animations, lingering overlays and hit reactions =====
+  const dfR=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.max(1,Math.round(w)),Math.max(1,Math.round(h)))};
+  const dfS=()=>Math.max(2,Math.round(st.ps*.7));
+  const dfOn=()=>S&&S.phase==='battle'&&!st.player.dead;
+  // --- lingering overlay manager (one fx entry that draws every active guard)
+  const DOV=[];
+  function dfEnsure(){if(now_()-(st._dovT||0)>250){st._dovT=now_();addFx(0,1e9,(p,now)=>{st._dovT=now_();if(!dfOn())return;DOV.forEach(o=>{try{if(o.on()){ctx.save();o.draw(now);ctx.restore()}}catch(e){}})})}}
+  // --- sprite-ish painters
+  function dfTower(x,feet,h,w,a,glow){const s=dfS();ctx.save();ctx.globalAlpha=a;const y=feet-h;
+    dfR(x-w/2-s,y-s,w+2*s,h+s,'#1c2028');dfR(x-w/2,y,w,h,'#6f7a8c');dfR(x-w/2,y,s*1.5,h,'#aab4c4');dfR(x+w/2-s*1.5,y,s*1.5,h,'#4a5262');
+    dfR(x-w/2,y,w,s*1.5,'#c8d0dc');dfR(x-w/2,y+h*.32,w,s,'#4a5262');dfR(x-w/2,y+h*.68,w,s,'#4a5262');
+    [[.18,.08],[.82,.08],[.18,.92],[.82,.92],[.18,.5],[.82,.5]].forEach(([fx,fy])=>dfR(x-w/2+w*fx-s/2,y+h*fy-s/2,s,s,'#e8eef6'));
+    dfR(x-s,y+h*.2,s*2,h*.42,'#e8b840');dfR(x-w*.22,y+h*.33,w*.44,s*2,'#e8b840');dfR(x-s*.5,y+h*.22,s,h*.38,'#fff0a0');
+    if(glow){ctx.globalCompositeOperation='lighter';ctx.globalAlpha=a*glow;dfR(x-w/2,y,w,h,'#59c9c2')}ctx.restore()}
+  function dfHex(cx,cy,r,fill,line,a){ctx.globalAlpha=a;ctx.beginPath();for(let i=0;i<6;i++){const an=i/6*6.283+.5236,px=Math.round(cx+Math.cos(an)*r),py=Math.round(cy+Math.sin(an)*r);i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill()}if(line){ctx.strokeStyle=line;ctx.lineWidth=Math.max(1,st.ps*.35);ctx.stroke()}}
+  function dfDomeCells(pm){const hs=st.ps*2.6,rx=pm.h*.72,ry=pm.h*1.02,cx=pm.x,cy=pm.feet,out=[];for(let row=0;row*hs*1.5<ry+hs;row++){const y=cy-row*hs*1.5;for(let q=-20;q<=20;q++){const x=cx+q*hs*1.732+(row%2?hs*.866:0),d=((x-cx)/rx)**2+((y-cy)/ry)**2;if(d<=1.02&&d>=.55)out.push([x,y,Math.atan2(cy-y,x-cx)])}}return out}
+  function dfSword(x,y,ang,len,c1,c2,a){const s=dfS();ctx.save();ctx.globalAlpha=a;ctx.translate(Math.round(x),Math.round(y));ctx.rotate(ang);
+    dfR(-len*.5,-s,len*.78,s*2,c1);dfR(-len*.5,-s,len*.78,s*.8,c2);dfR(len*.28,-s*.6,s*2,s*1.2,c1);dfR(len*.28-s*.4,-s*3,s*1.2,s*6,'#e8b840');dfR(len*.32,-s*.7,len*.16,s*1.4,'#6a4a2a');dfR(len*.48,-s,s*1.4,s*2,'#e8b840');ctx.restore()}
+  function dfFlame(x,feet,h,w,now,cols,a,seed){const s=dfS();ctx.save();ctx.globalAlpha=a;for(let i=0;i<w/s;i++){const n=Math.max(1,w/s),ed=Math.abs(i-n/2)/(n/2),fx=x-w/2+i*s,hh=h*(1-ed*ed)*(.35+.65*Math.abs(Math.sin(now/120+i*1.7+(seed||0))));for(let k=0;k<hh;k+=s){const c=cols[Math.min(cols.length-1,Math.floor(k/hh*cols.length))];if(Math.random()<.92)dfR(fx,feet-k-s,s,s,c)}}ctx.restore()}
+  function dfMirrorPane(x,feet,h,w,a,crack,now){const s=dfS(),y=feet-h;ctx.save();ctx.globalAlpha=a;
+    dfR(x-w/2-s*2,y-s*2,w+s*4,h+s*2,'#8a8f9c');dfR(x-w/2-s,y-s,w+s*2,h+s,'#d8dde6');dfR(x-w/2,y,w,h,'#7fb8d8');
+    const g=ctx.createLinearGradient(x-w/2,y,x+w/2,y+h);g.addColorStop(0,'#cfeaff');g.addColorStop(.5,'#8fc6e6');g.addColorStop(1,'#5a94b8');ctx.fillStyle=g;ctx.fillRect(Math.round(x-w/2),Math.round(y),Math.round(w),Math.round(h));
+    const sh=((now/700)%1.6)-.3;ctx.globalAlpha=a*.8;for(let k=0;k<3;k++){const yy=y+h*(sh+k*.12);for(let i=0;i<w;i+=s){const yi=yy-i*.6;if(yi>y&&yi<y+h)dfR(x-w/2+i,yi,s,s*(k===1?2:1),'#ffffff')}}
+    ctx.globalAlpha=a;dfR(x-s,y-s*4,s*2,s*3,'#e8b840');dfR(x-s*3,y-s*3,s*6,s,'#e8b840');
+    if(crack){ctx.strokeStyle='#ffffff';ctx.lineWidth=s*.6;ctx.beginPath();const cx=x,cy=y+h*.45;for(let i=0;i<6;i++){const an=i/6*6.283+.4;ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(an)*w*.6*crack,cy+Math.sin(an)*h*.4*crack)}ctx.stroke()}ctx.restore()}
+  function dfSigil(x,y,r,now,c1,c2,a){const s=dfS();ctx.save();ctx.globalAlpha=a;ctx.shadowColor=c1;ctx.shadowBlur=st.ps*3;ctx.fillStyle=c1;dotRing(x,y,r,r,s,now/900,0);dotRing(x,y,r*.82,r*.82,s,-now/700,4);ctx.fillStyle=c2;for(let i=0;i<8;i++){const an=now/900+i/8*6.283;glyph(x+Math.cos(an)*r*.66,y+Math.sin(an)*r*.66,i+3,s*.55)}
+    pxDisc(x,y,r*.34,s);ctx.fillStyle=c1;dfR(x-s*.5,y-r*.25,s,r*.5);dfR(x-r*.25,y-s*.5,r*.5,s);ctx.restore()}
+  function dfClone(dx,a,col,now){const H=st.player.lastHF;if(!H||!H.c)return;const tc=tintC('dfclone'+col+H.key,H.c,col);ctx.save();ctx.globalAlpha=a;ctx.translate(H.x+dx,H.y+Math.sin(now/240+dx)*st.ps*.6);ctx.scale(H.fl?-1:1,1);ctx.drawImage(tc,-H.ax*H.k,-H.fy*H.k,H.w*H.k,H.h*H.k);ctx.globalAlpha=a*.6;ctx.globalCompositeOperation='lighter';ctx.drawImage(tc,-H.ax*H.k,-H.fy*H.k-st.ps*.5,H.w*H.k,H.h*H.k);ctx.restore()}
+  function dfSpikes(x0,feet,n,gap,h,grow,a,now){const s=dfS();ctx.save();ctx.globalAlpha=a;for(let i=0;i<n;i++){const g=clamp01(grow*1.6-i*.12),hh=h*(.7+.3*((i*37)%7)/6)*ease(g);if(hh<=0)continue;const x=x0+i*gap;
+      for(let k=0;k<hh;k+=s){const w=Math.max(s,(1-k/hh)*s*3.2);dfR(x-w/2,feet-k-s,w,s,k>hh*.75?'#e8eef6':'#8a92a2');dfR(x-w/2,feet-k-s,s*.6,s,'#c8d0dc')}dfR(x-s*2,feet-s,s*4,s,'#3a3e48')}ctx.restore()}
+  const PM=()=>PMx();
+  // ---- lingering overlays
+  DOV.push(
+   {on:()=>S.bulwark&&S.block>0,draw:now=>{const pm=PM();dfTower(pm.x+pm.w*1.15,pm.feet,pm.h*.95,st.ps*7,.92,0);dfTower(pm.x+pm.w*1.75,pm.feet,pm.h*.82,st.ps*6,.85,0)}},
+   {on:()=>S.aegis&&S.barrier>0,draw:now=>{const pm=PM();dfDomeCells(pm).forEach(([x,y,an],i)=>{const sh=.5+.5*Math.sin(now/260-an*3+i*.1);dfHex(x,y,st.ps*2.4,'#9fe2ff',(sh>.85?'#ffffff':'#7fd0ff'),.1+.22*sh)})}},
+   {on:()=>S.mirage>0,draw:now=>{const offs=[-1.25,1.25,-2.3];for(let i=0;i<S.mirage;i++){const f=.35+.15*Math.sin(now/90+i*2);dfClone(offs[i]*PM().w,f,'#7fe0ff',now)}}},
+   {on:()=>!!S.venge,draw:now=>{const pm=PM();dfFlame(pm.x-pm.w*.55,pm.feet,pm.h*.45,st.ps*3,now,['#ff3a2a','#c0101a','#4a0610'],.55,1);dfFlame(pm.x+pm.w*.55,pm.feet,pm.h*.45,st.ps*3,now,['#ff3a2a','#c0101a','#4a0610'],.55,2);dfR(pm.x+pm.w*.08,pm.feet-pm.h*.86,st.ps*.8,st.ps*.8,'#ff2a2a')}},
+   {on:()=>S.manaGuard>0&&(S.block>0||S.barrier>0),draw:now=>{const pm=PM();[[-.9,.7],[1.0,.9]].forEach(([fx,fy],i)=>{const x=pm.x+pm.w*fx,y=pm.feet-pm.h*fy+Math.sin(now/300+i*2)*st.ps*1.5,s=dfS();ctx.globalAlpha=.85;pxTri(x,y-s*4,x-s*2.2,y,x+s*2.2,y,s);ctx.fillStyle='#3a8cff';pxTri(x,y-s*4,x-s*2.2,y,x+s*2.2,y,s);ctx.fillStyle='#bfe6ff';pxTri(x,y-s*4,x-s*2.2,y,x,y+s*3.5,s);ctx.fillStyle='#2a5ec0';pxTri(x,y+s*3.5,x-s*2.2,y,x+s*2.2,y,s)})}},
+   {on:()=>S.parry&&S.parry.iron,draw:now=>{const pm=PM(),x=pm.x+pm.w*.95,y=pm.feet-pm.h*.55,s=dfS();dfSword(x,y,-.8,st.ps*9,'#c8d0dc','#ffffff',.9);ctx.globalAlpha=.95;pxDisc(x,y,st.ps*2.6,s);ctx.fillStyle='#6f7a8c';pxDisc(x,y,st.ps*2.6,s);ctx.fillStyle='#aab4c4';pxDisc(x-s*.6,y-s*.6,st.ps*1.6,s);dfR(x-s*.5,y-s*.5,s,s,'#e8b840')}},
+   {on:()=>!!S.tumble,draw:now=>{const pm=PM(),s=dfS();ctx.fillStyle='#bff5d8';ctx.globalAlpha=.55;dotRing(pm.x,pm.feet-s,pm.w*.9,st.ps*1.2,s,now/200,3);ctx.fillStyle='#59c98a';dotRing(pm.x,pm.feet-s*2,pm.w*.7,st.ps,s,-now/160,4)}},
+   {on:()=>S.spikes&&S.block>0,draw:now=>{const pm=PM();dfSpikes(pm.x+pm.w*.9,pm.feet,5,st.ps*3,pm.h*.38,1,.95,now)}},
+   {on:()=>S.veilT>0,draw:now=>{const pm=PM(),s=dfS();ctx.globalAlpha=.4+.2*Math.sin(now/110);ctx.fillStyle='#b18bff';for(let i=0;i<6;i++){const y=pm.feet-pm.h*(.1+i*.16),off=Math.sin(now/90+i*1.9)*st.ps*2;dfR(pm.x-pm.w*.7+off,y,pm.w*1.4,Math.max(1,s*.5),i%2?'#d8c4ff':'#8a5ae0')}ctx.globalAlpha=.6;for(let i=0;i<5;i++){const an=now/700+i*1.26;dfR(pm.x+Math.cos(an)*pm.w,pm.feet-pm.h*.5+Math.sin(an*1.3)*pm.h*.45,s,s,'#e4d4ff')}}},
+   {on:()=>S.retri&&S.barrier>0,draw:now=>{const pm=PM();dfSigil(pm.x+pm.w*1.05,pm.feet-pm.h*.55,pm.h*.3,now,'#ffd36b','#fff6c8',.55+.15*Math.sin(now/200))}},
+   {on:()=>!!S.mirror,draw:now=>{const pm=PM();dfMirrorPane(pm.x+pm.w*1.3,pm.feet,pm.h*1.05,st.ps*9,.9,0,now)}},
+   {on:()=>!!S.shadowStep,draw:now=>{const pm=PM(),s=dfS();ctx.globalAlpha=.75;for(let i=0;i<14;i++){const an=i/14*6.283,r=pm.w*(.9+.15*Math.sin(now/180+i));dfR(pm.x+Math.cos(an)*r,pm.feet-s+Math.sin(an)*st.ps*1.2,s*1.4,s,'#1a0f2a')}for(let i=0;i<4;i++){const ph=((now/900)+i/4)%1;ctx.globalAlpha=.6*(1-ph);dfR(pm.x+(i-1.5)*pm.w*.4,pm.feet-ph*pm.h*.6,s,s*2,'#6a4aa0')}ctx.globalAlpha=.9;dfR(pm.x-st.ps*1.5,pm.feet-st.ps*1.8,s,s,'#c06cff');dfR(pm.x+st.ps*.8,pm.feet-st.ps*1.8,s,s,'#c06cff')}},
+   {on:()=>S.parry&&S.parry.storm,draw:now=>{const pm=PM();for(let i=0;i<3;i++){const an=now/500+i/3*6.283;dfSword(pm.x+Math.cos(an)*pm.w*1.2,pm.feet-pm.h*.55+Math.sin(an)*pm.h*.32,an+1.57,st.ps*8,'#bfe9ff','#ffffff',.85)}}},
+   {on:()=>!!S.windDance,draw:now=>{const pm=PM(),s=dfS();for(let i=0;i<10;i++){const an=now/380+i/10*6.283,r=pm.w*(1+.2*Math.sin(i)),x=pm.x+Math.cos(an)*r,y=pm.feet-pm.h*(.15+((i*.37)%1)*.7)+Math.sin(an)*st.ps*2;ctx.globalAlpha=.8;dfR(x,y,s*1.6,s,i%3?'#7fe0a0':'#d8ffb0');dfR(x+s,y-s*.6,s,s*.6,'#3a9a5a')}}},
+   {on:()=>S.deflect>0,draw:now=>{const pm=PM(),s=dfS();for(let i=0;i<S.deflect;i++){const an=now/420+i*3.14,x=pm.x+Math.cos(an)*pm.w*1.1,y=pm.feet-pm.h*.6+Math.sin(an)*pm.h*.2;ctx.globalAlpha=.95;pxTri(x,y-s*3,x-s*2,y,x+s*2,y,s);ctx.fillStyle='#fff6c0';pxTri(x,y-s*3,x-s*2,y,x+s*2,y,s);ctx.fillStyle='#e8b840';pxTri(x,y+s*3,x-s*2,y,x+s*2,y,s)}}}
+  );
+  // ---- cast animations
+  const dfCast=(name,dur,delay)=>setTimeout(()=>{if(!st.player.mv)st.player.anim={name,t0:now_(),dur}},delay||0);
+  Object.assign(SPELLFX,{
+  // 1 Bulwark: two tower shields drop from the sky and slam into the ground
+  'block+block':(R,ch)=>{dfEnsure();const t0=ch-450;dfCast('shield',1500,t0);
+    [[1.15,.95,7,0],[1.75,.82,6,180]].forEach(([fx,fh,fw,dl])=>{addFx(t0+dl,900,(p,now)=>{const pm=PM(),x=pm.x+pm.w*fx,h=pm.h*fh,fall=p<.45?(1-ease(p/.45)):0,y=pm.feet-fall*st.H*.7;ctx.save();dfTower(x,y,h,st.ps*fw,1,p>.45?.5*(1-(p-.45)/.55):0);ctx.restore();if(p>.45&&p<.5){}});
+      setTimeout(()=>{const pm=PM(),x=pm.x+pm.w*fx;shake(0,st.ps*2.4);sBurst(x,pm.feet,['#8a7a5a','#c0a878','#5a4a3a'],18,.22,520,.8);ring(x,pm.feet-st.ps,pm.h*.5,'#c8d0dc',0,420,1.6)},t0+dl+405)});
+    return t0+1050},
+  // 2 Aegis Dome: hex tiles assemble into a dome around the hero
+  'shield+shield':(R,ch)=>{dfEnsure();const t0=ch-450;dfCast('raise',1700,t0);groundUnder(PM,{r:st.H*.13,c1:'#7fd0ff',c2:'#e8f8ff',delay:t0,dur:1700,seed:6,spin:.6});
+    addFx(t0+150,1500,(p,now)=>{const pm=PM(),cells=dfDomeCells(pm);ctx.save();cells.forEach(([x,y,an],i)=>{const k=clamp01(p*1.6-(1-an/3.14)*.25-i/cells.length*.35);if(k<=0)return;const pop=k<.3?ease(k/.3):1;dfHex(x,y,st.ps*2.4*pop,'#9fe2ff',k<.6?'#ffffff':'#7fd0ff',(k<.6?.6:.3)*(p>.85?1-(p-.85)/.15*.4:1))});ctx.restore()});
+    setTimeout(()=>{const pm=PM();flash('#9fe2ff',0,.18);ring(pm.x,pm.feet-pm.h*.5,pm.h*.9,'#e8f8ff',0,500,2)},t0+1250);return t0+1350},
+  // 3 Perfect Deflect: blade flourish, two deflect sigils spin out
+  'parry+parry':R=>{dfEnsure();const c=chor();c.stay(120,{fr:'idle'});c.stay(420,{fr:'slash',spin:1});c.ev(()=>{const pm=PM();ring(pm.x+pm.w*.4,pm.feet-pm.h*.6,pm.h*.45,'#fff6c0',0,300,1.8)});c.stay(420,{fr:'slash',spin:-1});
+    c.ev(()=>{const pm=PM();for(let k=0;k<2;k++)addFx(k*120,700,(p,now)=>{const x=pm.x+pm.w*(.4+p*.7*(k?-1:1)),y=pm.feet-pm.h*(.6+p*.1),r=st.ps*4*(1-p*.3);ctx.save();ctx.globalAlpha=1-p*.3;ctx.fillStyle='#fff6c0';const s=dfS();pxTri(x,y-r,x-r*.7,y,x+r*.7,y,s);ctx.fillStyle='#e8b840';pxTri(x,y+r,x-r*.7,y,x+r*.7,y,s);ctx.restore()});
+      const sx=pm.x+pm.w*.7,sy=pm.feet-pm.h*.85;addFx(0,500,p=>{ctx.save();ctx.globalAlpha=1-p;const s=dfS(),L=st.ps*7*(1-p*.5);dfR(sx-L,sy-s/2,L*2,s,'#ffffff');dfR(sx-s/2,sy-L,s,L*2,'#ffffff');dfR(sx-s*1.5,sy-s*1.5,s*3,s*3,'#fff6c0');ctx.restore()});flash('#fff6c0',0,.12)});
+    c.stay(320,{fr:['shield',0,3]});c.hit(()=>{},0);return runChor(c,R,'#fff6c0')},
+  // 4 Mirage: afterimages peel away from the hero
+  'dodge+dodge':R=>{dfEnsure();const c=chor();c.stay(120,{fr:'idle'});c.stay(460,{fr:'flip',arc:st.H*.05});c.ev(()=>{const pm=PM();const n=R.mirage||2;
+      for(let i=0;i<n;i++)addFx(0,900,(p,now)=>{const off=[-1.25,1.25,-2.3][i]*pm.w*ease(clamp01(p*1.4));dfClone(off,(.6-.25*p)*(Math.random()<.85?1:.3),'#7fe0ff',now);if(Math.random()<.3)spawn(pm.x+off,pm.feet-Math.random()*pm.h,{vy:-.02*U(),color:'#bfefff',size:st.ps*.4,life:300})});
+      for(let k=0;k<8;k++)addFx(k*40,260,p=>{ctx.save();ctx.globalAlpha=(1-p)*.5;dfR(pm.x-pm.w*2.5,pm.feet-pm.h*Math.random(),pm.w*5,Math.max(1,st.ps*.4),'#bfefff');ctx.restore()})});
+    c.stay(700,{fr:'idle'});c.hit(()=>{},0);return runChor(c,R,'#7fe0ff')},
+  // 5 Vengeance: crimson rune circle, rising fury flames and a demon sigil
+  'counter+counter':(R,ch)=>{dfEnsure();const t0=ch-450;dfCast('raise',1700,t0);groundUnder(PM,{r:st.H*.14,c1:'#ff2a2a',c2:'#ff9a8a',delay:t0,dur:1800,seed:9,spin:-.9,star:5});
+    addFx(t0+100,1500,(p,now)=>{const pm=PM(),a=Math.sin(p*Math.PI);dfFlame(pm.x,pm.feet,pm.h*1.1*a,pm.w*1.8,now,['#ffd0a0','#ff3a2a','#c0101a','#4a0610'],.55*a,3);
+      ctx.save();ctx.globalAlpha=a;ctx.fillStyle='#ff2a2a';ctx.shadowColor='#ff2a2a';ctx.shadowBlur=st.ps*4;const ey=pm.feet-pm.h*.86;dfR(pm.x+pm.w*.05,ey,st.ps*1.1,st.ps*.8,'#ff4a3a');
+      const sy=pm.feet-pm.h*1.45;glyph(pm.x,sy,13,dfS()*1.4);ctx.restore()});
+    setTimeout(()=>{const pm=PM();shake(0,st.ps*1.6);flash('#ff2a2a',0,.2);sBurst(pm.x,pm.feet-pm.h*.5,['#ff3a2a','#ffb0a0','#4a0610'],24,.28,520,.8)},t0+900);return t0+1200},
+  // 6 Mana Bastion: three crystal ramparts rise and pour mana into the hero
+  'block+shield':(R,ch)=>{dfEnsure();const t0=ch-450;dfCast('shield',1500,t0);
+    [[-.9,.6,0],[1.1,.95,140],[1.7,.75,260]].forEach(([fx,fh,dl])=>addFx(t0+dl,1400,(p,now)=>{const pm=PM(),x=pm.x+pm.w*fx,h=pm.h*fh*ease(clamp01(p*2.4)),s=dfS(),w=st.ps*4;if(h<=0)return;const y=pm.feet;ctx.save();ctx.globalAlpha=p>.8?1-(p-.8)/.2*.6:1;
+      ctx.fillStyle='#1a3a70';pxTri(x,y-h-w*1.2,x-w,y-h,x+w,y-h,s);dfR(x-w,y-h,w*2,h,'#2a5ec0');dfR(x-w,y-h,w*.7,h,'#7fc0ff');dfR(x+w*.4,y-h,w*.6,h,'#1a3a80');ctx.fillStyle='#bfe6ff';pxTri(x-w*.2,y-h-w,x-w,y-h,x,y-h,s);
+      ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.4+.3*Math.sin(now/90+fx);dfR(x-s/2,y-h,s,h,'#e8f8ff');ctx.restore();
+      if(p>.4&&p<.8&&Math.random()<.5){const sx=x,sy=y-h*Math.random();spawn(sx,sy,{vx:(pm.x-sx)/360,vy:(pm.feet-pm.h*.5-sy)/360,color:Math.random()<.5?'#6cb2ff':'#e8f8ff',size:st.ps*.55,life:360})}}));
+    setTimeout(()=>{const pm=PM();ring(pm.x,pm.feet-pm.h*.5,pm.h*.7,'#6cb2ff',0,500,2)},t0+1000);return t0+1150},
+  // 7 Iron Riposte: crossed sword and iron shield clang together in a spray of sparks
+  'block+parry':(R,ch)=>{dfEnsure();const t0=ch-450;dfCast('shield',1400,t0);
+    addFx(t0,1200,(p,now)=>{const pm=PM(),cx=pm.x+pm.w*1.0,cy=pm.feet-pm.h*.55,k=ease(clamp01(p*2.2)),s=dfS();ctx.save();
+      dfSword(cx-st.ps*10*(1-k),cy-st.ps*6*(1-k),-.8,st.ps*12,'#c8d0dc','#ffffff',1);dfSword(cx+st.ps*10*(1-k),cy-st.ps*6*(1-k),-2.35,st.ps*12,'#c8d0dc','#ffffff',1);
+      ctx.globalAlpha=k;ctx.fillStyle='#3a3e48';pxDisc(cx,cy+st.ps*1.5,st.ps*4.6,s);ctx.fillStyle='#6f7a8c';pxDisc(cx,cy+st.ps*1.5,st.ps*4,s);ctx.fillStyle='#aab4c4';pxDisc(cx-s,cy+st.ps*.5,st.ps*2.4,s);ctx.fillStyle='#e8b840';pxDisc(cx,cy+st.ps*1.5,st.ps*1.2,s);ctx.restore()});
+    setTimeout(()=>{const pm=PM(),cx=pm.x+pm.w*1.0,cy=pm.feet-pm.h*.55;shake(0,st.ps*1.8);flash('#ffffff',0,.18);for(let i=0;i<26;i++){const a=Math.random()*6.283,v=(.1+Math.random()*.25)*U();spawn(cx,cy,{vx:Math.cos(a)*v,vy:Math.sin(a)*v-.05*U(),g:.0008*U(),color:Math.random()<.5?'#fff2b0':'#ffb347',size:st.ps*.45,life:420})}ring(cx,cy,pm.h*.4,'#ffffff',0,300,2)},t0+560);return t0+900},
+  // 8 Tumble Guard: backward and forward rolls in a cloud of dust
+  'block+dodge':R=>{dfEnsure();const c=chor(),pm=c.pm,dust=()=>{const p2=PMx();sBurst(p2.x,p2.feet,['#c0a878','#8a7a5a','#e8dcc0'],10,.12,420,.7)};c.stay(80,{fr:'idle'});
+    c.go(c.H-pm.w*1.6,0,380,{fr:'roll',fl:true});c.ev(dust,180);c.stay(120,{fr:['shield',0,3],fl:false});c.go(c.H,0,380,{fr:'roll',fl:false});c.ev(dust,180);
+    c.ev(()=>{const p2=PMx();addFx(0,700,(p,now)=>{ctx.save();ctx.globalAlpha=(1-p)*.8;const s=dfS();ctx.fillStyle='#7fe0a0';pxDisc(p2.x+p2.w*.6,p2.feet-p2.h*.5,st.ps*4*(1+p*.3),s);ctx.fillStyle='#d8ffe0';pxDisc(p2.x+p2.w*.5,p2.feet-p2.h*.55,st.ps*2,s);ctx.restore()});ring(p2.x,p2.feet-p2.h*.4,p2.h*.6,'#bff5d8',0,420,1.6)});
+    c.stay(420,{fr:['shield',0,3]});c.hit(()=>{},0);return runChor(c,R,'#bff5d8')},
+  // 9 Spike Wall: rows of iron spikes erupt from the ground
+  'block+counter':(R,ch)=>{dfEnsure();const t0=ch-450;dfCast('kick',700,t0);
+    addFx(t0+260,1100,(p,now)=>{const pm=PM();dfSpikes(pm.x+pm.w*.9,pm.feet,5,st.ps*3,pm.h*.38,p*1.4,p>.85?1-(p-.85)/.15*.3:1,now);dfSpikes(pm.x+pm.w*1.05,pm.feet,4,st.ps*3,pm.h*.26,p*1.4-.15,.8,now)});
+    [0,90,180,270,360].forEach((d,i)=>setTimeout(()=>{const pm=PM(),x=pm.x+pm.w*.9+i*st.ps*3;sBurst(x,pm.feet,['#5a4a3a','#8a7a5a','#c8d0dc'],8,.18,380,.7);if(i%2===0)shake(0,st.ps*1.2)},t0+260+d));return t0+900},
+  // 10 Phase Veil: violet glitch slices and expanding phase rings
+  'dodge+shield':(R,ch)=>{dfEnsure();const t0=ch-450;dfCast('raise',1500,t0);
+    for(let k=0;k<3;k++)setTimeout(()=>{const pm=PM();ring(pm.x,pm.feet-pm.h*.5,pm.h*(.6+k*.15),k%2?'#d8c4ff':'#8a5ae0',0,520,1.8)},t0+200+k*220);
+    addFx(t0+100,1300,(p,now)=>{const pm=PM(),s=dfS();ctx.save();for(let i=0;i<9;i++){const y=pm.feet-pm.h*(.05+i*.12),off=(Math.random()-.5)*st.ps*5*Math.sin(p*Math.PI);ctx.globalAlpha=.55*Math.sin(p*Math.PI);dfR(pm.x-pm.w*.8+off,y,pm.w*1.6,Math.max(1,s*.7),i%2?'#d8c4ff':'#6a3ac0')}ctx.restore()});
+    setTimeout(()=>{const pm=PM();flash('#8a5ae0',0,.16);sBurst(pm.x,pm.feet-pm.h*.5,['#b18bff','#e4d4ff','#4a2a80'],20,.22,520,.6)},t0+800);return t0+1100},
+  // 11 Retribution Aegis: golden motes converge into a rune shield
+  'counter+shield':(R,ch)=>{dfEnsure();const t0=ch-450;dfCast('raise',1600,t0);
+    addFx(t0,1500,(p,now)=>{const pm=PM(),cx=pm.x+pm.w*1.05,cy=pm.feet-pm.h*.55,k=ease(clamp01((p-.25)/.5));ctx.save();
+      if(p<.6)for(let i=0;i<18;i++){const an=i/18*6.283+now/500,r=pm.h*(.9-p*1.3);if(r>0)dfR(cx+Math.cos(an)*r,cy+Math.sin(an)*r*.7,st.ps*.8,st.ps*.8,i%2?'#ffd36b':'#fff6c8')}
+      if(k>0)dfSigil(cx,cy,pm.h*.3*k,now,'#ffd36b','#fff6c8',k*(p>.85?1-(p-.85)/.15*.4:1));ctx.restore()});
+    setTimeout(()=>{const pm=PM();flash('#ffd36b',0,.16);ring(pm.x+pm.w*1.05,pm.feet-pm.h*.55,pm.h*.4,'#fff6c8',0,500,2)},t0+900);return t0+1150},
+  // 12 Mirror Guard: a silver mirror pane rises and catches the light
+  'parry+shield':(R,ch)=>{dfEnsure();const t0=ch-450;dfCast('shield',1500,t0);
+    addFx(t0+150,1250,(p,now)=>{const pm=PM(),k=ease(clamp01(p*1.8)),h=pm.h*1.05*k;if(h<=2)return;dfMirrorPane(pm.x+pm.w*1.3,pm.feet,h,st.ps*9,1,0,now);if(p<.55&&Math.random()<.5)spawn(pm.x+pm.w*1.3+(Math.random()-.5)*st.ps*9,pm.feet,{vy:-.05*U(),color:'#e8f6ff',size:st.ps*.4,life:300})});
+    setTimeout(()=>{const pm=PM(),x=pm.x+pm.w*1.3,y=pm.feet-pm.h*.7;addFx(0,450,p=>{ctx.save();ctx.globalAlpha=1-p;const L=st.ps*9*(1-p*.4),s=dfS();dfR(x-L,y-s/2,L*2,s,'#ffffff');dfR(x-s/2,y-L,s,L*2,'#ffffff');ctx.restore()});flash('#e8f6ff',0,.15)},t0+900);return t0+1100},
+  // 13 Shadow Step: the hero sinks into a pool of shadow and rises again
+  'dodge+parry':R=>{dfEnsure();const c=chor(),pm=c.pm;c.stay(120,{fr:'idle'});c.ev(()=>{addFx(0,1500,(p,now)=>{const p2=PMx(),s=dfS(),w=p2.w*1.4*Math.sin(Math.min(1,p*1.6)*Math.PI*.5)*(p>.8?1-(p-.8)/.2*.5:1);ctx.save();ctx.globalAlpha=.85;ctx.fillStyle='#1a0f2a';ctx.beginPath();ctx.ellipse(p2.x,p2.feet,w,st.ps*1.6,0,0,6.283);ctx.fill();ctx.fillStyle='#4a2a80';dotRing(p2.x,p2.feet,w,st.ps*1.6,s,now/300,3);ctx.restore();if(Math.random()<.6)spawn(p2.x+(Math.random()-.5)*w*2,p2.feet,{vy:-.04*U(),color:Math.random()<.5?'#6a4aa0':'#1a0f2a',size:st.ps*.7,life:500})})});
+    c.go(c.H,st.H*.1,380,{fr:['shield',0,3],e:'in'});c.stay(380,{hide:true});c.ev(()=>{const p2=PMx();sBurst(p2.x,p2.feet-p2.h*.4,['#1a0f2a','#6a4aa0','#c06cff'],22,.24,520,.8)});c.go(c.H,0,420,{fr:'idle',e:'out'});c.stay(240,{fr:'idle'});c.hit(()=>{},0);return runChor(c,R,'#6a4aa0')},
+  // 14 Riposte Storm: three spectral swords materialise and begin to orbit
+  'counter+parry':(R,ch)=>{dfEnsure();const t0=ch-450;dfCast('raise',1500,t0);
+    addFx(t0+100,1350,(p,now)=>{const pm=PM();for(let i=0;i<3;i++){const k=clamp01(p*2.2-i*.25);if(k<=0)continue;const an=now/500+i/3*6.283,r=pm.w*(1.2+(1-ease(k))*2),x=pm.x+Math.cos(an)*r,y=pm.feet-pm.h*.55+Math.sin(an)*pm.h*.32-(1-ease(k))*pm.h*.6;dfSword(x,y,an+1.57,st.ps*8,'#bfe9ff','#ffffff',k);if(k<1&&Math.random()<.4)spawn(x,y,{color:'#bfe9ff',size:st.ps*.4,life:260})}});
+    [0,1,2].forEach(i=>setTimeout(()=>{const pm=PM();ring(pm.x,pm.feet-pm.h*.55,pm.h*.35,'#bfe9ff',0,300,1.4)},t0+400+i*230));return t0+1150},
+  // 15 Wind Dancer: a spinning dance wrapped in ribbons of wind and leaves
+  'counter+dodge':R=>{dfEnsure();const c=chor();c.stay(100,{fr:'idle'});c.ev(()=>{addFx(0,1500,(p,now)=>{const p2=PMx(),s=dfS(),a=Math.sin(p*Math.PI);ctx.save();for(let k=0;k<3;k++){ctx.globalAlpha=.7*a;ctx.fillStyle=k===1?'#d8ffb0':'#7fe0a0';for(let i=0;i<26;i++){const an=now/160+i*.24+k*2.1,r=p2.w*(.7+k*.25),y=p2.feet-p2.h*(.05+i/26*.95)+Math.sin(an)*st.ps;dfR(p2.x+Math.cos(an)*r,y,s,s,ctx.fillStyle)}}ctx.restore();if(Math.random()<.5)spawn(p2.x+(Math.random()-.5)*p2.w*2,p2.feet-Math.random()*p2.h,{vx:(Math.random()-.5)*.08*U(),vy:-.06*U(),color:Math.random()<.5?'#59c98a':'#d8ffb0',size:st.ps*.6,life:520})})});
+    c.stay(520,{fr:'spinkick',spin:1,arc:st.H*.06});c.stay(520,{fr:'spinkick',spin:1});c.stay(240,{fr:'idle'});c.hit(()=>{},0);return runChor(c,R,'#7fe0a0')}
+  });
+  // ---- hit reactions while a guard is active
+  function defFx(kind,delay){setTimeout(()=>{if(!dfOn())return;const pm=PM(),m=EM();dfEnsure();
+    if(kind==='mirageHit'){const off=(Math.random()<.5?-1.25:1.25)*pm.w;sBurst(pm.x+off,pm.feet-pm.h*.5,['#7fe0ff','#ffffff','#2a8ab0'],22,.26,420,.7);for(let k=0;k<6;k++)addFx(k*30,200,p=>{ctx.save();ctx.globalAlpha=1-p;dfR(pm.x+off-pm.w,pm.feet-pm.h*Math.random(),pm.w*2,Math.max(1,st.ps*.5),'#bfefff');ctx.restore()})}
+    else if(kind==='mirrorHit'){addFx(0,600,(p,now)=>dfMirrorPane(pm.x+pm.w*1.3,pm.feet,pm.h*1.05,st.ps*9,1-p,Math.min(1,p*3),now));if(m){const sx=pm.x+pm.w*1.3,sy=pm.feet-pm.h*.6;addFx(120,380,p=>{ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=1-p;const ex=sx+(m.x-sx)*Math.min(1,p*2.2);dfR(sx,sy-st.ps,ex-sx,st.ps*2,'#e8f6ff');dfR(sx,sy-st.ps*.4,ex-sx,st.ps*.8,'#ffffff');ctx.restore()})}flash('#e8f6ff',0,.2)}
+    else if(kind==='deflectHit'){const x=pm.x+pm.w*.6,y=pm.feet-pm.h*.6;for(let i=0;i<16;i++){const a=Math.random()*6.283;spawn(x,y,{vx:Math.cos(a)*.22*U(),vy:Math.sin(a)*.22*U(),color:i%2?'#fff6c0':'#ffffff',size:st.ps*.45,life:300})}addFx(0,300,p=>{ctx.save();ctx.globalAlpha=1-p;const L=st.ps*8*(1-p*.3),s=dfS();dfR(x-L,y-s/2,L*2,s,'#ffffff');dfR(x-s/2,y-L,s,L*2,'#ffffff');ctx.restore()})}
+    else if(kind==='shadowHit'&&m){blinkFx&&blinkFx(pm.x,0,'#6a4aa0');sBurst(m.x+m.w*.6,m.feet-m.h*.5,['#1a0f2a','#6a4aa0','#c06cff'],18,.24,420,.8);addFx(220,280,p=>{ctx.save();ctx.globalAlpha=1-p;ctx.strokeStyle='#c06cff';ctx.lineWidth=st.ps*1.2;ctx.beginPath();ctx.moveTo(m.x+m.w,m.feet-m.h*.9);ctx.lineTo(m.x-m.w*.6,m.feet-m.h*.15);ctx.stroke();ctx.restore()})}
+    else if(kind==='danceHit'&&m){st.player.anim={name:'spinkick',t0:now_(),dur:420};const sx=pm.x+pm.w*.6,sy=pm.feet-pm.h*.55;addFx(160,360,p=>{ctx.save();const x=sx+(m.x-sx)*p,s=dfS();ctx.globalAlpha=1-p*.5;for(let i=-4;i<=4;i++)dfR(x+Math.abs(i)*s*.6,sy+i*s*1.2,s*1.4,s,i%2?'#d8ffb0':'#7fe0a0');ctx.restore()})}
+    else if(kind==='stormHit'&&m){for(let k=0;k<3;k++){const an=k/3*6.283,sx=pm.x+Math.cos(an)*pm.w*1.2,sy=pm.feet-pm.h*.55+Math.sin(an)*pm.h*.3;addFx(k*170,260,p=>{const x=sx+(m.x-sx)*ease(p),y=sy+(m.feet-m.h*.5-sy)*ease(p);dfSword(x,y,Math.atan2(m.feet-m.h*.5-sy,m.x-sx),st.ps*8,'#bfe9ff','#ffffff',1)})}}
+    else if(kind==='spikeHit'&&m){const x=pm.x+pm.w*1.1;for(let i=0;i<10;i++)spawn(x,pm.feet-pm.h*.3,{vx:(.05+Math.random()*.15)*U(),vy:-(Math.random()*.1)*U(),g:.0006*U(),color:'#c8d0dc',size:st.ps*.45,life:320})}
+    else if(kind==='ironHit'){const cx=pm.x+pm.w*1.0,cy=pm.feet-pm.h*.55;for(let i=0;i<18;i++){const a=Math.random()*6.283;spawn(cx,cy,{vx:Math.cos(a)*.22*U(),vy:Math.sin(a)*.22*U(),color:Math.random()<.5?'#fff2b0':'#ffb347',size:st.ps*.45,life:340})}ring(cx,cy,pm.h*.35,'#ffffff',0,280,2);shake(0,st.ps*1.4)}
+    else if(kind==='vengeHit'&&m){const sx=pm.x+pm.w*.5,sy=pm.feet-pm.h*.55;addFx(100,300,p=>{ctx.save();ctx.globalAlpha=1-p;ctx.strokeStyle='#ff2a2a';ctx.lineWidth=st.ps*1.4;ctx.beginPath();const x=sx+(m.x-sx)*Math.min(1,p*1.6);ctx.moveTo(sx,sy);ctx.lineTo(x,m.feet-m.h*.5);ctx.stroke();ctx.restore()});sBurst(m.x,m.feet-m.h*.5,['#ff2a2a','#4a0610','#ffb0a0'],14,.24,380,.7)}
+    else if(kind==='retriBlast'){const cx=pm.x+pm.w*1.05,cy=pm.feet-pm.h*.55;flash('#ffd36b',0,.35);shake(0,st.ps*3);ring(cx,cy,pm.h*.6,'#fff6c8',0,500,3);
+      addFx(0,700,p=>{ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=1-p;const r=st.W*p*.9,s=dfS();ctx.fillStyle='#ffd36b';dotRing(cx,cy,r,r*.35,s*1.4,0,0);ctx.fillStyle='#fff6c8';dotRing(cx,cy,r*.9,r*.3,s,0,2);ctx.restore()});
+      st.foes.forEach(f=>{if(f.gone||f.state==='die')return;const mm=enemyMetricsOf(f);addFx(220,600,p=>{ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=Math.sin(p*Math.PI);const w=mm.w*.6*(1-p*.5);dfR(mm.x-w/2,0,w,mm.feet,'#ffd36b');dfR(mm.x-w/5,0,w*.4,mm.feet,'#fff6c8');ctx.restore()});sBurst(mm.x,mm.feet-mm.h*.5,['#ffd36b','#fff6c8'],16,.26,420,.7)})}
+  },delay||0)}
+  window.__defFx=defFx;
+
   const H0=()=>st.H;
   const ICO=(()=>{const t=(1+Math.sqrt(5))/2,v=[[-1,t,0],[1,t,0],[-1,-t,0],[1,-t,0],[0,-1,t],[0,1,t],[0,-1,-t],[0,1,-t],[t,0,-1],[t,0,1],[-t,0,-1],[-t,0,1]].map(p=>{const l=Math.hypot(...p);return p.map(c=>c/l)});const e=[];for(let a=0;a<12;a++)for(let b=a+1;b<12;b++){const d=Math.hypot(v[a][0]-v[b][0],v[a][1]-v[b][1],v[a][2]-v[b][2]);if(d<1.1)e.push([a,b])}return{v,e}})();
   function drawReflect(cx,cy,r,now,el){const C=el?{g:'#f2d24b',f:'#fff6b0',b:'#c9a530',gl:'#f2d24b'}:{g:'#bfe9ff',f:'#e6f6ff',b:'#8fc8ea',gl:'#bfe9ff'};const ay=now/1400,ax=.45+Math.sin(now/2300)*.25,cy_=Math.cos(ay),sy_=Math.sin(ay),cx_=Math.cos(ax),sx_=Math.sin(ax);
@@ -2308,6 +2499,7 @@ window.__cardArt=cardArt;
       else if(hf.pose==='block'){sy=.94}
       if(P.seq&&P.seq.lift&&now<P.seq.until)oy+=P.seq.lift(now-P.seq.t0)+(hf.f.jy||0)*k*.45;
       if(P.mv&&now-P.mv.t0<=P.mv.dur){const t=now-P.mv.t0;oy+=P.mv.y(t);rot+=P.mv.rot(t);if(P.mv.ghost&&!P.mv.hide(t)){P.gh=P.gh||[];if(!P.ghT||now-P.ghT>30){P.ghT=now;P.gh.push({tc:tint(hf.c,P.mv.ghost),w:hf.f.w||hf.c.width,h:hf.f.h||hf.c.height,x:px+ox,y:feet+oy,c:hf.c,key:hf.key,ax:hf.f.ax,fy:hf.f.fy||hf.c.height,fl:P.teleFlip,t:now,col:P.mv.ghost,rot})}}}
+      P.lastHF={c:hf.c,key:hf.key,w:hf.f.w||hf.c.width,h:hf.f.h||hf.c.height,ax:hf.f.ax,fy:hf.f.fy||hf.c.height,k,x:px+ox,y:feet+oy,fl:P.teleFlip};
       if(P.gh&&P.gh.length){P.gh=P.gh.filter(g=>now-g.t<260);P.gh.forEach(g=>{const a=1-(now-g.t)/260;ctx.save();ctx.globalAlpha=.5*a;ctx.translate(g.x,g.y);ctx.rotate(g.rot);ctx.scale(g.fl?-1:1,1);ctx.drawImage(g.tc,-g.ax*k,-g.fy*k,g.w*k,g.h*k);ctx.restore()})}
       shadow(px,feet,Math.min(fw,H*.12),1);
       ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
@@ -2660,6 +2852,7 @@ window.__cardArt=cardArt;
     addFoes(list){const now=performance.now();list.forEach(f=>{const o={id:f.id,elite:false,state:'idle',slot:f.slot,ox:f.ox,dx:(f.fromOx-f.ox)*st.W,popT:now,popDx:(f.fromOx-f.ox)*st.W};st.foes[f.slot]=o;const m=enemyMetricsOf(o);burst(m.x+o.dx,m.feet-m.h*.4,'#7fe02a',16,.18*st.H/400,.05*st.H/400)})},
     cleaveFx(){const m=enemyMetrics();if(!m)return;ring(m.x,m.feet-m.h*.5,m.h*1.2,'#e6eaf0',0,380,2);shake(160,st.ps*1.2)},
     explodeFx(){st.foes.forEach(f=>{if(f.gone||f.state==='die')return;const m=enemyMetricsOf(f);burst(m.x,m.feet-m.h*.5,'#ff9a3a',22,.32*st.H/400,.04*st.H/400);burst(m.x,m.feet-m.h*.5,'#fff2b0',10,.22*st.H/400);ring(m.x,m.feet-m.h*.5,m.h*1.5,'#ffb347',120,520,3)});flash('#ff8a2a',220,.22);shake(380,st.ps*2.6)},
+    defFx:(k,d)=>window.__defFx&&window.__defFx(k,d),
     poisonFx(){const m=playerMetrics();burst(m.x,m.feet-m.h*.5,'#9be05a',12,.1*st.H/400,.03*st.H/400)},
     playerBurst(color){const m=playerMetrics();burst(m.x,m.feet-m.h*.5,color,10,.12*st.H/400,.05*st.H/400)},
     enemyDie(){const e=st.enemy;if(!e)return;e.state='die';e.t0=performance.now();const m=enemyMetrics();burst(m.x,m.feet-m.h*.5,'#ffffff',24,.3*st.H/400);burst(m.x,m.feet-m.h*.5,'#dba64b',16,.2*st.H/400)},
@@ -2826,6 +3019,7 @@ function fuse(c1,c2){
       if(r.key==='counter+dodge')r.counter.p=Math.round(r.counter.p*1.5);
       if(r.key==='parry+shield')r.parry.p=Math.round(r.parry.p*1.5);
       if(r.key==='block+shield'){r.block=10;r.barrier=(effLv(a)+effLv(b))*2;if(effLv(a)+effLv(b)>=6)r.manaGuard=.5}}
+    if(ESPELL[r.key]&&ESPELL[r.key].def){const sp=ESPELL[r.key],u=effLv(a)+effLv(b);r.block=0;r.barrier=0;r.parry=null;r.dodge=0;r.counter=null;r.heal=0;r.manaGuard=0;r.name=sp.name;r.spell=r.key;sp.build(r,u)}
   }
   r.charge=[...new Set([a,b].filter(c=>CARDS[c.key].cat==='elem').map(c=>c.key))];
   r.weapon=r.anim==='shield'?'none':(r.anim==='kick'||(r.anim==='punch'&&r.phys.includes('punch')&&!r.phys.includes('stab')))?'back':'hand';
@@ -2941,7 +3135,7 @@ function startBattle(n){
   S.foes.forEach(F=>{const dd=ENEMIES[F.id];F.abil=(dd.abil||[]).slice();if(F.elite&&L.revive&&F.slot===0)F.abil.push('revive');if(F.abil.includes('ward'))F.ward=true;if(F.abil.includes('revive'))F.undying=true});S.poison=null;S.pbleed=null;
   S.enemy=S.foes[0];S.tgt=S.enemy;
   S.draw=shuffle(battleDeck().map(c=>c.id));S.hand=[];S.disc=[];S.sel=[];
-  S.block=stats().def;S.barrier=0;S.barrierT=0;S.manaGuard=0;S.manaGuardT=0;S.iceAge=0;S.stoneSkin=false;Stage.iceFloor(false);S.thorns=null;S.dodge=0;S.parry=null;S.counter=null;S.guarding=false;S.rainNext=0;S.embrace=false;S.reflect=false;S.efield=false;S.busy=false;
+  clearDefense(true);S.block=stats().def;S.barrier=0;S.barrierT=0;S.manaGuard=0;S.manaGuardT=0;S.iceAge=0;S.stoneSkin=false;Stage.iceFloor(false);S.thorns=null;S.dodge=0;S.parry=null;S.counter=null;S.guarding=false;S.rainNext=0;S.embrace=false;S.reflect=false;S.efield=false;S.busy=false;
   {const g=stats();S.struck=false;S.combos=0;if(g.barrierStart){S.barrier=g.barrierStart;S.barrierT=3}if(g.dodge)S.dodge=g.dodge}
   S.log=[n.swarm?`A ${d.swarmName.toLowerCase()} surrounds you: ${ids.length} ${d.name}s, each attacking on its own. Tap one to target it.`:duo?`An elite pair blocks the road: ${ids.map(i=>ENEMIES[i].name).join(' and ')}. Tap a monster to target it.`:`${elite?'An elite ':''}${d.name} blocks the road.`];
   drawHand();S.phase='battle';render();
@@ -3108,22 +3302,36 @@ function hurtPlayer(raw,delay,pierce){
   if(S.embrace){Stage.float('player','IMMUNE','#9fe2ff','FROZEN',delay);return 0}
   if(S.stoneSkin){Stage.float('player','IMMUNE','#e0c08a','STONE SKIN',delay);setTimeout(()=>Stage.stoneFx&&Stage.stoneFx(),delay||0);return 0}let x=raw;if(E.chill)x=Math.round(x*.6);if(E.weak>0)x=Math.round(x*.7);if(iceAgeHits(E))x=Math.round(x*.5);
   if(E.blind&&Math.random()*100<E.blind){Stage.float('player','MISS','#cfd6dd','BLINDED',delay);return 0}
+  if(S.mirage>0){S.mirage--;Stage.float('player','MIRAGE','#9fe2ff','AN IMAGE TAKES IT',delay);Stage.defFx&&Stage.defFx('mirageHit',delay);return 0}
+  if(S.mirror&&x>0){const mx=Math.round(x*S.mirror);S.mirror=0;Stage.float('player','MIRRORED','#e8f6ff','',delay);Stage.defFx&&Stage.defFx('mirrorHit',delay);trueHit(E,mx,'MIRROR','#e8f6ff',(delay||0)+260);return 0}
+  if(S.deflect>0){S.deflect--;Stage.float('player','DEFLECT','#fff6c0','',delay);Stage.defFx&&Stage.defFx('deflectHit',delay);dealToEnemy(S.deflectP||4,'slash','DEFLECT',(delay||0)+180);return 0}
+  if(S.shadowStep){const ss=S.shadowStep;S.shadowStep=null;if(Math.random()<.6){Stage.float('player','SHADOW STEP','#b18bff','',delay);Stage.defFx&&Stage.defFx('shadowHit',delay);dealToEnemy(ss.p,'pierce','RIPOSTE',(delay||0)+320);E.vuln=Math.max(E.vuln||0,25);E.vulnT=2;setTimeout(()=>Stage.float('enemy','EXPOSED','#b18bff','+25% DMG TAKEN',0),(delay||0)+520);return 0}}
+  if(S.windDance&&Math.random()*100<S.windDance.ch){const wd=S.windDance;Stage.float('player','DODGE','#bff5d8','WIND DANCE',delay);Stage.defFx&&Stage.defFx('danceHit',delay);dealToEnemy(wd.p,'slash','WIND CUT',(delay||0)+260);const mg=Math.min(6,S.maxMana-S.mana);if(mg>0){S.mana+=mg;Stage.float('player',`+${mg}`,'#6cb2ff','MANA',(delay||0)+380)}return 0}
+  if(S.tumble){if(Math.random()*100<S.tumble.ch){Stage.float('player','DODGE','#bff5d8','TUMBLE',delay);Stage.dodgeFx(delay);return 0}S.tumble.ch=Math.min(95,S.tumble.ch+20)}
   if(S.lava)dealToEnemy(S.lava,'fire','LAVA',(delay||0)+200);
   if(S.reflect&&x>0&&E.hp>0){E.hp-=x;Stage.float('enemy',x,'#bfe9ff','REFLECT',(delay||0)+180);Stage.reflectFx(delay||0)}
   if(S.dodge>0&&Math.random()*100<S.dodge){Stage.float('player','DODGE','#bff5d8','',delay);Stage.dodgeFx(delay);counterStrike(delay);return 0}
-  if(S.parry){const pr=S.parry;S.parry=null;x-=pr.full?x:Math.ceil(x/2);dealToEnemy(pr.p,pr.t,'PARRY',(delay||0)+120);Stage.parryFx(delay)}
+  let ironP=0;
+  if(S.parry){const pr=S.parry;S.parry=null;x-=pr.full?x:Math.ceil(x/2);if(pr.iron)ironP=pr.p;else if(pr.storm){Stage.defFx&&Stage.defFx('stormHit',delay);for(let k=0;k<3;k++)dealToEnemy(pr.storm,'slash','BLADE',(delay||0)+200+k*170)}else dealToEnemy(pr.p,pr.t,'PARRY',(delay||0)+120);Stage.parryFx(delay)}
   let ab=0;
   if(S.barrier>0&&x>0){const b=Math.min(S.barrier,x);S.barrier-=b;x-=b;ab+=b;
     if(S.thorns&&b>0){const t=S.thorns;dealToEnemy(4,t,'THORNS',(delay||0)+160);applyElem(t,E,ENEMIES[E.id])}
-    if(S.barrier<=0){S.barrier=0;S.thorns=null}}
-  if(S.block>0&&x>0&&!pierce){const b=Math.min(S.block,x);S.block-=b;x-=b;ab+=b}
+    if(S.barrier<=0){S.barrier=0;S.thorns=null;S.aegis=false;if(S.retri)retriBlast(delay)}}
+  if(S.block>0&&x>0&&!pierce){const b=Math.min(S.block,x);S.block-=b;x-=b;ab+=b;if(S.spikes&&b>0){const sp=Math.max(1,Math.round(b*S.spikes));Stage.defFx&&Stage.defFx('spikeHit',delay);dealToEnemy(sp,'pierce','SPIKES',(delay||0)+160)}}
+  if(ironP){Stage.defFx&&Stage.defFx('ironHit',delay);dealToEnemy(ironP+ab,'blunt','IRON RIPOSTE',(delay||0)+220)}
+  if(S.tumble&&x>0){const tb=S.tumble.b;S.block+=tb;setTimeout(()=>Stage.float('player',`+${tb}`,'#59c9c2','TUMBLE GUARD',0),(delay||0)+260)}
   if(S.manaGuard&&ab>0){const mg=Math.min(Math.max(1,Math.round(ab*S.manaGuard)),S.maxMana-S.mana);if(mg>0){S.mana+=mg;Stage.float('player',`+${mg}`,'#6cb2ff','MANA',(delay||0)+200)}}
   S.hp-=x;
+  if(S.venge&&E.hp>0){const vd=S.venge.p+Math.round(x/2);Stage.defFx&&Stage.defFx('vengeHit',delay);dealToEnemy(vd,'slash','VENGEANCE',(delay||0)+240)}
   setTimeout(()=>Stage.hitPlayer(!x),delay||0);
   Stage.float('player',x?`-${x}`:'0',x?'#ff6b5e':'#59c9c2',ab?`${ab} BLOCKED`:'',delay);
   counterStrike(delay);
   return x;
 }
+function clearDefense(full){S.mirage=0;S.mirror=0;S.deflect=0;S.venge=null;S.shadowStep=null;S.windDance=null;S.tumble=null;S.spikes=0;if(full){S.bulwark=false;S.aegis=false;S.retri=null;S.veilT=0}}
+function trueHit(E,d,label,col,delay){if(!E||E.hp<=0||d<=0)return;E.hp-=d;Stage.withFoe(E.slot||0,()=>{Stage.float('enemy',d,col,label,delay);setTimeout(()=>Stage.hitEnemy(['light']),delay||0)})}
+function retriBlast(delay){const r=S.retri;S.retri=null;if(!r)return;const E=S.enemy;Stage.defFx&&Stage.defFx('retriBlast',delay);log(`Your Retribution Aegis shatters and detonates for ${r.p}!`);
+  aliveFoes().forEach((F,i)=>{if(F===E)trueHit(E,r.p,'RETRIBUTION','#ffd36b',(delay||0)+260);else sideHit(F,r.p,'#ffd36b','RETRIBUTION',(delay||0)+300+i*60,[])})}
 function counterStrike(delay){if(S.counter){const c=S.counter;S.counter=null;dealToEnemy(c.p,c.t,'COUNTER',(delay||0)+220)}}
 function enemyTurn(){S.turnQ=aliveFoes();S.firstFoe=true;nextFoe()}
 function nextFoe(){
@@ -3182,12 +3390,15 @@ function finishEnemyTurn(){
   const tg=S.tgt&&S.tgt.hp>0?S.tgt:aliveFoes()[0];if(tg)setTarget(tg);
   S.lava=null;
   S.dodge=0;S.parry=null;S.counter=null;S.guarding=false;S.guardEls=[];if(S.embrace){S.embrace=false;Stage.unembrace()}S.reflect=false;S.efield=false;
-  if(S.manaGuardT>0&&--S.manaGuardT===0)S.manaGuard=0;if(S.iceAge>0&&--S.iceAge===0)Stage.iceFloor(false);S.stoneSkin=false;if(S.barrier>0){S.barrierT--;if(S.barrierT<=0){S.barrier=0;S.thorns=null}}
+  clearDefense(false);
+  if(S.veilT>0&&--S.veilT>0)S.dodge=Math.max(S.dodge||0,S.veil||25);
+  if(S.manaGuardT>0&&--S.manaGuardT===0)S.manaGuard=0;if(S.iceAge>0&&--S.iceAge===0)Stage.iceFloor(false);S.stoneSkin=false;if(S.barrier>0){S.barrierT--;if(S.barrierT<=0){S.barrier=0;S.thorns=null;S.aegis=false;S.retri=null}}
+  if(S.aegis&&S.barrier>0&&(S.pbleed||S.poison)){Stage.float('player','WARDED','#9fe2ff','AEGIS DOME',100);if(S.pbleed&&--S.pbleed.t<=0)S.pbleed=null;if(S.poison&&--S.poison.t<=0)S.poison=null}
   if(S.pbleed&&S.hp>0){const p=S.pbleed;S.hp-=p.d;Stage.float('player',`-${p.d}`,'#ff5a64','BLEED',260);Stage.playerBurst('#c0303a');log(`Bleeding deals ${p.d} to you.`);if(--p.t<=0)S.pbleed=null}
   if(S.poison&&S.hp>0){const p=S.poison;S.hp-=p.d;Stage.float('player',`-${p.d}`,'#9be05a','POISON',100);Stage.poisonFx&&Stage.poisonFx();log(`Poison deals ${p.d} to you.`);if(--p.t<=0)S.poison=null}
   if(S.hp<=0&&tryRevive()){}
   if(S.hp<=0){S.hp=0;Stage.playerDie();render();setTimeout(()=>{S.phase='over';render()},1100);return}
-  S.block=stats().def;S.turns++;drawHand();S.busy=false;
+  {const carry=S.bulwark?Math.floor((S.block||0)/2):0;S.bulwark=false;S.block=stats().def+carry;if(carry){Stage.float('player',`+${carry}`,'#59c9c2','BULWARK',140);log(`Bulwark keeps ${carry} block for this turn.`)}}S.turns++;drawHand();S.busy=false;
   {const g=stats();if(g.dodge)S.dodge=Math.max(S.dodge,g.dodge);if(g.mregen){const m=Math.min(g.mregen,S.maxMana-S.mana);if(m>0){S.mana+=m;Stage.float('player',`+${m}`,'#6cb2ff','MANA',120)}}}
   if(S.regen&&S.regen.t>0){const h=Math.min(S.regen.amt,S.maxHp-S.hp);if(h>0)S.hp+=h;Stage.float('player',`+${h}`,'#ffd36b','SANCTUM',150);if(--S.regen.t<=0)S.regen=null}
   render();
@@ -3342,6 +3553,7 @@ function playerStatusHTML(){
   const s=[`<span class="chip st" style="--tc:var(--guard)">${icon('block')}Block ${S.block}</span>`];
   if(S.poison)s.push(`<span class="chip st" style="--tc:#9be05a">Poison ${S.poison.d} · ${S.poison.t}t</span>`);
   if(S.pbleed)s.push(`<span class="chip st" style="--tc:#ff5a64">Bleeding ${S.pbleed.d} · ${S.pbleed.t}t</span>`);
+  {const D=(c,t)=>s.push(`<span class="chip st" style="--tc:${c}">${t}</span>`);if(S.bulwark)D('#59c9c2','Bulwark');if(S.aegis&&S.barrier>0)D('#9fe2ff','Aegis Dome');if(S.retri&&S.barrier>0)D('#ffd36b',`Retribution ${S.retri.p}`);if(S.veilT>0)D('#b18bff',`Phase Veil ${S.veilT}t`);if(S.mirage>0)D('#9fe2ff',`Mirage ×${S.mirage}`);if(S.mirror)D('#e8f6ff','Mirror Guard');if(S.deflect>0)D('#fff6c0',`Deflect ×${S.deflect}`);if(S.venge)D('#ff5a64','Vengeance');if(S.shadowStep)D('#b18bff','Shadow Step');if(S.windDance)D('#bff5d8','Wind Dancer');if(S.tumble)D('#bff5d8',`Tumble ${S.tumble.ch}%`);if(S.spikes)D('#c8ccd6','Spike Wall')}
   if(S.barrier)s.push(`<span class="chip st" style="--tc:${S.thorns?typeColor(S.thorns):'var(--guard)'}">${icon('shield')}Barrier ${S.barrier} · ${S.barrierT}t</span>`);
   if(S.dodge)s.push(`<span class="chip st" style="--tc:var(--wind)">${icon('dodge')}Dodge ${S.dodge}%</span>`);
   if(S.stoneSkin)s.push(`<span class="chip st" style="--tc:var(--earth)">${icon('earth')}Stone skin: immune</span>`);

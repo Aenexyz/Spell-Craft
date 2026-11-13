@@ -149,6 +149,7 @@ function fuse(c1,c2){
       if(r.key==='counter+dodge')r.counter.p=Math.round(r.counter.p*1.5);
       if(r.key==='parry+shield')r.parry.p=Math.round(r.parry.p*1.5);
       if(r.key==='block+shield'){r.block=10;r.barrier=(effLv(a)+effLv(b))*2;if(effLv(a)+effLv(b)>=6)r.manaGuard=.5}}
+    if(ESPELL[r.key]&&ESPELL[r.key].def){const sp=ESPELL[r.key],u=effLv(a)+effLv(b);r.block=0;r.barrier=0;r.parry=null;r.dodge=0;r.counter=null;r.heal=0;r.manaGuard=0;r.name=sp.name;r.spell=r.key;sp.build(r,u)}
   }
   r.charge=[...new Set([a,b].filter(c=>CARDS[c.key].cat==='elem').map(c=>c.key))];
   r.weapon=r.anim==='shield'?'none':(r.anim==='kick'||(r.anim==='punch'&&r.phys.includes('punch')&&!r.phys.includes('stab')))?'back':'hand';
@@ -264,7 +265,7 @@ function startBattle(n){
   S.foes.forEach(F=>{const dd=ENEMIES[F.id];F.abil=(dd.abil||[]).slice();if(F.elite&&L.revive&&F.slot===0)F.abil.push('revive');if(F.abil.includes('ward'))F.ward=true;if(F.abil.includes('revive'))F.undying=true});S.poison=null;S.pbleed=null;
   S.enemy=S.foes[0];S.tgt=S.enemy;
   S.draw=shuffle(battleDeck().map(c=>c.id));S.hand=[];S.disc=[];S.sel=[];
-  S.block=stats().def;S.barrier=0;S.barrierT=0;S.manaGuard=0;S.manaGuardT=0;S.iceAge=0;S.stoneSkin=false;Stage.iceFloor(false);S.thorns=null;S.dodge=0;S.parry=null;S.counter=null;S.guarding=false;S.rainNext=0;S.embrace=false;S.reflect=false;S.efield=false;S.busy=false;
+  clearDefense(true);S.block=stats().def;S.barrier=0;S.barrierT=0;S.manaGuard=0;S.manaGuardT=0;S.iceAge=0;S.stoneSkin=false;Stage.iceFloor(false);S.thorns=null;S.dodge=0;S.parry=null;S.counter=null;S.guarding=false;S.rainNext=0;S.embrace=false;S.reflect=false;S.efield=false;S.busy=false;
   {const g=stats();S.struck=false;S.combos=0;if(g.barrierStart){S.barrier=g.barrierStart;S.barrierT=3}if(g.dodge)S.dodge=g.dodge}
   S.log=[n.swarm?`A ${d.swarmName.toLowerCase()} surrounds you: ${ids.length} ${d.name}s, each attacking on its own. Tap one to target it.`:duo?`An elite pair blocks the road: ${ids.map(i=>ENEMIES[i].name).join(' and ')}. Tap a monster to target it.`:`${elite?'An elite ':''}${d.name} blocks the road.`];
   drawHand();S.phase='battle';render();
@@ -431,22 +432,36 @@ function hurtPlayer(raw,delay,pierce){
   if(S.embrace){Stage.float('player','IMMUNE','#9fe2ff','FROZEN',delay);return 0}
   if(S.stoneSkin){Stage.float('player','IMMUNE','#e0c08a','STONE SKIN',delay);setTimeout(()=>Stage.stoneFx&&Stage.stoneFx(),delay||0);return 0}let x=raw;if(E.chill)x=Math.round(x*.6);if(E.weak>0)x=Math.round(x*.7);if(iceAgeHits(E))x=Math.round(x*.5);
   if(E.blind&&Math.random()*100<E.blind){Stage.float('player','MISS','#cfd6dd','BLINDED',delay);return 0}
+  if(S.mirage>0){S.mirage--;Stage.float('player','MIRAGE','#9fe2ff','AN IMAGE TAKES IT',delay);Stage.defFx&&Stage.defFx('mirageHit',delay);return 0}
+  if(S.mirror&&x>0){const mx=Math.round(x*S.mirror);S.mirror=0;Stage.float('player','MIRRORED','#e8f6ff','',delay);Stage.defFx&&Stage.defFx('mirrorHit',delay);trueHit(E,mx,'MIRROR','#e8f6ff',(delay||0)+260);return 0}
+  if(S.deflect>0){S.deflect--;Stage.float('player','DEFLECT','#fff6c0','',delay);Stage.defFx&&Stage.defFx('deflectHit',delay);dealToEnemy(S.deflectP||4,'slash','DEFLECT',(delay||0)+180);return 0}
+  if(S.shadowStep){const ss=S.shadowStep;S.shadowStep=null;if(Math.random()<.6){Stage.float('player','SHADOW STEP','#b18bff','',delay);Stage.defFx&&Stage.defFx('shadowHit',delay);dealToEnemy(ss.p,'pierce','RIPOSTE',(delay||0)+320);E.vuln=Math.max(E.vuln||0,25);E.vulnT=2;setTimeout(()=>Stage.float('enemy','EXPOSED','#b18bff','+25% DMG TAKEN',0),(delay||0)+520);return 0}}
+  if(S.windDance&&Math.random()*100<S.windDance.ch){const wd=S.windDance;Stage.float('player','DODGE','#bff5d8','WIND DANCE',delay);Stage.defFx&&Stage.defFx('danceHit',delay);dealToEnemy(wd.p,'slash','WIND CUT',(delay||0)+260);const mg=Math.min(6,S.maxMana-S.mana);if(mg>0){S.mana+=mg;Stage.float('player',`+${mg}`,'#6cb2ff','MANA',(delay||0)+380)}return 0}
+  if(S.tumble){if(Math.random()*100<S.tumble.ch){Stage.float('player','DODGE','#bff5d8','TUMBLE',delay);Stage.dodgeFx(delay);return 0}S.tumble.ch=Math.min(95,S.tumble.ch+20)}
   if(S.lava)dealToEnemy(S.lava,'fire','LAVA',(delay||0)+200);
   if(S.reflect&&x>0&&E.hp>0){E.hp-=x;Stage.float('enemy',x,'#bfe9ff','REFLECT',(delay||0)+180);Stage.reflectFx(delay||0)}
   if(S.dodge>0&&Math.random()*100<S.dodge){Stage.float('player','DODGE','#bff5d8','',delay);Stage.dodgeFx(delay);counterStrike(delay);return 0}
-  if(S.parry){const pr=S.parry;S.parry=null;x-=pr.full?x:Math.ceil(x/2);dealToEnemy(pr.p,pr.t,'PARRY',(delay||0)+120);Stage.parryFx(delay)}
+  let ironP=0;
+  if(S.parry){const pr=S.parry;S.parry=null;x-=pr.full?x:Math.ceil(x/2);if(pr.iron)ironP=pr.p;else if(pr.storm){Stage.defFx&&Stage.defFx('stormHit',delay);for(let k=0;k<3;k++)dealToEnemy(pr.storm,'slash','BLADE',(delay||0)+200+k*170)}else dealToEnemy(pr.p,pr.t,'PARRY',(delay||0)+120);Stage.parryFx(delay)}
   let ab=0;
   if(S.barrier>0&&x>0){const b=Math.min(S.barrier,x);S.barrier-=b;x-=b;ab+=b;
     if(S.thorns&&b>0){const t=S.thorns;dealToEnemy(4,t,'THORNS',(delay||0)+160);applyElem(t,E,ENEMIES[E.id])}
-    if(S.barrier<=0){S.barrier=0;S.thorns=null}}
-  if(S.block>0&&x>0&&!pierce){const b=Math.min(S.block,x);S.block-=b;x-=b;ab+=b}
+    if(S.barrier<=0){S.barrier=0;S.thorns=null;S.aegis=false;if(S.retri)retriBlast(delay)}}
+  if(S.block>0&&x>0&&!pierce){const b=Math.min(S.block,x);S.block-=b;x-=b;ab+=b;if(S.spikes&&b>0){const sp=Math.max(1,Math.round(b*S.spikes));Stage.defFx&&Stage.defFx('spikeHit',delay);dealToEnemy(sp,'pierce','SPIKES',(delay||0)+160)}}
+  if(ironP){Stage.defFx&&Stage.defFx('ironHit',delay);dealToEnemy(ironP+ab,'blunt','IRON RIPOSTE',(delay||0)+220)}
+  if(S.tumble&&x>0){const tb=S.tumble.b;S.block+=tb;setTimeout(()=>Stage.float('player',`+${tb}`,'#59c9c2','TUMBLE GUARD',0),(delay||0)+260)}
   if(S.manaGuard&&ab>0){const mg=Math.min(Math.max(1,Math.round(ab*S.manaGuard)),S.maxMana-S.mana);if(mg>0){S.mana+=mg;Stage.float('player',`+${mg}`,'#6cb2ff','MANA',(delay||0)+200)}}
   S.hp-=x;
+  if(S.venge&&E.hp>0){const vd=S.venge.p+Math.round(x/2);Stage.defFx&&Stage.defFx('vengeHit',delay);dealToEnemy(vd,'slash','VENGEANCE',(delay||0)+240)}
   setTimeout(()=>Stage.hitPlayer(!x),delay||0);
   Stage.float('player',x?`-${x}`:'0',x?'#ff6b5e':'#59c9c2',ab?`${ab} BLOCKED`:'',delay);
   counterStrike(delay);
   return x;
 }
+function clearDefense(full){S.mirage=0;S.mirror=0;S.deflect=0;S.venge=null;S.shadowStep=null;S.windDance=null;S.tumble=null;S.spikes=0;if(full){S.bulwark=false;S.aegis=false;S.retri=null;S.veilT=0}}
+function trueHit(E,d,label,col,delay){if(!E||E.hp<=0||d<=0)return;E.hp-=d;Stage.withFoe(E.slot||0,()=>{Stage.float('enemy',d,col,label,delay);setTimeout(()=>Stage.hitEnemy(['light']),delay||0)})}
+function retriBlast(delay){const r=S.retri;S.retri=null;if(!r)return;const E=S.enemy;Stage.defFx&&Stage.defFx('retriBlast',delay);log(`Your Retribution Aegis shatters and detonates for ${r.p}!`);
+  aliveFoes().forEach((F,i)=>{if(F===E)trueHit(E,r.p,'RETRIBUTION','#ffd36b',(delay||0)+260);else sideHit(F,r.p,'#ffd36b','RETRIBUTION',(delay||0)+300+i*60,[])})}
 function counterStrike(delay){if(S.counter){const c=S.counter;S.counter=null;dealToEnemy(c.p,c.t,'COUNTER',(delay||0)+220)}}
 function enemyTurn(){S.turnQ=aliveFoes();S.firstFoe=true;nextFoe()}
 function nextFoe(){
@@ -505,12 +520,15 @@ function finishEnemyTurn(){
   const tg=S.tgt&&S.tgt.hp>0?S.tgt:aliveFoes()[0];if(tg)setTarget(tg);
   S.lava=null;
   S.dodge=0;S.parry=null;S.counter=null;S.guarding=false;S.guardEls=[];if(S.embrace){S.embrace=false;Stage.unembrace()}S.reflect=false;S.efield=false;
-  if(S.manaGuardT>0&&--S.manaGuardT===0)S.manaGuard=0;if(S.iceAge>0&&--S.iceAge===0)Stage.iceFloor(false);S.stoneSkin=false;if(S.barrier>0){S.barrierT--;if(S.barrierT<=0){S.barrier=0;S.thorns=null}}
+  clearDefense(false);
+  if(S.veilT>0&&--S.veilT>0)S.dodge=Math.max(S.dodge||0,S.veil||25);
+  if(S.manaGuardT>0&&--S.manaGuardT===0)S.manaGuard=0;if(S.iceAge>0&&--S.iceAge===0)Stage.iceFloor(false);S.stoneSkin=false;if(S.barrier>0){S.barrierT--;if(S.barrierT<=0){S.barrier=0;S.thorns=null;S.aegis=false;S.retri=null}}
+  if(S.aegis&&S.barrier>0&&(S.pbleed||S.poison)){Stage.float('player','WARDED','#9fe2ff','AEGIS DOME',100);if(S.pbleed&&--S.pbleed.t<=0)S.pbleed=null;if(S.poison&&--S.poison.t<=0)S.poison=null}
   if(S.pbleed&&S.hp>0){const p=S.pbleed;S.hp-=p.d;Stage.float('player',`-${p.d}`,'#ff5a64','BLEED',260);Stage.playerBurst('#c0303a');log(`Bleeding deals ${p.d} to you.`);if(--p.t<=0)S.pbleed=null}
   if(S.poison&&S.hp>0){const p=S.poison;S.hp-=p.d;Stage.float('player',`-${p.d}`,'#9be05a','POISON',100);Stage.poisonFx&&Stage.poisonFx();log(`Poison deals ${p.d} to you.`);if(--p.t<=0)S.poison=null}
   if(S.hp<=0&&tryRevive()){}
   if(S.hp<=0){S.hp=0;Stage.playerDie();render();setTimeout(()=>{S.phase='over';render()},1100);return}
-  S.block=stats().def;S.turns++;drawHand();S.busy=false;
+  {const carry=S.bulwark?Math.floor((S.block||0)/2):0;S.bulwark=false;S.block=stats().def+carry;if(carry){Stage.float('player',`+${carry}`,'#59c9c2','BULWARK',140);log(`Bulwark keeps ${carry} block for this turn.`)}}S.turns++;drawHand();S.busy=false;
   {const g=stats();if(g.dodge)S.dodge=Math.max(S.dodge,g.dodge);if(g.mregen){const m=Math.min(g.mregen,S.maxMana-S.mana);if(m>0){S.mana+=m;Stage.float('player',`+${m}`,'#6cb2ff','MANA',120)}}}
   if(S.regen&&S.regen.t>0){const h=Math.min(S.regen.amt,S.maxHp-S.hp);if(h>0)S.hp+=h;Stage.float('player',`+${h}`,'#ffd36b','SANCTUM',150);if(--S.regen.t<=0)S.regen=null}
   render();
@@ -665,6 +683,7 @@ function playerStatusHTML(){
   const s=[`<span class="chip st" style="--tc:var(--guard)">${icon('block')}Block ${S.block}</span>`];
   if(S.poison)s.push(`<span class="chip st" style="--tc:#9be05a">Poison ${S.poison.d} · ${S.poison.t}t</span>`);
   if(S.pbleed)s.push(`<span class="chip st" style="--tc:#ff5a64">Bleeding ${S.pbleed.d} · ${S.pbleed.t}t</span>`);
+  {const D=(c,t)=>s.push(`<span class="chip st" style="--tc:${c}">${t}</span>`);if(S.bulwark)D('#59c9c2','Bulwark');if(S.aegis&&S.barrier>0)D('#9fe2ff','Aegis Dome');if(S.retri&&S.barrier>0)D('#ffd36b',`Retribution ${S.retri.p}`);if(S.veilT>0)D('#b18bff',`Phase Veil ${S.veilT}t`);if(S.mirage>0)D('#9fe2ff',`Mirage ×${S.mirage}`);if(S.mirror)D('#e8f6ff','Mirror Guard');if(S.deflect>0)D('#fff6c0',`Deflect ×${S.deflect}`);if(S.venge)D('#ff5a64','Vengeance');if(S.shadowStep)D('#b18bff','Shadow Step');if(S.windDance)D('#bff5d8','Wind Dancer');if(S.tumble)D('#bff5d8',`Tumble ${S.tumble.ch}%`);if(S.spikes)D('#c8ccd6','Spike Wall')}
   if(S.barrier)s.push(`<span class="chip st" style="--tc:${S.thorns?typeColor(S.thorns):'var(--guard)'}">${icon('shield')}Barrier ${S.barrier} · ${S.barrierT}t</span>`);
   if(S.dodge)s.push(`<span class="chip st" style="--tc:var(--wind)">${icon('dodge')}Dodge ${S.dodge}%</span>`);
   if(S.stoneSkin)s.push(`<span class="chip st" style="--tc:var(--earth)">${icon('earth')}Stone skin: immune</span>`);
