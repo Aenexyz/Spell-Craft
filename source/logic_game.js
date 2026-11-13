@@ -151,6 +151,8 @@ function fuse(c1,c2){
       if(r.key==='block+shield'){r.block=10;r.barrier=(effLv(a)+effLv(b))*2;if(effLv(a)+effLv(b)>=6)r.manaGuard=.5}}
     if(ESPELL[r.key]&&ESPELL[r.key].def){const sp=ESPELL[r.key],u=effLv(a)+effLv(b);r.block=0;r.barrier=0;r.parry=null;r.dodge=0;r.counter=null;r.heal=0;r.manaGuard=0;r.name=sp.name;r.spell=r.key;sp.build(r,u)}
   }
+  if(ESPELL[r.key]&&ESPELL[r.key].gen&&!(r.key==='punch+punch')){const sp=ESPELL[r.key],u=effLv(a)+effLv(b);Object.assign(r,{block:0,barrier:0,parry:null,dodge:0,counter:null,heal:0,lifesteal:0,drain:false,stun:false,thorns:null,blind:0,dodgeAdd:0,holyRain:0,rainFlat:false,reflect:false,manaGuard:0,embrace:0,immuneChance:0,efield:false,freeze:false,mud:0,lstrike:null,stonePunch:0,gatling:0});r.name=sp.name;r.spell=r.key;sp.build(r,u);
+    const pk=[a,b].find(c=>CARDS[c.key].cat==='phys');r.anim=pk?(pk.key==='shieldbash'?'shield':pk.key==='kick'?'kick':pk.key==='slash'?'slash':'punch'):'punch'}
   r.charge=[...new Set([a,b].filter(c=>CARDS[c.key].cat==='elem').map(c=>c.key))];
   r.weapon=r.anim==='shield'?'none':(r.anim==='kick'||(r.anim==='punch'&&r.phys.includes('punch')&&!r.phys.includes('stab')))?'back':'hand';
   if(r.dmg.length===0&&r.kind!=='support')r.kind='support';
@@ -432,6 +434,7 @@ function hurtPlayer(raw,delay,pierce){
   if(S.embrace){Stage.float('player','IMMUNE','#9fe2ff','FROZEN',delay);return 0}
   if(S.stoneSkin){Stage.float('player','IMMUNE','#e0c08a','STONE SKIN',delay);setTimeout(()=>Stage.stoneFx&&Stage.stoneFx(),delay||0);return 0}let x=raw;if(E.chill)x=Math.round(x*.6);if(E.weak>0)x=Math.round(x*.7);if(iceAgeHits(E))x=Math.round(x*.5);
   if(E.blind&&Math.random()*100<E.blind){Stage.float('player','MISS','#cfd6dd','BLINDED',delay);return 0}
+  if(S.rider)applyRider(E,delay);
   if(S.mirage>0){S.mirage--;Stage.float('player','MIRAGE','#9fe2ff','AN IMAGE TAKES IT',delay);Stage.defFx&&Stage.defFx('mirageHit',delay);return 0}
   if(S.mirror&&x>0){const mx=Math.round(x*S.mirror);S.mirror=0;Stage.float('player','MIRRORED','#e8f6ff','',delay);Stage.defFx&&Stage.defFx('mirrorHit',delay);trueHit(E,mx,'MIRROR','#e8f6ff',(delay||0)+260);return 0}
   if(S.deflect>0){S.deflect--;Stage.float('player','DEFLECT','#fff6c0','',delay);Stage.defFx&&Stage.defFx('deflectHit',delay);dealToEnemy(S.deflectP||4,'slash','DEFLECT',(delay||0)+180);return 0}
@@ -458,7 +461,7 @@ function hurtPlayer(raw,delay,pierce){
   counterStrike(delay);
   return x;
 }
-function clearDefense(full){S.mirage=0;S.mirror=0;S.deflect=0;S.venge=null;S.shadowStep=null;S.windDance=null;S.tumble=null;S.spikes=0;if(full){S.bulwark=false;S.aegis=false;S.retri=null;S.veilT=0}}
+function clearDefense(full){S.rider=null;S.mirage=0;S.mirror=0;S.deflect=0;S.venge=null;S.shadowStep=null;S.windDance=null;S.tumble=null;S.spikes=0;if(full){S.bulwark=false;S.aegis=false;S.retri=null;S.veilT=0}}
 function trueHit(E,d,label,col,delay){if(!E||E.hp<=0||d<=0)return;E.hp-=d;Stage.withFoe(E.slot||0,()=>{Stage.float('enemy',d,col,label,delay);setTimeout(()=>Stage.hitEnemy(['light']),delay||0)})}
 function retriBlast(delay){const r=S.retri;S.retri=null;if(!r)return;const E=S.enemy;Stage.defFx&&Stage.defFx('retriBlast',delay);log(`Your Retribution Aegis shatters and detonates for ${r.p}!`);
   aliveFoes().forEach((F,i)=>{if(F===E)trueHit(E,r.p,'RETRIBUTION','#ffd36b',(delay||0)+260);else sideHit(F,r.p,'#ffd36b','RETRIBUTION',(delay||0)+300+i*60,[])})}

@@ -950,6 +950,216 @@ Object.assign(ESPELL,{
   apply:(R,E,n)=>{S.windDance={ch:45,p:R.danceP};n.push('<span class="w">dancing on the wind</span>')}}
 });
 
+/* ===== The remaining 140 combinations: each gets its own name, effect and animation =====
+   Spec tokens (u = sum of both card levels):
+   dN total damage N*u · hN hits · mixN element share % · pierce · aoe (hits every enemy) · splashN (% to others)
+   burnN soakN chillN frzN(% freeze) stunN(%) curseN blindN(%) weakN rootN bleedN(turns) vulnN(%) shock sapN purge
+   bvs:cond:N (+N% vs burning/soaked/chilled/cursed/stunned/bleeding/hurt) execN (+N% under 30% HP)
+   lsN (% lifesteal) healN (N*u) regenN (N*u for 3 turns) manaN blockN barN parN ctrN (N*u) dodgeN(%) cleanse thorns rideN */
+const GEN_SPEC={
+ // ---- Physical + Element
+ 'slash+earth':['Fault Line','Splits the ground open in one heavy downward cut','d6 pierce root2'],
+ 'slash+wind':['Gale Rend','Whips up five razor gusts in a single flurry','d4 h5 dodge20'],
+ 'slash+light':['Dawnbreaker','Cuts a sunrise across it in two radiant arcs','d5 h2 heal1 bvs:curse:50'],
+ 'stab+fire':['Magma Lance','Drives a white-hot lance straight through it','d6 burn2 vuln20'],
+ 'stab+water':['Tidal Pierce','Thrusts twice on the crest of a water jet','d5 h2 soak2 pierce mana8'],
+ 'stab+ice':['Icicle Needle','Skewers it with a needle of solid ice','d6 frz40 chill1'],
+ 'stab+earth':['Stalagmite Thrust','Spears it as a stone spike bursts from the ground','d6 pierce weak2'],
+ 'stab+wind':['Zephyr Pierce','Fires three wind-driven thrusts that pass right through','d5 h3 splash40'],
+ 'stab+dark':['Soul Skewer','Pins its soul on a blade of night','d6 ls40 exec50'],
+ 'stab+light':['Radiant Spear','Thrusts a spear of pure light into it','d6 blind40 regen1'],
+ 'kick+fire':['Phoenix Kick','Leaps with a flaming kick that bursts on impact','d6 burn2 splash40'],
+ 'kick+water':['Breaker Wave Kick','Rides a crashing wave into two heavy kicks','d5 h2 soak2 sap2'],
+ 'kick+ice':['Avalanche Kick','Drops from above in a frozen axe kick','d6 frz25 weak1'],
+ 'kick+earth':['Landslide Stomp','Stomps so hard the ground heaves under every enemy','d6 aoe stun20'],
+ 'kick+wind':['Tornado Kick','Spins into four cyclone kicks','d4 h4 dodge25'],
+ 'kick+dark':['Eclipse Kick','Darkens the sky with a moon-shaped kick','d6 curse2 blind30'],
+ 'kick+light':['Comet Kick','Falls like a shooting star, kick first','d7 stun20 bvs:stun:50'],
+ 'punch+fire':['Inferno Fist','Unloads three exploding fire punches','d6 h3 burn2'],
+ 'punch+water':['Torrent Jab','Jabs four times behind a jet of water','d5 h4 soak1 mana6'],
+ 'punch+ice':['Frost Knuckle','Lands a freezing haymaker','d6 chill2 frz20'],
+ 'punch+wind':['Vacuum Fist','Punches the air so hard a wind blast hits it','d6 pierce dodge15'],
+ 'punch+dark':['Abyss Hammer','Brings down a fist wrapped in the abyss','d7 curse1 vuln15'],
+ 'punch+light':['Holy Smite','Strikes with a glowing fist that burns away ailments','d6 heal1 cleanse'],
+ 'shieldbash+fire':['Blazing Rampart','Charges behind a shield of flame','d5 burn2 block2'],
+ 'shieldbash+water':['Tsunami Charge','Charges on a wave that strips its guard','d5 soak2 purge block1'],
+ 'shieldbash+ice':['Frostwall Ram','Rams it with a shield coated in ice','d5 frz35 block2'],
+ 'shieldbash+earth':['Tectonic Bash','Slams down a quake-shaking shield blow','d6 stun35 block2'],
+ 'shieldbash+wind':['Cyclone Ram','Spins into it inside a wall of wind','d5 dodge30 block1'],
+ 'shieldbash+lightning':['Thunder Charge','Charges in a crackling storm of sparks','d6 stun40 shock'],
+ 'shieldbash+dark':['Gloom Bulwark','Crushes it with a shield of living shadow','d5 curse2 bar2'],
+ 'shieldbash+light':['Aegis Smite','Smites it with a halo-crowned shield','d5 bar2 heal1'],
+ 'shieldthrow+fire':['Ember Disc','Hurls a burning shield that bounces on','d5 h2 burn2 splash60'],
+ 'shieldthrow+water':['Ricochet Tide','Skips a shield across a wave three times','d4 h3 soak2 splash40'],
+ 'shieldthrow+ice':['Frost Boomerang','Throws a frozen shield that curves back twice','d5 h2 chill1 frz20'],
+ 'shieldthrow+earth':['Boulder Disc','Launches a shield wrapped in rock','d7 pierce stun25'],
+ 'shieldthrow+wind':['Whirlwind Disc','Sends a shield spinning on a whirlwind','d4 h4 splash50 dodge10'],
+ 'shieldthrow+lightning':['Storm Disc','Throws a shield that chains lightning','d5 h2 shock stun25 splash50'],
+ 'shieldthrow+dark':['Void Discus','Hurls a shield that drinks its life','d5 h2 curse2 ls25'],
+ 'shieldthrow+light':['Halo Disc','Throws a shield ringed with holy light','d5 h2 blind30 heal1'],
+ // ---- Physical + Defense
+ 'slash+block':['Guard Break Slash','Shatters its guard with a slash, then braces','d3 block3 purge'],
+ 'slash+shield':['Warding Arc','Cuts an arc that hangs in the air as a ward','d3 bar3 bleed2'],
+ 'slash+parry':['Return Edge','Slashes, then readies the blade to turn the next hit','d3 par4'],
+ 'slash+dodge':['Wind Step Cut','Cuts twice while stepping out of reach','d3 h2 dodge40'],
+ 'slash+counter':['Retribution Cut','Marks it with a cut and waits to answer','d3 ctr4 bleed2'],
+ 'stab+block':['Phalanx','Thrusts from behind a locked shield','d3 block3 pierce'],
+ 'stab+shield':['Shield Wall Thrust','Finds the gap in its armor from behind a barrier','d3 bar3 vuln15'],
+ 'stab+parry':["Fencer's Riposte",'Feints, then waits to riposte','d3 par3 exec40'],
+ 'stab+dodge':['Feint Thrust','Feints one way and thrusts the other','d4 dodge35 vuln20'],
+ 'stab+counter':['Spiked Guard','Thrusts, then plants the blade point-out','d3 ctr4 weak1'],
+ 'kick+block':['Iron Stance Kick','Kicks from a rooted, armored stance','d3 block4 stun15'],
+ 'kick+shield':['Barrier Kick','Kicks a barrier up around yourself','d3 bar3 sap1'],
+ 'kick+parry':['Deflecting Sweep','Sweeps its legs and stays low to deflect','d3 par3 weak1'],
+ 'kick+dodge':['Backflip Kick','Kicks off it into a backflip','d3 dodge50'],
+ 'kick+counter':['Coiled Spring','Kicks, then coils to spring back','d3 ctr5'],
+ 'punch+block':['Guarded Jab','Two quick jabs behind a high guard','d3 h2 block3'],
+ 'punch+shield':['Bastion Punch','Punches out a barrier of force','d3 bar3 mana5'],
+ 'punch+parry':['Counter Hook','Slips inside and hooks, ready for more','d3 par4 stun15'],
+ 'punch+dodge':['Bob and Weave','Weaves through three punches','d3 h3 dodge35'],
+ 'punch+counter':['Cross Counter','Punches and waits to cross-counter','d3 ctr5 vuln10'],
+ 'shieldbash+block':['Turtle Charge','Charges in fully shelled','d3 block5'],
+ 'shieldbash+shield':['Fortress Ram','Rams it behind a shimmering barrier','d3 bar4 stun15'],
+ 'shieldbash+parry':['Repel','Shoves it back and turns the next hit aside','d3 par3 sap2'],
+ 'shieldbash+dodge':['Shoulder Roll','Bashes and rolls clear','d3 dodge40 block2'],
+ 'shieldbash+counter':['Spiked Shield','Bashes with a shield that bristles with spikes','d3 ctr4 block2'],
+ 'shieldthrow+block':['Boomerang Guard','Throws the shield and catches it back in guard','d3 block3 splash40'],
+ 'shieldthrow+shield':['Orbiting Aegis','Sends the shield orbiting around you','d3 bar3 splash30'],
+ 'shieldthrow+parry':['Rebound Deflect','Bounces the shield twice off it, then deflects','d3 h2 par3'],
+ 'shieldthrow+dodge':['Distraction Throw','Throws to distract it, then slips away','d3 dodge40 blind25'],
+ 'shieldthrow+counter':['Returning Rebuke','The shield hits twice and returns ready to punish','d3 h2 ctr4'],
+ 'arrowshot+block':['Covering Fire','Fires from cover','d3 block3 weak1'],
+ 'arrowshot+shield':['Warded Volley','Looses three arrows inside a ward','d3 h3 bar2'],
+ 'arrowshot+parry':['Pinning Shot','Pins its feet, then readies a parry','d3 par3 root2'],
+ 'arrowshot+dodge':['Retreating Shot','Shoots while leaping backward','d4 dodge40'],
+ 'arrowshot+counter':['Overwatch','Shoots, then keeps an arrow nocked to answer','d3 ctr5 vuln10'],
+ 'spearthrow+block':['Pike Wall','Throws, then plants a wall of pikes','d3 block4 pierce'],
+ 'spearthrow+shield':['Javelin Ward','Hurls a spear that leaves a ward in its wake','d3 bar3 bleed2'],
+ 'spearthrow+parry':['Vaulting Deflect','Vaults over its guard, ready to deflect','d3 par3 dodge15'],
+ 'spearthrow+dodge':['Pole Vault Strike','Vaults high and strikes from above','d4 dodge45'],
+ 'spearthrow+counter':['Impaling Guard','Throws, then waits to impale whatever comes','d3 ctr5 bleed2'],
+ // ---- Element + Defense
+ 'fire+block':['Flame Wall','Raises a wall of fire','block4 ride2'],
+ 'fire+shield':['Ember Mantle','Wraps you in a cloak of embers','bar3 thorns ride1'],
+ 'fire+parry':['Searing Riposte','Readies a red-hot parry','par4 ride2'],
+ 'fire+dodge':['Flicker Flame','Flickers away in a puff of flame','dodge40 d2 burn2'],
+ 'fire+counter':['Backdraft','Holds back a fire that explodes when struck','ctr5 ride1'],
+ 'water+block':['Tidewall','Raises a wall of water that feeds your mana','block4 mana8'],
+ 'water+shield':['Bubble Shield','Wraps you in a cleansing bubble','bar5 cleanse'],
+ 'water+parry':['Undertow','Turns the next hit aside on a current','par3 ride2 sap2'],
+ 'water+dodge':['Flowing Water','Flows out of reach like water','dodge45 regen1'],
+ 'water+counter':['Riptide Rebuke','Pulls attackers into a riptide','ctr4 ride2'],
+ 'ice+shield':['Glacier Shell','Encases you in a shell of glacier ice','bar4 ride1'],
+ 'ice+parry':['Frozen Riposte','Readies a parry that freezes','par3 ride2'],
+ 'ice+dodge':['Frost Glide','Glides away on a sheet of ice','dodge40 d2 chill1'],
+ 'ice+counter':['Icicle Retort','Grows icicles that answer any blow','ctr5 ride1'],
+ 'earth+shield':['Stone Wall','Raises a wall of solid stone','bar6'],
+ 'earth+parry':['Granite Deflect','Deflects with forearms turned to granite','par4 block2'],
+ 'earth+dodge':['Burrow','Sinks into the ground out of reach','dodge50 block2'],
+ 'earth+counter':['Rockspike Retort','Rock spikes punish anything that comes close','ctr5 ride2'],
+ 'wind+block':['Gale Barrier','Raises a howling wall of wind','block3 dodge20'],
+ 'wind+shield':['Wind Wall','Surrounds you with a spinning wall of air','bar3 dodge25'],
+ 'wind+parry':['Gust Deflect','Deflects on a gust that refreshes you','par3 mana6'],
+ 'wind+dodge':['Blink','Vanishes on the wind','dodge100 mana5'],
+ 'wind+counter':['Tempest Retort','A tempest answers anything that strikes you','ctr3 ride2'],
+ 'lightning+shield':['Static Shell','Charges a crackling static barrier','bar3 ride25'],
+ 'lightning+parry':['Thunder Riposte','Readies a parry that cracks like thunder','par4 ride20'],
+ 'lightning+dodge':['Flash Step','Flashes away in a bolt, zapping it','dodge45 d3 stun20'],
+ 'lightning+counter':['Lightning Rod','Draws lightning onto anything that hits you','ctr6 ride15'],
+ 'dark+block':['Shadow Ward','Raises a ward of hungry shadow','block4 ride2'],
+ 'dark+shield':['Umbral Veil','Hides you behind a veil of night','bar3 dodge15'],
+ 'dark+parry':['Soul Siphon','Parries and siphons its strength','par3 heal1'],
+ 'dark+dodge':['Phantom Step','Steps through it like a phantom','dodge40 curse2'],
+ 'dark+counter':['Grudge','Bears a grudge against anything that hits you','ctr5 ride2'],
+ 'light+block':['Sacred Ward','Raises a ward of holy light','block4 heal1'],
+ 'light+shield':['Halo Barrier','Crowns you with a healing halo','bar3 regen1'],
+ 'light+parry':['Blessed Riposte','Readies a parry that heals you','par3 ride2'],
+ 'light+dodge':['Radiant Step','Steps away in a blinding flash','dodge40 blind40'],
+ 'light+counter':['Divine Retribution','Purifies you and waits to strike back','ctr5 cleanse'],
+ // ---- Physical + Heal
+ 'slash+heal':['Blood Harvest','Two draining cuts that feed you','d5 h2 ls50'],
+ 'stab+heal':['Leech Thrust','A thrust that drinks and keeps healing','d5 ls40 regen1'],
+ 'kick+heal':['Rejuvenating Kick','A kick that kicks your heart back into rhythm','d5 heal1 stun10'],
+ 'punch+heal':['Second Breath Punch','Two punches that restore your breath','d5 h2 mana8 ls30'],
+ 'shieldbash+heal':['Sanctified Bash','A blessed bash that heals and guards','d4 block2 heal1'],
+ 'shieldthrow+heal':['Mending Disc','A disc that bounces back carrying life','d4 h2 ls40 splash30'],
+ 'arrowshot+heal':['Lifeline Arrow','An arrow that trails healing light back to you','d5 regen1 ls30'],
+ 'spearthrow+heal':['Blood Lance','A lance that drains the dying dry','d6 ls50 exec30'],
+ // ---- Element + Heal, Defense + Heal, Heal + Heal
+ 'fire+heal':['Phoenix Ember','Rises from a healing ember that sears it','heal2 d2 burn2'],
+ 'earth+heal':['Regrowth','Grows a garden of healing roots','regen2 block2'],
+ 'wind+heal':['Breath of Wind','A fresh breeze that lifts you','heal1 dodge30 mana6'],
+ 'lightning+heal':['Jolt','Shocks your heart and mana awake','heal1 mana15 d2 stun20'],
+ 'light+heal':['Holy Light','Bathes you in holy light','heal5 cleanse'],
+ 'block+heal':['Second Wind','Guards up and catches your breath','block3 heal1'],
+ 'shield+heal':['Sanctuary','Builds a sanctuary that keeps healing','bar3 regen1'],
+ 'parry+heal':['Calm Mind','Calms your mind behind a ready blade','par3 mana10 heal1'],
+ 'dodge+heal':['Evasive Recovery','Recovers while staying light on your feet','dodge35 regen1'],
+ 'counter+heal':['Patient Strike','Breathes deep, then waits to strike','ctr4 heal1'],
+ 'heal+heal':['Rejuvenate','A full-body surge of renewal','heal6 regen1 cleanse'],
+ // ---- the last Element + Element
+ 'lightning+water':['Electrocute','Drenches it, then sends lightning through the water','d6 h4 soak2 stun30 shock splash40']
+};
+function parseGen(str){const o={};str.split(' ').forEach(t=>{if(!t)return;if(t.startsWith('bvs:')){const[,c,v]=t.split(':');o.bvs=[c,+v];return}const m=t.match(/^([a-z]+)(\d*)$/);if(m)o[m[1]]=m[2]===''?true:+m[2]});return o}
+const RIDE_TXT={fire:n=>`sets attackers burning for ${n} turns`,water:n=>`soaks attackers for ${n} turns`,ice:n=>`chills attackers (${n*15}% to freeze)`,earth:n=>`gives you ${n} block and may stun attackers`,wind:n=>`makes your dodge +${n*10}% on the next attack`,lightning:n=>`has a ${n}% chance to stun attackers`,dark:n=>`curses attackers for ${n} turns`,light:n=>`heals you ${n} each time you're struck`};
+const BVS_TXT={burn:'burning',soak:'soaked',chill:'chilled',curse:'cursed',stun:'stunned',bleed:'bleeding',hurt:'hurt'};
+function genParts(key){const[a,b]=key.split('+'),A=CARDS[a],B=CARDS[b];return{a,b,A,B,ph:A.cat==='phys'?A.type:null,el:A.cat==='elem'?a:(B.cat==='elem'?b:null),gd:[a,b].find(k=>CARDS[k].cat==='def')||null,heal:a==='heal'||b==='heal'}}
+function genBuild(key,o){return(r,u)=>{const P=genParts(key),el=P.el,ph=P.ph,elG=el==='lightning'&&key==='lightning+water'?'lightning':el;
+  r.kind='support';r.dmg=[];r.fx=[];r.trail=null;r.ranged=null;r.charged=null;r.segs=null;r.combo=false;r.double=false;r.ticks=0;r.tickTypes=null;r.tickW=null;r.breaker=!!o.pierce;r.gen=o;r.gu=u;
+  if(o.d){const tot=Math.max(1,Math.round(o.d*u)),h=o.h||1,ty=[ph,elG].filter(Boolean);if(key==='lightning+water'){ty.splice(0,ty.length,'water','lightning')}
+    if(h>1){r.ticks=h;r.tickTypes=Array.from({length:h},(_,i)=>ty[i%ty.length]);r.dmg=[{t:ty[0],p:tot}]}
+    else if(ty.length>1){const es=(o.mix||50)/100,pe=Math.round(tot*es);r.dmg=[{t:ty[0],p:tot-pe},{t:ty[1],p:pe}]}else r.dmg=[{t:ty[0],p:tot}];
+    const RG=['shieldthrow','arrowshot','spearthrow'];r.kind=ph?(RG.includes(P.a)?'ranged':'melee'):'cast';if(ph&&RG.includes(P.a))r.ranged='gen';r.phys=ph?[P.a]:[]}
+  if(o.block)r.block=Math.round(o.block*u);if(o.bar)r.barrier=Math.round(o.bar*u);if(o.thorns&&el)r.thorns=el;
+  if(o.par)r.parry={p:Math.round(o.par*u),t:el||ph||'blunt'};if(o.ctr)r.counter={p:Math.round(o.ctr*u),t:el||ph||'blunt'};
+  if(o.dodge)r.dodge=Math.min(100,o.dodge);if(o.heal)r.heal=Math.round(o.heal*u*1.25);if(o.ls)r.lifesteal=o.ls/100}}
+function genDesc(key,sp,o){return R=>{const P=genParts(key),u=R.gu||2,el=P.el,bits=[];const tot=R.dmg.reduce((s,p)=>s+p.p,0);
+  const types=[...new Set((R.tickTypes||R.dmg.map(p=>p.t)))].map(t=>TYPENAME[t]).join(' + ');
+  if(tot>0)bits.push(R.ticks>1?`${R.ticks} hits for ${tot} ${types} damage in total`:`${tot} ${types} damage`);
+  if(o.aoe)bits.push('to every enemy');if(o.splash)bits.push(`splashing ${o.splash}% onto the others`);if(o.pierce)bits.push('ignoring shields');if(o.purge)bits.push('washing away its shield');
+  const st=[];if(o.burn)st.push(`sets it burning for ${o.burn} turns`);if(o.soak)st.push(`soaks it for ${o.soak} turns`);if(o.chill)st.push('chills it');if(o.frz)st.push(`has a ${o.frz}% chance to freeze it`);if(o.stun)st.push(`has a ${o.stun}% chance to stun`);if(o.curse)st.push(`curses it for ${o.curse} turns`);if(o.blind)st.push(`blinds it (${o.blind}% miss)`);if(o.weak)st.push(`weakens it for ${o.weak} turn${o.weak>1?'s':''}`);if(o.root)st.push(`roots it for ${o.root} turns`);if(o.bleed)st.push(`makes it bleed for ${o.bleed} turns`);if(o.vuln)st.push(`breaks its armor (+${o.vuln}% damage taken for 2 turns)`);if(o.shock)st.push('shocks it (+10% damage taken)');if(o.sap)st.push(`lowers its attack by ${o.sap}`);
+  if(st.length)bits.push(st.join(', '));
+  if(o.bvs)bits.push(`+${o.bvs[1]}% damage if it is ${BVS_TXT[o.bvs[0]]}`);if(o.exec)bits.push(`+${o.exec}% damage below 30% HP`);
+  const me=[];if(R.block)me.push(`block ${R.block}`);if(R.barrier)me.push(`raise a ${R.barrier}-point barrier for 3 turns${R.thorns?` that burns back with ${TYPENAME[R.thorns]}`:''}`);if(R.parry)me.push(`halve the next hit and riposte for ${R.parry.p}`);if(R.counter)me.push(`counter for ${R.counter.p} when hit`);if(R.dodge)me.push(R.dodge>=100?'dodge the next attack for sure':`gain ${R.dodge}% dodge`);if(R.heal)me.push(`heal ${R.heal}`);if(o.regen)me.push(`heal ${Math.round(o.regen*u)} a turn for 3 turns`);if(R.lifesteal)me.push(`drink ${Math.round(R.lifesteal*100)}% of the damage as HP`);if(o.mana)me.push(`restore ${o.mana} mana`);if(o.cleanse)me.push('cure poison and bleeding');
+  if(me.length)bits.push('you '+me.join(', '));
+  if(o.ride&&el)bits.push(`this turn, getting hit ${RIDE_TXT[el](o.ride)}`);
+  return `${sp[1]}: ${bits.join('; ')}.`}}
+function genPrep(key,o){return(R,E)=>{if(!E)return;let m=1;if(o.bvs){const c=o.bvs[0],has=c==='burn'?E.burn>0:c==='soak'?E.soak>0:c==='chill'?E.chill>0:c==='curse'?E.curse>0:c==='stun'?E.stun:c==='bleed'?E.bleed>0:c==='hurt'?E.hp<E.max*.5:false;if(has){m*=1+o.bvs[1]/100;R.gbon=1}}
+  if(o.exec&&E.hp<=E.max*.3){m*=1+o.exec/100;R.gbon=1}if(o.purge&&E.block>0){R.breaker=true}if(m!==1)R.dmg.forEach(p=>p.p=Math.round(p.p*m))}}
+function genApply(key,o){return(R,E,n)=>{const P=genParts(key),el=P.el,u=R.gu||2,ok=t=>t&&modOf(E,t)!==0,eAlive=E&&E.hp>0;
+  if(o.purge&&E){E.block=0}
+  if(o.aoe||o.splash){const others=(S.foes||[]).filter(F=>F!==E&&F.hp>0);if(others.length){const tot=R.dmg.reduce((s,p)=>s+p.p,0),d=Math.max(1,Math.round(tot*(o.aoe?1:o.splash/100)));others.forEach((F,i)=>sideHit(F,d,hexOf(el||R.dmg[0].t),o.aoe?'':'SPLASH',200+i*80,n));n.push(o.aoe?`hits every enemy for ${d}`:`splashes ${d} onto ${others.length} other${others.length>1?'s':''}`)}}
+  if(eAlive){const t=el||'fire';
+    if(o.burn&&ok('fire')){E.burn=Math.max(E.burn,o.burn);n.push(`<span class="w">set it burning</span>`)}
+    if(o.soak&&ok('water')){E.soak=Math.max(E.soak,o.soak);n.push(`<span class="w">soaked it</span>`)}
+    if(o.chill&&ok('ice')){E.chill=Math.min(2,(E.chill||0)+o.chill);n.push(`<span class="w">chilled it</span>`)}
+    if(o.frz&&Math.random()*100<o.frz){if(canFreeze(E)){E.frozen=true;n.push('<span class="w">froze it solid</span>');Stage.float('enemy','FROZEN','#82d4ff','',420)}}
+    if(o.stun&&!E.stun&&Math.random()*100<o.stun){E.stun=true;n.push('<span class="w">stunned it</span>');Stage.float('enemy','STUN','#f2d24b','',380)}
+    if(o.curse&&ok('dark')){E.curse+=o.curse;n.push('<span class="w">cursed it</span>')}
+    if(o.blind){E.blind=Math.max(E.blind||0,o.blind);n.push(`<span class="w">blinded it (${o.blind}% miss)</span>`)}
+    if(o.weak){E.weak=Math.max(E.weak||0,o.weak);n.push('<span class="w">weakened it</span>')}
+    if(o.root){E.root=Math.max(E.root||0,o.root);n.push('<span class="w">rooted it</span>')}
+    if(o.bleed)bleed(E,n,o.bleed,1+Math.ceil(u/2));
+    if(o.vuln)mark(E,n,o.vuln);
+    if(o.shock){E.shocked=true;n.push('<span class="w">shocked it</span>')}
+    if(o.sap){E.str-=o.sap;n.push(`<span class="w">attack −${o.sap}</span>`)}}
+  if(o.regen){S.regen={amt:Math.round(o.regen*u),t:3};n.push(`<span class="w">regenerating ${S.regen.amt} a turn</span>`)}
+  if(o.mana){const m=Math.min(o.mana,S.maxMana-S.mana);if(m>0){S.mana+=m;Stage.float('player',`+${m}`,'#6cb2ff','MANA',300)}}
+  if(o.cleanse&&(S.poison||S.pbleed)){S.poison=null;S.pbleed=null;n.push('<span class="w">cured your ailments</span>')}
+  if(o.ride&&el){S.rider={el,n:o.ride,u};n.push('<span class="w">your guard bites back</span>')}
+  if(R.gbon)n.push('<span class="w">bonus damage!</span>')}}
+function applyRider(E,delay){const r=S.rider;if(!r||!E||E.hp<=0)return;const m=t=>modOf(E,t)!==0;let tag='';
+  if(r.el==='fire'&&m('fire')){E.burn=Math.max(E.burn,r.n);tag='BURN'}
+  else if(r.el==='water'&&m('water')){E.soak=Math.max(E.soak,r.n);tag='SOAKED'}
+  else if(r.el==='ice'&&m('ice')){E.chill=Math.min(2,(E.chill||0)+1);tag='CHILLED';if(Math.random()*100<r.n*15&&canFreeze(E)){E.frozen=true;tag='FROZEN'}}
+  else if(r.el==='earth'){S.block+=r.n;Stage.float('player',`+${r.n}`,'#59c9c2','BLOCK',(delay||0)+200);if(!E.stun&&Math.random()<.15){E.stun=true;tag='STUN'}}
+  else if(r.el==='wind'){S.dodge=Math.min(95,(S.dodge||0)+r.n*10);tag=''}
+  else if(r.el==='lightning'&&m('lightning')&&!E.stun&&Math.random()*100<r.n){E.stun=true;tag='STUN'}
+  else if(r.el==='dark'&&m('dark')){E.curse+=r.n;tag='CURSED'}
+  else if(r.el==='light'){const h=Math.min(r.n,S.maxHp-S.hp);if(h>0){S.hp+=h;Stage.float('player',`+${h}`,'#ffd36b','HOLY',(delay||0)+200)}}
+  if(tag)Stage.float('enemy',tag,hexOf(r.el),'',(delay||0)+260);Stage.defFx&&Stage.defFx('rider:'+r.el,delay)}
+Object.entries(GEN_SPEC).forEach(([key,sp])=>{const o=parseGen(sp[2]);ESPELL[key]={gen:true,name:sp[0],flavor:sp[1],spec:o,build:genBuild(key,o),desc:genDesc(key,sp,o),prep:genPrep(key,o),apply:genApply(key,o)}});
+
 const PLAYER_TOP=[
 "......kkkk....k.",
 ".....khhhhk..kwk",
@@ -2167,6 +2377,91 @@ window.__cardArt=cardArt;
   },delay||0)}
   window.__defFx=defFx;
 
+  // ===== Animations for the 140 remaining combinations: delivery choreography x element/guard pixel effects =====
+  const GP={fire:['#ff4a12','#ffb347','#fff2b0','#7a1a0a'],water:['#2a7ad8','#7fd0ff','#e8f8ff','#123a70'],ice:['#7fd8ff','#d8f6ff','#ffffff','#2a6a9a'],earth:['#6b4a2a','#a87a43','#e0c08a','#3a2814'],wind:['#3aa86a','#9be8b8','#e8fff0','#1a5a3a'],lightning:['#f2d24b','#fff6a0','#ffffff','#8a6a10'],dark:['#2a1440','#7a3ac0','#d6b8ff','#0a0414'],light:['#ffd36b','#fff3c0','#ffffff','#a87a20'],
+    block:['#59c9c2','#a8f0ea','#ffffff','#1a5a56'],shield:['#4aa8ff','#a8dcff','#ffffff','#1a4a80'],parry:['#e8b840','#fff6c0','#ffffff','#7a5a10'],dodge:['#59c98a','#bff5d8','#ffffff','#1a5a3a'],counter:['#ff5a64','#ffb0b6','#ffffff','#7a1a20'],heal:['#59d27a','#bff5c8','#ffffff','#1a6a30'],phys:['#c8d0dc','#ffffff','#ffffff','#4a5262']};
+  const gHash=k=>{let h=0;for(const c of k)h=(h*31+c.charCodeAt(0))>>>0;return h};
+  const gPx=()=>Math.max(2,Math.round(st.ps*.65));
+  function gParts(key){const[a,b]=key.split('+'),ca=CARDS[a].cat,cb=CARDS[b].cat;const pk=ca==='phys'?a:cb==='phys'?b:null,el=ca==='elem'?a:cb==='elem'?b:null,gd=ca==='def'?a:cb==='def'?b:null,hl=a==='heal'||b==='heal';return{pk,el,gd,hl,pal:GP[el||gd||(hl?'heal':'phys')],acc:GP[gd||(hl?'heal':el||'phys')],seed:gHash(key)}}
+  // element particle spray with element-specific motion
+  function gSpray(el,x,y,n,pw){const P=GP[el]||GP.phys,u=U();for(let i=0;i<n;i++){const a=Math.random()*6.283,v=(.04+Math.random()*.16)*(pw||1)*u;let o={vx:Math.cos(a)*v,vy:Math.sin(a)*v,color:P[i%3],size:st.ps*(.35+Math.random()*.45),life:300+Math.random()*300};
+    if(el==='fire'||el==='light'){o.vy=-Math.abs(o.vy)-.03*u;o.vx*=.6}else if(el==='earth'||el==='water'||el==='ice'){o.vy=-Math.abs(o.vy)-.05*u;o.g=.0012*u}else if(el==='wind'){o.vx=Math.abs(o.vx)+.08*u;o.vy*=.3}else if(el==='lightning'){o.life=180;o.size=st.ps*.4}else if(el==='dark'){o.vx*=.4;o.vy*=.4;o.life=600}spawn(x,y,o)}}
+  // impact shapes, each painted in the element palette
+  function gShape(style,el,m,i,seed){const P=GP[el]||GP.phys,s=gPx(),cx=m.x,cy=m.feet-m.h*.5;
+    if(style==='arc'){const ang=((seed+i*67)%180)/180*2.4-1.2;addFx(0,320,p=>{ctx.save();ctx.translate(cx,cy);ctx.rotate(ang);const r=m.h*.75,a0=-1.1+p*.4,a1=a0+2.2*Math.min(1,p*3);for(let a=a0;a<a1;a+=.07){const th=(1-Math.abs((a-a0)/(a1-a0)*2-1))*s*3*(1-p*.6);ctx.globalAlpha=1-p;ctx.fillStyle=P[0];ctx.fillRect(Math.round(Math.cos(a)*r-th/2),Math.round(Math.sin(a)*r*.55-th/2),Math.max(s,th),Math.max(s,th));ctx.fillStyle=P[2];ctx.fillRect(Math.round(Math.cos(a)*r*.96),Math.round(Math.sin(a)*r*.53),s,s)}ctx.restore()})}
+    else if(style==='line'){const x0=cx-m.w*2,x1=cx+m.w*2.5;addFx(0,300,p=>{ctx.save();ctx.globalAlpha=1-p;const L=(x1-x0)*Math.min(1,p*3),h=s*(3-p*2);ctx.fillStyle=P[0];ctx.fillRect(Math.round(x0),Math.round(cy-h),Math.round(L),Math.round(h*2));ctx.fillStyle=P[2];ctx.fillRect(Math.round(x0),Math.round(cy-s/2),Math.round(L),s);for(let k=0;k<4;k++)ctx.fillRect(Math.round(x0+L-s*k*2),Math.round(cy-s*(3+k)),s,s*(6+2*k));ctx.restore()})}
+    else if(style==='ring'){addFx(0,520,p=>{ctx.save();ctx.globalAlpha=1-p;ctx.fillStyle=P[i%2];dotRing(cx,m.feet-s,m.w*(.4+p*2.2),st.ps*(.8+p*1.5),s,seed,0);ctx.fillStyle=P[2];dotRing(cx,m.feet-s,m.w*(.3+p*1.6),st.ps*(.6+p),s,-seed,3);ctx.restore()})}
+    else if(style==='burst'){const n=10+(seed%6);addFx(0,340,p=>{ctx.save();ctx.globalAlpha=1-p;for(let k=0;k<n;k++){const a=k/n*6.283+seed,l=m.h*(.2+.55*ease(p));for(let q=m.h*.12*p;q<l;q+=s*1.3){ctx.fillStyle=q>l*.7?P[2]:P[k%2];ctx.fillRect(Math.round(cx+Math.cos(a)*q),Math.round(cy+Math.sin(a)*q),s,s)}}ctx.fillStyle=P[2];pxDisc(cx,cy,m.h*.12*(1-p),s);ctx.restore()})}
+    else if(style==='pillar'){addFx(0,560,p=>{ctx.save();const a=Math.sin(p*Math.PI),w=m.w*.7*a,H=m.h*1.5*Math.min(1,p*2.5);ctx.globalAlpha=a;for(let x=-w/2;x<w/2;x+=s){const hh=H*(.75+.25*Math.sin(x*.4+p*20));for(let y=0;y<hh;y+=s){ctx.fillStyle=y>hh-s*3?P[2]:(Math.abs(x)<w*.18?P[1]:P[0]);if((x/s+y/s)%3!==0||Math.abs(x)<w*.3)ctx.fillRect(Math.round(cx+x),Math.round(m.feet-y-s),s,s)}}ctx.restore()})}
+    else if(style==='orbit'){addFx(0,520,(p,now)=>{ctx.save();for(let k=0;k<12;k++){const a=k/12*6.283+p*9,r=m.h*.8*(1-ease(p));ctx.globalAlpha=1-p*.5;ctx.fillStyle=P[k%3];ctx.fillRect(Math.round(cx+Math.cos(a)*r),Math.round(cy+Math.sin(a)*r*.6),s*1.4,s*1.4)}ctx.restore()})}
+    else if(style==='slam'){addFx(0,460,p=>{ctx.save();ctx.globalAlpha=1-p;for(let k=-6;k<=6;k++){const h=m.h*(.5-Math.abs(k)*.06)*Math.sin(Math.min(1,p*2)*Math.PI);ctx.fillStyle=P[Math.abs(k)%2];ctx.fillRect(Math.round(cx+k*s*2.2),Math.round(m.feet-h),s*1.6,Math.round(h))}ctx.restore()});shake(0,st.ps*1.5)}}
+  // per-element signature finisher
+  function gSig(el,m,seed){if(!el)return;const P=GP[el],s=gPx(),cx=m.x,ft=m.feet,cy=ft-m.h*.5;
+    if(el==='fire')addFx(0,700,(p,now)=>{ctx.save();ctx.globalAlpha=1-p;for(let k=0;k<9;k++){const x=cx+(k-4)*m.w*.18,h=m.h*(.4+.5*Math.abs(Math.sin(k*1.3+now/90)))*(1-p);for(let y=0;y<h;y+=s){ctx.fillStyle=y>h*.75?P[2]:y>h*.4?P[1]:P[0];ctx.fillRect(Math.round(x),Math.round(ft-y-s),s,s)}}ctx.restore()});
+    else if(el==='water')for(let k=0;k<16;k++){const a=-Math.PI*(k/15);spawn(cx,ft-s,{vx:Math.cos(a)*.14*U(),vy:Math.sin(a)*.22*U()-.05*U(),g:.0014*U(),color:P[k%3],size:st.ps*.6,life:560})}
+    else if(el==='ice')addFx(0,800,p=>{ctx.save();ctx.globalAlpha=p>.75?(1-p)*4:1;for(let k=0;k<6;k++){const x=cx+(k-2.5)*m.w*.32,h=m.h*(.35+((seed+k*7)%5)*.08)*ease(Math.min(1,p*4));ctx.fillStyle=P[0];pxTri(x-s*2.4,ft,x+s*2.4,ft,x,ft-h,s);ctx.fillStyle=P[2];pxTri(x-s*.8,ft,x+s*.4,ft,x,ft-h*.9,s)}ctx.restore()});
+    else if(el==='earth'){for(let k=0;k<10;k++)spawn(cx+(Math.random()-.5)*m.w*1.6,ft,{vx:(Math.random()-.5)*.1*U(),vy:-(.1+Math.random()*.15)*U(),g:.0016*U(),color:P[k%3],size:st.ps*(.6+Math.random()*.7),life:600});shake(0,st.ps*1.4)}
+    else if(el==='wind')addFx(0,600,p=>{ctx.save();ctx.globalAlpha=1-p;for(let k=0;k<5;k++){const y=cy+(k-2)*m.h*.18,x=cx-m.w*2+p*m.w*5+k*s*4;ctx.fillStyle=P[k%3];for(let q=0;q<10;q++)ctx.fillRect(Math.round(x-q*s*1.5),Math.round(y+Math.sin(q*.6)*s*1.5),s*1.5,s)}ctx.restore()});
+    else if(el==='lightning')addFx(0,320,p=>{ctx.save();ctx.globalAlpha=1-p;let x=cx+((seed%9)-4)*s,y=0;ctx.fillStyle=P[2];while(y<cy){const nx=x+((Math.random()-.5)*s*6),ny=y+s*4;for(let t=0;t<1;t+=.2)ctx.fillRect(Math.round(x+(nx-x)*t),Math.round(y+(ny-y)*t),s*1.5,s*1.5);x=nx;y=ny}ctx.fillStyle=P[0];pxDisc(cx,cy,m.h*.25*(1-p),s);ctx.restore()});
+    else if(el==='dark')addFx(0,800,(p,now)=>{ctx.save();ctx.globalAlpha=1-p*.8;for(let k=0;k<5;k++){const bx=cx+(k-2)*m.w*.35,h=m.h*.9*Math.sin(Math.min(1,p*1.5)*Math.PI);for(let y=0;y<h;y+=s){ctx.fillStyle=y>h*.8?P[2]:P[k%2];ctx.fillRect(Math.round(bx+Math.sin(y*.15+now/120+k)*s*2),Math.round(ft-y-s),s*1.4,s)}}ctx.restore()});
+    else if(el==='light')addFx(0,700,p=>{ctx.save();ctx.globalCompositeOperation='lighter';const a=Math.sin(p*Math.PI),w=m.w*.9*a;ctx.globalAlpha=a*.8;ctx.fillStyle=P[0];ctx.fillRect(Math.round(cx-w/2),0,Math.round(w),Math.round(ft));ctx.fillStyle=P[2];ctx.fillRect(Math.round(cx-w/6),0,Math.round(w/3),Math.round(ft));ctx.restore()})}
+  // projectiles for thrown/shot deliveries
+  function gProj(kind,el,from,to,dur,delay){const P=GP[el]||GP.phys,s=gPx();addFx(delay||0,dur,(p,now)=>{const x=from[0]+(to[0]-from[0])*p,y=from[1]+(to[1]-from[1])*p-Math.sin(p*Math.PI)*(kind==='disc'?st.H*.05:st.H*.03);ctx.save();
+      for(let k=1;k<9;k++){const q=Math.max(0,p-k*.025);ctx.globalAlpha=(1-k/9)*.8;ctx.fillStyle=P[k%2];ctx.fillRect(Math.round(from[0]+(to[0]-from[0])*q),Math.round(from[1]+(to[1]-from[1])*q-Math.sin(q*Math.PI)*(kind==='disc'?st.H*.05:st.H*.03)),s*(1.6-k*.12),s*(1.6-k*.12))}
+      ctx.globalAlpha=1;ctx.translate(Math.round(x),Math.round(y));
+      if(kind==='disc'){ctx.rotate(now/40);ctx.fillStyle='#3a3e48';pxDisc(0,0,st.ps*2.6,s);ctx.fillStyle=P[0];pxDisc(0,0,st.ps*2.2,s);ctx.fillStyle='#aab4c4';pxDisc(0,0,st.ps*1.3,s);ctx.fillStyle='#e8b840';ctx.fillRect(-s/2,-st.ps*2.2,s,s*2)}
+      else{const ang=Math.atan2(to[1]-from[1],to[0]-from[0]);ctx.rotate(ang);const L=kind==='spear'?st.ps*12:st.ps*7;ctx.fillStyle='#6a4a2a';ctx.fillRect(-L,-s/2,L,s);ctx.fillStyle=P[0];ctx.fillRect(-L,-s,s*2,s*2);ctx.fillStyle=P[2];pxTri(0,-s*1.6,0,s*1.6,s*3,0,s)}
+      ctx.restore();if(Math.random()<.5)gSpray(el||'phys',x,y,1,.3)})}
+  // guard flourish after an attack (physical + defense)
+  function gGuard(gd,pal,big){const pm=PMx(),s=gPx(),P=pal,x=pm.x,ft=pm.feet,H=pm.h;
+    if(gd==='block')addFx(0,800,p=>{ctx.save();ctx.globalAlpha=Math.sin(p*Math.PI)*.85;const w=st.ps*6,h=H*.9*ease(Math.min(1,p*3)),bx=x+pm.w*1.0;ctx.fillStyle=P[3];ctx.fillRect(Math.round(bx-w/2-s),Math.round(ft-h-s),Math.round(w+2*s),Math.round(h+s));ctx.fillStyle=P[0];ctx.fillRect(Math.round(bx-w/2),Math.round(ft-h),Math.round(w),Math.round(h));ctx.fillStyle=P[1];ctx.fillRect(Math.round(bx-w/2),Math.round(ft-h),s*1.5,Math.round(h));ctx.fillStyle=P[2];for(let k=0;k<4;k++)ctx.fillRect(Math.round(bx-w/2+s*2),Math.round(ft-h+((p*H*2+k*H*.25)%h)),Math.round(w-s*3),s);ctx.restore()});
+    else if(gd==='shield')addFx(0,900,(p,now)=>{ctx.save();const a=Math.sin(p*Math.PI);ctx.globalAlpha=a*.7;ctx.fillStyle=P[0];dotRing(x,ft-H*.5,H*.62*ease(Math.min(1,p*2.5)),H*.62*ease(Math.min(1,p*2.5)),s,now/400,0);ctx.fillStyle=P[1];dotRing(x,ft-H*.5,H*.55,H*.55,s,-now/300,5);ctx.globalAlpha=a*.12;ctx.fillStyle=P[1];ctx.beginPath();ctx.arc(x,ft-H*.5,H*.6,0,6.283);ctx.fill();ctx.restore()});
+    else if(gd==='parry'){addFx(0,500,p=>{ctx.save();ctx.globalAlpha=1-p;const cx=x+pm.w*.6,cy=ft-H*.65,L=st.ps*8*(1-p*.4);ctx.fillStyle=P[2];ctx.fillRect(Math.round(cx-L),Math.round(cy-s/2),Math.round(L*2),s);ctx.fillRect(Math.round(cx-s/2),Math.round(cy-L),s,Math.round(L*2));ctx.fillStyle=P[0];pxDisc(cx,cy,s*2,s);ctx.restore()});dfSword&&addFx(0,700,p=>dfSword(x+pm.w*.9,ft-H*.55,-.9-p*.4,st.ps*9,P[0],P[2],Math.sin(p*Math.PI)))}
+    else if(gd==='dodge'){for(let k=0;k<3;k++)addFx(k*70,420,p=>{dfClone&&dfClone(-pm.w*(.6+k*.5),(1-p)*.45,P[1],now_())});gSpray('wind',x,ft-H*.4,10,.6)}
+    else if(gd==='counter')addFx(0,800,(p,now)=>{ctx.save();const a=Math.sin(p*Math.PI);ctx.globalAlpha=a;for(let k=0;k<10;k++){const an=k/10*6.283+now/600,r=pm.w*1.1,hx=x+Math.cos(an)*r,hy=ft-H*.45+Math.sin(an)*H*.45;ctx.fillStyle=P[k%2];pxTri(hx-s*1.4,hy,hx+s*1.4,hy,hx+Math.cos(an)*s*4,hy+Math.sin(an)*s*4,s)}ctx.fillStyle=P[0];glyph(x,ft-H*1.25,11,s*1.1);ctx.restore()})}
+  // elemental guard constructs (element + defense)
+  function gConstruct(gd,el,seed){const pm=PMx(),s=gPx(),P=GP[el],x=pm.x,ft=pm.feet,H=pm.h;
+    if(gd==='block')addFx(0,1300,(p,now)=>{ctx.save();const k=ease(Math.min(1,p*2.5)),fo=p>.8?1-(p-.8)/.2*.6:1,w=st.ps*8,bx=x+pm.w*1.7,h=H*1.05*k;ctx.globalAlpha=fo;
+      for(let xx=-w/2;xx<w/2;xx+=s){let hh=h;if(el==='fire'||el==='dark')hh=h*(.85+.15*Math.sin(now/80+xx));if(el==='water')hh=h-Math.abs(Math.sin(now/200+xx*.15))*s*3;if(el==='ice'&&((xx/s)|0)%3===0)hh=h+s*3;for(let y=0;y<hh;y+=s){const f=y/Math.max(1,hh);let c=f<.45?P[0]:f<.8?P[1]:P[2];if(el==='fire'&&Math.random()<.18)c=P[1];if(el==='water')c=((((y/s)+now/60)|0)%5===0)?P[2]:(f<.6?P[0]:P[1]);if(el==='ice'&&Math.abs(xx)<s)c=P[2];if(el==='dark')c=Math.random()<.15?P[2]:(f<.6?P[3]:P[1]);if(el==='light')c=Math.abs(xx)<w*.2?P[2]:P[f<.5?0:1];if(el==='earth')c=((((y/(s*3))|0)+((xx/(s*4))|0))%2)?P[0]:P[1];if(el==='wind')c=((y/s+now/40)|0)%4===0?P[2]:P[1];if(el==='lightning')c=Math.random()<.1?P[2]:P[0];if(y>hh-s*2)c=P[2];ctx.fillStyle=c;ctx.fillRect(Math.round(bx+xx),Math.round(ft-y-s),s,s)}}
+      ctx.restore();if(Math.random()<.4)gSpray(el,bx,ft-Math.random()*h,1,.4)});
+    else if(gd==='shield')addFx(0,1300,(p,now)=>{ctx.save();const k=ease(Math.min(1,p*2)),fo=p>.8?1-(p-.8)/.2*.6:1,r=H*.68*k;ctx.globalAlpha=fo*.22;ctx.fillStyle=P[1];ctx.beginPath();ctx.ellipse(x,ft-H*.48,r*.8,r,0,0,6.283);ctx.fill();ctx.globalAlpha=fo;ctx.fillStyle=P[0];dotRing(x,ft-H*.48,r*.8,r,s,now/500,0);ctx.fillStyle=P[2];for(let i=0;i<6;i++){const a=now/700+i*1.047;glyph(x+Math.cos(a)*r*.8,ft-H*.48+Math.sin(a)*r,i+seed,s*.6)}ctx.restore();if(Math.random()<.3)gSpray(el,x+(Math.random()-.5)*r*1.6,ft-H*.48+(Math.random()-.5)*r*2,1,.3)});
+    else if(gd==='parry')addFx(0,1300,(p,now)=>{const k=ease(Math.min(1,p*2.2)),fo=p>.8?1-(p-.8)/.2*.5:1;dfSword(x+pm.w*1.1,ft-H*.55-(1-k)*H*.6,-.8+(1-k)*3,st.ps*12,P[0],P[2],fo);if(Math.random()<.4)gSpray(el,x+pm.w*1.1,ft-H*.55,1,.3)});
+    else if(gd==='dodge'){for(let k=0;k<4;k++)addFx(k*90,600,p=>{dfClone&&dfClone(-pm.w*(.5+k*.45),(1-p)*.5,P[1],now_())});addFx(0,900,p=>{ctx.save();ctx.globalAlpha=1-p;ctx.fillStyle=P[0];dotRing(x,ft-s,pm.w*(.6+p*1.6),st.ps*(1+p),s,0,2);ctx.restore()});setTimeout(()=>gSpray(el,x,ft-H*.5,22,.8),100)}
+    else if(gd==='counter')addFx(0,1300,(p,now)=>{ctx.save();const k=ease(Math.min(1,p*2.5)),fo=p>.8?1-(p-.8)/.2*.5:1;ctx.globalAlpha=fo;for(let i=0;i<12;i++){const an=i/12*6.283,bx=x+Math.cos(an)*pm.w*1.2,by=ft-s,h=H*(.25+.15*((i+seed)%3))*k;ctx.fillStyle=P[i%2];pxTri(bx-s*1.6,by,bx+s*1.6,by,bx,by-h,s);ctx.fillStyle=P[2];ctx.fillRect(Math.round(bx-s/2),Math.round(by-h),s,s*2)}ctx.restore()})}
+  // healing bloom
+  function gHeal(el,big){const pm=PMx(),P=el?GP[el]:GP.heal,s=gPx();addFx(0,1200,(p,now)=>{ctx.save();const a=Math.sin(p*Math.PI);ctx.globalAlpha=a;for(let k=0;k<(big?14:8);k++){const ph=((now/900)+k/(big?14:8))%1,x=pm.x+Math.sin(k*2.3+now/400)*pm.w*.9,y=pm.feet-ph*pm.h*1.3;ctx.fillStyle=k%2?P[1]:GP.heal[0];ctx.fillRect(Math.round(x-s),Math.round(y-s*.3),s*2,Math.max(1,s*.6));ctx.fillRect(Math.round(x-s*.3),Math.round(y-s),Math.max(1,s*.6),s*2)}ctx.globalAlpha=a*.25;ctx.fillStyle=GP.heal[1];ctx.beginPath();ctx.ellipse(pm.x,pm.feet-pm.h*.5,pm.w*1.1,pm.h*.7,0,0,6.283);ctx.fill();ctx.restore()})}
+  function gDrain(el,m,delay){const pm=PMx(),P=GP[el]||GP.heal;for(let k=0;k<14;k++)setTimeout(()=>{const sx=m.x,sy=m.feet-m.h*.5,tx=pm.x,ty=pm.feet-pm.h*.55,t=360+Math.random()*160;spawn(sx+(Math.random()-.5)*m.w,sy+(Math.random()-.5)*m.h*.5,{vx:(tx-sx)/t,vy:(ty-sy)/t,color:k%2?P[0]:GP.heal[0],size:st.ps*.55,life:t})},(delay||0)+k*30)}
+  const G_STYLE={slash:'arc',stab:'line',kick:'ring',punch:'burst',shieldbash:'slam',shieldthrow:'orbit',arrowshot:'line',spearthrow:'pillar'};
+  function genFx(R,ch){const key=R.spell,G=gParts(key),o=R.gen||{},seed=G.seed,h=R.ticks||1,el=G.el,style=G_STYLE[G.pk]||'burst';ch=ch||0;
+    const onHit=(i,last)=>{const m=EM();if(!m)return;if(R.dmg.length){gShape(style,el||'phys',m,i,seed);if(G.pk&&G.pk!=='shieldthrow'&&G.pk!=='arrowshot'&&G.pk!=='spearthrow')physFx&&physFx(G.pk==='shieldbash'?'shieldbash':G.pk,m,0,el?GP[el][1]:'#ffffff');gSpray(el||'phys',m.x,m.feet-m.h*.5,el?10:6,1);if(last&&el)gSig(el,m,seed);if(last&&(R.lifesteal||o.ls))gDrain(el,m,120)}};
+    // ---- physical deliveries
+    if(G.pk){const c=chor(),m=c.m,pm=c.pm,RG=['shieldthrow','arrowshot','spearthrow'].includes(G.pk);
+      if(RG){const fr=G.pk==='arrowshot'?'aim':'throw';c.stay(ch?Math.max(120,ch-500):150,{fr:'idle'});
+        for(let i=0;i<h;i++){c.stay(380,{fr:[fr,0,i%2?2:0]});const from=[pm.x+pm.w*.6,pm.feet-pm.h*.62];c.ev(()=>{const mm=EM();gProj(G.pk==='shieldthrow'?'disc':G.pk==='spearthrow'?'spear':'arrow',el||(G.gd||'phys'),from,[mm.x,mm.feet-mm.h*.5],300,0)},120);c.hit(()=>onHit(i,i===h-1),420)}
+        c.stay(320,{fr:'idle'})}
+      else{const D={slash:['slash',300,150],stab:['punch',260,130],kick:['spinkick',420,230],punch:['punch',230,115],shieldbash:['shield',300,160]}[G.pk]||['punch',260,130];
+        if(G.pk==='shieldbash'){c.stay(Math.max(100,ch-500),{fr:['shield',0,1]});c.go(c.FR,0,320,{fr:['shield',0,3],e:'in'})}else{c.stay(Math.max(80,ch-520),{fr:'idle'});c.go(c.FR,0,300,{fr:['walk',45]})}
+        for(let i=0;i<h;i++){const last=i===h-1;let fr=D[0];if(G.pk==='punch'&&last&&h>1)fr='uppercut';if(G.pk==='kick'&&i%2)fr='kick';
+          if(G.pk==='slash'&&h>=3&&i>0)c.blink(i%2?c.BK:c.FR,0,{fl:!!(i%2),col:GP[el||G.gd||'phys'][1]});
+          if(G.pk==='stab')c.go(c.FR+pm.w*.25,0,90,{fr:['beam',0,0]});
+          c.stay(D[1],{fr,arc:G.pk==='kick'?st.H*.05:0});c.hit(()=>onHit(i,last),D[2]-D[1]);if(G.pk==='stab')c.go(c.FR,0,90,{fr:'idle'})}
+        c.blink(c.H,0,{fl:false,col:GP[el||G.gd||'phys'][1]});c.stay(200,{fr:'idle'})}
+      if(G.gd)c.ev(()=>gGuard(G.gd,GP[G.gd]),-80);
+      if(G.hl||o.heal||o.regen)c.ev(()=>gHeal(el,false),-60);
+      return runChor(c,R,GP[el||G.gd||(G.hl?'heal':'phys')][1])}
+    // ---- casts (element + defense, heal combos, lightning + water)
+    const t0=Math.max(0,ch-450),P=G.pal;castPose(t0,1300);
+    groundUnder(PMx,{r:st.H*.13,c1:P[0],c2:P[1],delay:t0,dur:1500,seed:seed%13,spin:(seed%2?.7:-.7),star:seed%3?6:5});
+    if(G.gd&&el)setTimeout(()=>gConstruct(G.gd,el,seed),t0+250);
+    else if(G.gd)setTimeout(()=>gGuard(G.gd,GP[G.gd],true),t0+250);
+    if(G.hl||o.heal||o.regen)setTimeout(()=>gHeal(el,G.hl),t0+300);
+    if(o.mana)setTimeout(()=>{const pm=PMx();ring(pm.x,pm.feet-pm.h*.5,pm.h*.6,'#6cb2ff',0,500,1.6)},t0+600);
+    if(R.dmg.length){const times=[];for(let i=0;i<h;i++)times.push(t0+700+i*200);
+      times.forEach((t,i)=>setTimeout(()=>{const m=EM();if(!m)return;const st2=['burst','pillar','ring','orbit'][(seed+i)%4];gShape(st2,R.tickTypes?R.tickTypes[i]:el,m,i,seed);gSpray(R.tickTypes?R.tickTypes[i]:el,m.x,m.feet-m.h*.5,10,1);if(i===h-1){gSig(el,m,seed);if(key==='lightning+water')gSig('water',m,seed)}},t));
+      if(R.ticks){R.tickTimes=times;return times[h-1]}return times[0]}
+    return t0+1150}
+  window.__genFx=genFx;
+
   const H0=()=>st.H;
   const ICO=(()=>{const t=(1+Math.sqrt(5))/2,v=[[-1,t,0],[1,t,0],[-1,-t,0],[1,-t,0],[0,-1,t],[0,1,t],[0,-1,-t],[0,1,-t],[t,0,-1],[t,0,1],[-t,0,-1],[-t,0,1]].map(p=>{const l=Math.hypot(...p);return p.map(c=>c/l)});const e=[];for(let a=0;a<12;a++)for(let b=a+1;b<12;b++){const d=Math.hypot(v[a][0]-v[b][0],v[a][1]-v[b][1],v[a][2]-v[b][2]);if(d<1.1)e.push([a,b])}return{v,e}})();
   function drawReflect(cx,cy,r,now,el){const C=el?{g:'#f2d24b',f:'#fff6b0',b:'#c9a530',gl:'#f2d24b'}:{g:'#bfe9ff',f:'#e6f6ff',b:'#8fc8ea',gl:'#bfe9ff'};const ay=now/1400,ax=.45+Math.sin(now/2300)*.25,cy_=Math.cos(ay),sy_=Math.sin(ay),cx_=Math.cos(ax),sx_=Math.sin(ax);
@@ -2622,6 +2917,7 @@ window.__cardArt=cardArt;
       const m=enemyMetrics(),pm=playerMetrics();if(!m)return 300;
       const elems=R.fx.length?R.fx:R.dmg.map(p=>p.t).filter(t=>ELEMS.includes(t));const uniq=[...new Set(elems)];
       const big=R.fx.length===2&&R.fx[0]===R.fx[1];
+      if(R.spell&&R.gen&&!SPELLFX[R.spell])SPELLFX[R.spell]=(RR,c)=>genFx(RR,c);
       if(R.spell&&SPELLFX[R.spell]){if(R.spell.startsWith('arrowshot+')||R.spell.startsWith('spearthrow+')){st.player.anim=null;st.player.act=null;st.player.aura={els:R.charge||[],t0:now_(),dur:900};return SPELLFX[R.spell](R)}const ch=700;st.player.anim=null;st.player.act=null;st.player.aura={els:R.charge||[],t0:now_(),dur:ch+250};return SPELLFX[R.spell](R,ch);}
       if(R.pebbles){const ch=700;st.player.aura={els:R.charge,t0:now_(),dur:ch+400};setTimeout(()=>{st.player.anim={name:'punch',t0:now_(),dur:520}},ch+500);R.tickTimes=pebbleStorm(ch,R.ticks);return R.tickTimes[R.tickTimes.length-1]+60;}
       if(R.lstrike){const P=st.player,ch=1200,T=now_();P.anim=null;P.act=null;lsAura(0,ch);
@@ -3021,6 +3317,8 @@ function fuse(c1,c2){
       if(r.key==='block+shield'){r.block=10;r.barrier=(effLv(a)+effLv(b))*2;if(effLv(a)+effLv(b)>=6)r.manaGuard=.5}}
     if(ESPELL[r.key]&&ESPELL[r.key].def){const sp=ESPELL[r.key],u=effLv(a)+effLv(b);r.block=0;r.barrier=0;r.parry=null;r.dodge=0;r.counter=null;r.heal=0;r.manaGuard=0;r.name=sp.name;r.spell=r.key;sp.build(r,u)}
   }
+  if(ESPELL[r.key]&&ESPELL[r.key].gen&&!(r.key==='punch+punch')){const sp=ESPELL[r.key],u=effLv(a)+effLv(b);Object.assign(r,{block:0,barrier:0,parry:null,dodge:0,counter:null,heal:0,lifesteal:0,drain:false,stun:false,thorns:null,blind:0,dodgeAdd:0,holyRain:0,rainFlat:false,reflect:false,manaGuard:0,embrace:0,immuneChance:0,efield:false,freeze:false,mud:0,lstrike:null,stonePunch:0,gatling:0});r.name=sp.name;r.spell=r.key;sp.build(r,u);
+    const pk=[a,b].find(c=>CARDS[c.key].cat==='phys');r.anim=pk?(pk.key==='shieldbash'?'shield':pk.key==='kick'?'kick':pk.key==='slash'?'slash':'punch'):'punch'}
   r.charge=[...new Set([a,b].filter(c=>CARDS[c.key].cat==='elem').map(c=>c.key))];
   r.weapon=r.anim==='shield'?'none':(r.anim==='kick'||(r.anim==='punch'&&r.phys.includes('punch')&&!r.phys.includes('stab')))?'back':'hand';
   if(r.dmg.length===0&&r.kind!=='support')r.kind='support';
@@ -3302,6 +3600,7 @@ function hurtPlayer(raw,delay,pierce){
   if(S.embrace){Stage.float('player','IMMUNE','#9fe2ff','FROZEN',delay);return 0}
   if(S.stoneSkin){Stage.float('player','IMMUNE','#e0c08a','STONE SKIN',delay);setTimeout(()=>Stage.stoneFx&&Stage.stoneFx(),delay||0);return 0}let x=raw;if(E.chill)x=Math.round(x*.6);if(E.weak>0)x=Math.round(x*.7);if(iceAgeHits(E))x=Math.round(x*.5);
   if(E.blind&&Math.random()*100<E.blind){Stage.float('player','MISS','#cfd6dd','BLINDED',delay);return 0}
+  if(S.rider)applyRider(E,delay);
   if(S.mirage>0){S.mirage--;Stage.float('player','MIRAGE','#9fe2ff','AN IMAGE TAKES IT',delay);Stage.defFx&&Stage.defFx('mirageHit',delay);return 0}
   if(S.mirror&&x>0){const mx=Math.round(x*S.mirror);S.mirror=0;Stage.float('player','MIRRORED','#e8f6ff','',delay);Stage.defFx&&Stage.defFx('mirrorHit',delay);trueHit(E,mx,'MIRROR','#e8f6ff',(delay||0)+260);return 0}
   if(S.deflect>0){S.deflect--;Stage.float('player','DEFLECT','#fff6c0','',delay);Stage.defFx&&Stage.defFx('deflectHit',delay);dealToEnemy(S.deflectP||4,'slash','DEFLECT',(delay||0)+180);return 0}
@@ -3328,7 +3627,7 @@ function hurtPlayer(raw,delay,pierce){
   counterStrike(delay);
   return x;
 }
-function clearDefense(full){S.mirage=0;S.mirror=0;S.deflect=0;S.venge=null;S.shadowStep=null;S.windDance=null;S.tumble=null;S.spikes=0;if(full){S.bulwark=false;S.aegis=false;S.retri=null;S.veilT=0}}
+function clearDefense(full){S.rider=null;S.mirage=0;S.mirror=0;S.deflect=0;S.venge=null;S.shadowStep=null;S.windDance=null;S.tumble=null;S.spikes=0;if(full){S.bulwark=false;S.aegis=false;S.retri=null;S.veilT=0}}
 function trueHit(E,d,label,col,delay){if(!E||E.hp<=0||d<=0)return;E.hp-=d;Stage.withFoe(E.slot||0,()=>{Stage.float('enemy',d,col,label,delay);setTimeout(()=>Stage.hitEnemy(['light']),delay||0)})}
 function retriBlast(delay){const r=S.retri;S.retri=null;if(!r)return;const E=S.enemy;Stage.defFx&&Stage.defFx('retriBlast',delay);log(`Your Retribution Aegis shatters and detonates for ${r.p}!`);
   aliveFoes().forEach((F,i)=>{if(F===E)trueHit(E,r.p,'RETRIBUTION','#ffd36b',(delay||0)+260);else sideHit(F,r.p,'#ffd36b','RETRIBUTION',(delay||0)+300+i*60,[])})}

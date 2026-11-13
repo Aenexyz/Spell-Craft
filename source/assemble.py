@@ -141,6 +141,7 @@ R("  let last=performance.now();",open('stage_vfx.js').read()+open('path_art.js'
 R("  let last=performance.now();",open('spells_vfx.js').read()+"\n  let last=performance.now();")
 R("  let last=performance.now();",open('phys_vfx.js').read()+"\n  let last=performance.now();")
 R("  let last=performance.now();",open('def_vfx.js').read()+"\n  let last=performance.now();")
+R("  let last=performance.now();",open('gen_vfx.js').read()+"\n  let last=performance.now();")
 R("    enemyAttack(dur){if(st.enemy)st.enemy.act={t0:performance.now(),dur:dur||560}},",
 """    enemyAttack(dur,type){if(!st.enemy)return;st.enemy.act={t0:now_(),dur:dur||560,type};if(type==='heavy'){const m=enemyMetrics();ring(m.x,m.feet-m.h*.5,m.h,'#e8574d',0,500,2.4);flash('#ff3a2a',260,.18);shake(280,st.ps*2.2)}},
     perform(R){const d=this._perform(R);
@@ -602,6 +603,8 @@ R("    poisonFx(){","    cleaveFx(){const m=enemyMetrics();if(!m)return;ring(m.x
 R("    poisonFx(){","    defFx:(k,d)=>window.__defFx&&window.__defFx(k,d),\n    poisonFx(){")
 R("      if(P.gh&&P.gh.length){P.gh=P.gh.filter(g=>now-g.t<260);","      P.lastHF={c:hf.c,key:hf.key,w:hf.f.w||hf.c.width,h:hf.f.h||hf.c.height,ax:hf.f.ax,fy:hf.f.fy||hf.c.height,k,x:px+ox,y:feet+oy,fl:P.teleFlip};\n      if(P.gh&&P.gh.length){P.gh=P.gh.filter(g=>now-g.t<260);")
 
+R("      if(R.spell&&SPELLFX[R.spell]){if(R.spell.startsWith('arrowshot+')","      if(R.spell&&R.gen&&!SPELLFX[R.spell])SPELLFX[R.spell]=(RR,c)=>genFx(RR,c);\n      if(R.spell&&SPELLFX[R.spell]){if(R.spell.startsWith('arrowshot+')")
+
 css_add="""
 .item-ic{image-rendering:pixelated}
 .card-mana{font-family:var(--f-num);font-weight:700;font-size:14px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:#e8f3ff;background:radial-gradient(circle at 35% 30%,#6cb2ff,#2a5fc0 70%);border:1px solid #9fcaff;box-shadow:0 0 6px #4aa8ff88}
@@ -901,6 +904,6 @@ body.mob .path-foot{font-size:11px;text-align:center}
 """
 head2='<meta charset="utf-8">\n'+head.replace('</style>',css_add+'</style>').replace('<title>Fusebound</title>','<title>SpellCraft</title>')
 body_skel=body_skel.replace('<div class="stage-label" id="stageLabel"></div>','<div class="stage-label" id="stageLabel"></div><div id="hudLayer"></div><div id="resultLayer"></div><div id="dropLayer"></div>')
-js='<script>\n/*__ASSETS__*/\n(()=>{\ntry{const rs=document.documentElement.style;rs.setProperty(\'--items-url\',`url("${ASSET.items}")`);[[\'frame\',\'hbFrame\'],[\'g\',\'hbG\'],[\'b\',\'hbB\'],[\'r\',\'hbR\']].forEach(([k,a])=>rs.setProperty(\'--hb-\'+k,`url("${ASSET[a]}")`))}catch(e){}\n'+open('logic_data.js').read()+'\n'+open('logic_spells.js').read()+'\n'+sprites+atlas+'\nlet S;\n'+stage+'\n'+open('logic_game.js').read()+'\n})();\n</script>\n'
+js='<script>\n/*__ASSETS__*/\n(()=>{\ntry{const rs=document.documentElement.style;rs.setProperty(\'--items-url\',`url("${ASSET.items}")`);[[\'frame\',\'hbFrame\'],[\'g\',\'hbG\'],[\'b\',\'hbB\'],[\'r\',\'hbR\']].forEach(([k,a])=>rs.setProperty(\'--hb-\'+k,`url("${ASSET[a]}")`))}catch(e){}\n'+open('logic_data.js').read()+'\n'+open('logic_spells.js').read()+open('logic_gen.js').read()+'\n'+sprites+atlas+'\nlet S;\n'+stage+'\n'+open('logic_game.js').read()+'\n})();\n</script>\n'
 open('fusebound.src.html','w').write(head2+body_skel+js)
 print('ok')
