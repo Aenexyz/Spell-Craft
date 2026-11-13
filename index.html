@@ -4007,7 +4007,7 @@ function resultHTML(){
   if(R.charged&&!R.lstrike)L('arrowshot','var(--phys)',R.charged.float?'Power ×0.8–10':`Power ×${R.charged.ilo||3}–${R.charged.ihi||7}`);
   if(R.charged&&R.charged.crit)L('lightning','var(--lightning)','Crit chance 50%');
   if(R.gtags)R.gtags.forEach(t=>L('punch','var(--brass)',t));
-  if(S.cls&&[c1,c2].every(c=>CARDS[c.key].cat===CLASSES[S.cls].cat))L('ult',CLASSES[S.cls].col,`Add a 3rd ${CLASSES[S.cls].ultCat} card: ${CLASSES[S.cls].ult}`);{const g=stats();if(R.dmg.length&&(g.crit||g.supernova))L('lightning','var(--brass)',g.supernova&&((S.combos||0)+1)%3===0?'SUPERNOVA crit':`Crit ${g.crit||0}%`)}
+  if(S.cls&&[c1,c2].every(c=>clsCat(c.key)===CLASSES[S.cls].cat))L('ult',CLASSES[S.cls].col,`Add a 3rd ${CLASSES[S.cls].ultCat} card: ${CLASSES[S.cls].ult}`);{const g=stats();if(R.dmg.length&&(g.crit||g.supernova))L('lightning','var(--brass)',g.supernova&&((S.combos||0)+1)%3===0?'SUPERNOVA crit':`Crit ${g.crit||0}%`)}
   {const g=stats();if(R.dmg.length&&g.addl)L('lightning','var(--lightning)',`+${g.addl} Lightning (item)`);if(R.dmg.length&&g.souls)L('dark','var(--dark)',`+${g.souls} Dark (souls)`)}
   if(R.dodgeAdd)L('dodge','var(--guard)',`Dodge +${R.dodgeAdd}%`);
   if(R.segs)L('multi','var(--phys)',`Hits ×${R.segs.length}`);
@@ -4365,8 +4365,8 @@ window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.ho
 /* ===== Classes: Aegis Warden, Arcanist, Swordsman — passives and 3-card ultimates ===== */
 const CLASSES={
  warden:{name:'Aegis Warden',cat:'def',item:'warden_shield',col:'#59c9c2',tag:'Defender',
-   lines:['Fights with a shield as a weapon: starts with a Round Shield (Shield Bash), no sword','Shield attacks deal ×1.25 damage','Each turn: +1 block per card level in your deck'],
-   ult:'Citadel Crash',ultCat:'Defense',ultText:'Combine 3 Defense cards: raise a fortress around you, then bring its walls crashing down on every enemy.'},
+   lines:['Fights with a shield as a weapon: starts with a Round Shield (Shield Bash), no sword','Shield attacks deal ×1.25 damage','Each turn: +1 block per card level in your deck','Shield Bash and Shield Throw count as Defense cards for the ultimate'],
+   ult:'Citadel Crash',ultCat:'Defense',ultText:'Combine 3 Defense or shield cards: raise a fortress around you, then bring its walls crashing down on every enemy.'},
  arcanist:{name:'Arcanist',cat:'elem',item:'apprentice_wand',col:'#b18bff',tag:'Spellcaster',
    lines:['Starts with an Apprentice Wand (elements cost 1 less mana)','Affinity with your first element: its damage ×1.25','Starts with a random element card'],
    ult:'Prismatic Cataclysm',ultCat:'Element',ultText:'Combine 3 Element cards: fuse their circles into a prism that rains each element on every enemy.'},
@@ -4394,7 +4394,8 @@ function clsMods(R,c1,c2){if(!S.cls||!R.dmg.length)return;const ks=[c1.key,c2.ke
 function clsAfterHit(E,R,total,notes){if(!S.cls||!R.dmg.length||R.warded)return;
   if(R.swordHeal){const n=R.ticks||(R.segs?R.segs.length:0)||(R.double?2:1),h=Math.min(n,S.maxHp-S.hp);if(h>0){S.hp+=h;Stage.float('player',`+${h}`,'#7fe08a','BLADE HEAL',360);notes.push(`<span class="w">healed ${h}</span>`)}}
   if(R.swordCleave&&total>0){const others=(S.foes||[]).filter(F=>F!==E&&F.hp>0).slice(0,2);if(others.length){const d=Math.max(1,Math.round(total*.3));others.forEach((F,i)=>sideHit(F,d,'#ffe0b0','CLEAVE',220+i*90,notes));notes.push(`<span class="w">the blade cuts ${others.length} more for ${d}</span>`)}}}
-function canThird(id){if(!S.cls||S.sel.length!==2)return false;const cat=CLASSES[S.cls].cat,c=card(id);return!!c&&CARDS[c.key].cat===cat&&S.sel.every(x=>{const cc=card(x);return cc&&CARDS[cc.key].cat===cat})}
+function clsCat(k){return S.cls==='warden'&&(k==='shieldbash'||k==='shieldthrow')?'def':CARDS[k].cat}
+function canThird(id){if(!S.cls||S.sel.length!==2)return false;const cat=CLASSES[S.cls].cat,c=card(id);return!!c&&clsCat(c.key)===cat&&S.sel.every(x=>{const cc=card(x);return cc&&clsCat(cc.key)===cat})}
 function ultBuild(cs){const u=cs.reduce((a,c)=>a+effLv(c),0),k=S.cls,R={ult:true,spell:'ult_'+k,name:CLASSES[k].ult,dmg:[],fx:[],phys:[],kind:'cast',charge:[],u,key:'ult_'+k,block:0,barrier:0};
   if(k==='warden'){R.barrier=3*u;R.block=2*u;R.crash=3*u}
   if(k==='arcanist'){R.els=cs.map(c=>c.key);R.per=4*u}

@@ -759,7 +759,7 @@ function resultHTML(){
   if(R.charged&&!R.lstrike)L('arrowshot','var(--phys)',R.charged.float?'Power ×0.8–10':`Power ×${R.charged.ilo||3}–${R.charged.ihi||7}`);
   if(R.charged&&R.charged.crit)L('lightning','var(--lightning)','Crit chance 50%');
   if(R.gtags)R.gtags.forEach(t=>L('punch','var(--brass)',t));
-  if(S.cls&&[c1,c2].every(c=>CARDS[c.key].cat===CLASSES[S.cls].cat))L('ult',CLASSES[S.cls].col,`Add a 3rd ${CLASSES[S.cls].ultCat} card: ${CLASSES[S.cls].ult}`);{const g=stats();if(R.dmg.length&&(g.crit||g.supernova))L('lightning','var(--brass)',g.supernova&&((S.combos||0)+1)%3===0?'SUPERNOVA crit':`Crit ${g.crit||0}%`)}
+  if(S.cls&&[c1,c2].every(c=>clsCat(c.key)===CLASSES[S.cls].cat))L('ult',CLASSES[S.cls].col,`Add a 3rd ${CLASSES[S.cls].ultCat} card: ${CLASSES[S.cls].ult}`);{const g=stats();if(R.dmg.length&&(g.crit||g.supernova))L('lightning','var(--brass)',g.supernova&&((S.combos||0)+1)%3===0?'SUPERNOVA crit':`Crit ${g.crit||0}%`)}
   {const g=stats();if(R.dmg.length&&g.addl)L('lightning','var(--lightning)',`+${g.addl} Lightning (item)`);if(R.dmg.length&&g.souls)L('dark','var(--dark)',`+${g.souls} Dark (souls)`)}
   if(R.dodgeAdd)L('dodge','var(--guard)',`Dodge +${R.dodgeAdd}%`);
   if(R.segs)L('multi','var(--phys)',`Hits ×${R.segs.length}`);
