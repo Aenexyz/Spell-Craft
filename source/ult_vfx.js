@@ -52,40 +52,45 @@
   });
 
   // ---- Argent Knight: armor painted onto the stickman rig, a flowing cape, and two orbiting shields
-  const KN={dk:'#2a303c',st:'#7f8aa0',mid:'#b4bdcc',lt:'#e8eef6',wh:'#ffffff',gd:'#e8b840',gl:'#fff0a0',pl:'#4a9cff',pl2:'#9fd0ff',cp:'#2a5cc0',cp2:'#173a80'};
+  const KN={dk:'#1e2524',st:'#6a7774',mid:'#9eaba6',lt:'#d6dfdb',wh:'#f4f8f6',gd:'#d9a531',gl:'#ffe08a',gd2:'#8a6414',tb:'#34413d',tb2:'#253029',pl:'#d9a531',pl2:'#ffe08a',cp:'#34413d',cp2:'#253029'};
   function knShield(x,y,sc,a){const w=S&&S.gear&&S.gear.weapon,key=w&&ITEMS[w.key]&&ITEMS[w.key].slot==='shield'?w.key:'warden_shield',ii=ITEM_ATLAS.idx[key];if(ii==null||!itemsImg.complete)return;const c=ITEM_ATLAS.cols,sz=st.ps*7*sc;ctx.save();ctx.globalAlpha=a;ctx.imageSmoothingEnabled=false;ctx.shadowColor='#e8f4ff';ctx.shadowBlur=st.ps*3;ctx.drawImage(itemsImg,(ii%c)*64,Math.floor(ii/c)*64,64,64,Math.round(x-sz/2),Math.round(y-sz/2),Math.round(sz),Math.round(sz));ctx.restore()}
   function knEnsure(){if(st._knOv)return;st._knOv=true;DOV.push({on:()=>(S.knightT>0)||st.player.knightOrb,draw:now=>{const pm=PMx(),cx=pm.x,cy=pm.feet-pm.h*.55;for(let i=0;i<2;i++){const a=now/700+i*Math.PI,x=cx+Math.cos(a)*pm.w*1.6,y=cy+Math.sin(a)*pm.h*.28+Math.sin(now/300+i)*st.ps,front=Math.sin(a)>0;
       for(let t=1;t<6;t++){const b=a-t*.12;ctx.globalAlpha=(.35-t*.05);ctx.fillStyle=KN.lt;ctx.fillRect(Math.round(cx+Math.cos(b)*pm.w*1.6),Math.round(cy+Math.sin(b)*pm.h*.28),uPx(),uPx())}
       knShield(x,y,front?1:.85,front?1:.7)}
     if(Math.random()<.3)spawn(cx+(Math.random()-.5)*pm.w*2,cy+(Math.random()-.5)*pm.h,{vy:-.02*U(),color:Math.random()<.5?'#ffffff':'#9fd0ff',size:st.ps*.4,life:500})}});dfEnsure()}
-  function knightCape(hf,x0,y0,k,now,kp){const f=hf.f;if(!f.rig||!f.nk||!f.hp)return;const X=v=>x0+v*k,Y=v=>y0+v*k,nk=f.nk,hp=f.hp,r=(f.hd&&f.hd[2])||7;ctx.save();ctx.globalAlpha=kp;
-    const g=ctx.createRadialGradient(X(hp[0]),Y((nk[1]+hp[1])/2),0,X(hp[0]),Y((nk[1]+hp[1])/2),r*k*5);g.addColorStop(0,'#bfe0ff55');g.addColorStop(1,'#bfe0ff00');ctx.fillStyle=g;ctx.fillRect(X(hp[0]-r*5),Y(nk[1]-r*5),r*10*k,r*12*k);
-    const L=Math.hypot(hp[0]-nk[0],hp[1]-nk[1])*1.9,wv=Math.sin(now/180)*r*.5,pts=[[nk[0]-r*.5,nk[1]],[nk[0]+r*.4,nk[1]],[nk[0]-r*1.4+wv*.4,nk[1]+L*.55],[nk[0]-r*2.6+wv,nk[1]+L],[nk[0]-r*.6+wv*.6,nk[1]+L*.98]];
-    ctx.fillStyle=KN.cp2;ctx.beginPath();ctx.moveTo(X(pts[0][0]),Y(pts[0][1]));ctx.lineTo(X(pts[1][0]),Y(pts[1][1]));ctx.lineTo(X(pts[4][0]),Y(pts[4][1]));ctx.lineTo(X(pts[3][0]),Y(pts[3][1]));ctx.lineTo(X(pts[2][0]),Y(pts[2][1]));ctx.closePath();ctx.fill();
-    ctx.fillStyle=KN.cp;ctx.beginPath();ctx.moveTo(X(pts[0][0]),Y(pts[0][1]));ctx.lineTo(X(pts[1][0]-r*.3),Y(pts[1][1]));ctx.lineTo(X(pts[4][0]-r*.5),Y(pts[4][1]-r*.6));ctx.lineTo(X(pts[3][0]+r*.6),Y(pts[3][1]-r*.4));ctx.closePath();ctx.fill();
-    ctx.fillStyle=KN.gd;for(let t=0;t<=1;t+=.1)ctx.fillRect(Math.round(X(pts[3][0]+(pts[4][0]-pts[3][0])*t)),Math.round(Y(pts[3][1]+(pts[4][1]-pts[3][1])*t)),Math.max(1,k*1.2),Math.max(1,k*1.2));ctx.restore()}
+  function knightCape(hf,x0,y0,k,now,kp){const f=hf.f;if(!f.rig||!f.nk||!f.hp)return;const X=v=>x0+v*k,Y=v=>y0+v*k,nk=f.nk,hp=f.hp,r=(f.hd&&f.hd[2])||7;ctx.save();ctx.globalAlpha=kp*.9;
+    const g=ctx.createRadialGradient(X(hp[0]),Y((nk[1]+hp[1])/2),0,X(hp[0]),Y((nk[1]+hp[1])/2),r*k*5);g.addColorStop(0,'#e8f0ec44');g.addColorStop(1,'#e8f0ec00');ctx.fillStyle=g;ctx.fillRect(X(hp[0]-r*5),Y(nk[1]-r*5),r*10*k,r*12*k);
+    // back half of the tabard, swaying behind the legs
+    const sw=Math.sin(now/260)*r*.25;ctx.fillStyle=KN.tb2;ctx.beginPath();ctx.moveTo(X(hp[0]-r*.7),Y(hp[1]));ctx.lineTo(X(hp[0]+r*.5),Y(hp[1]));ctx.lineTo(X(hp[0]+r*.45-sw),Y(hp[1]+r*2.6));ctx.lineTo(X(hp[0]-r*.95-sw),Y(hp[1]+r*2.5));ctx.closePath();ctx.fill();ctx.restore()}
   function knightArmor(hf,x0,y0,k,now,kp){const f=hf.f;if(!f.rig||!f.hd||!f.nk||!f.hp)return;const X=v=>x0+v*k,Y=v=>y0+v*k,q=Math.max(1,Math.round(k*1.1)),r=f.hd[2],off=(1-kp)*r*6;ctx.save();ctx.imageSmoothingEnabled=false;
-    const disc=(cx,cy,rr,c)=>{ctx.fillStyle=c;pxDisc(X(cx),Y(cy),rr*k,q)};
-    const nk=f.nk,hp=f.hp,tx=hp[0]-nk[0],ty=hp[1]-nk[1],tl=Math.hypot(tx,ty)||1,px=-ty/tl,py=tx/tl;
-    // chest plate
-    ctx.globalAlpha=kp;{const o=off*.6,w1=r*1.05,w2=r*.75,P=[[nk[0]+px*w1,nk[1]+py*w1+o],[nk[0]-px*w1,nk[1]-py*w1+o],[hp[0]-px*w2,hp[1]-py*w2+o],[hp[0]+px*w2,hp[1]+py*w2+o]];
-      const poly=(pts,c)=>{ctx.fillStyle=c;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1])));ctx.closePath();ctx.fill()};
-      poly(P.map(([a,b])=>[a+(a-(nk[0]+hp[0])/2)*.12,b+(b-(nk[1]+hp[1])/2)*.08]),KN.dk);poly(P,KN.mid);poly([P[0],[(P[0][0]+P[1][0])/2,(P[0][1]+P[1][1])/2],[(P[3][0]+P[2][0])/2,(P[3][1]+P[2][1])/2],P[3]],KN.lt);
-      ctx.fillStyle=KN.wh;for(let t=.1;t<.9;t+=.08)ctx.fillRect(Math.round(X(nk[0]+tx*t)),Math.round(Y(nk[1]+ty*t+o)),q,q);
-      ctx.fillStyle=KN.gd;for(let t=0;t<=1;t+=.12)ctx.fillRect(Math.round(X(P[0][0]+(P[1][0]-P[0][0])*t)),Math.round(Y(P[0][1]+(P[1][1]-P[0][1])*t)),q,q);
-      ctx.fillStyle=KN.dk;ctx.fillRect(Math.round(X(hp[0]-r*.85)),Math.round(Y(hp[1]-r*.15+o)),Math.round(r*1.7*k),Math.round(r*.35*k));disc(hp[0],hp[1]+o/k*0,r*.22,KN.gd)}
-    // pauldrons
-    ctx.globalAlpha=kp;[[1,-off],[-1,off]].forEach(([sd,o])=>{const cx=nk[0]+px*r*.95*sd+o*.3,cy=nk[1]+py*r*.95*sd+r*.15;disc(cx,cy,r*.62,KN.dk);disc(cx,cy-r*.05,r*.52,KN.mid);disc(cx-r*.12,cy-r*.18,r*.28,KN.lt);ctx.fillStyle=KN.gd;ctx.fillRect(Math.round(X(cx-r*.5)),Math.round(Y(cy+r*.3)),Math.round(r*k),q)});
-    // gauntlets and greaves
-    if(f.hx!=null){disc(f.hx,f.hy,r*.42,KN.dk);disc(f.hx,f.hy,r*.33,KN.mid);disc(f.hx-r*.1,f.hy-r*.1,r*.15,KN.wh)}
-    if(f.bx!=null){disc(f.bx,f.by,r*.4,KN.dk);disc(f.bx,f.by,r*.31,KN.st)}
-    (f.ft||[]).forEach((ft,i)=>{const o=off*(i?1:-1)*.4;ctx.fillStyle=KN.dk;ctx.fillRect(Math.round(X(ft[0]-r*.45+o)),Math.round(Y(ft[1]-r*1.2)),Math.round(r*.95*k),Math.round(r*1.3*k));ctx.fillStyle=i?KN.mid:KN.st;ctx.fillRect(Math.round(X(ft[0]-r*.35+o)),Math.round(Y(ft[1]-r*1.1)),Math.round(r*.75*k),Math.round(r*1.05*k));ctx.fillStyle=KN.lt;ctx.fillRect(Math.round(X(ft[0]-r*.35+o)),Math.round(Y(ft[1]-r*1.1)),q,Math.round(r*.9*k))});
-    // great helm with visor and plume
-    {const hx=f.hd[0],hy=f.hd[1]-off*1.2;ctx.globalAlpha=kp;
-      for(let i=0;i<7;i++){const t=i/6;disc(hx-r*(.2+t*1.5),hy-r*(1.25-t*.15)+Math.sin(now/160+t*3)*r*.12*t,r*(.38-t*.03),i%2?KN.pl:KN.pl2)}
-      disc(hx,hy,r*1.18,KN.dk);disc(hx,hy,r*1.06,KN.mid);disc(hx-r*.25,hy-r*.3,r*.55,KN.lt);disc(hx-r*.35,hy-r*.45,r*.2,KN.wh);
-      ctx.fillStyle=KN.dk;ctx.fillRect(Math.round(X(hx-r*.1)),Math.round(Y(hy-r*.1)),Math.round(r*1.15*k),Math.round(r*.28*k));
-      ctx.fillStyle=Math.sin(now/220)>-.3?'#9fd0ff':'#ffffff';ctx.fillRect(Math.round(X(hx+r*.55)),Math.round(Y(hy-r*.06)),Math.max(q,Math.round(r*.3*k)),Math.max(1,Math.round(r*.18*k)));
-      ctx.fillStyle=KN.gd;ctx.fillRect(Math.round(X(hx-r*.08)),Math.round(Y(hy-r*1.15)),q*2,Math.round(r*.9*k));ctx.fillRect(Math.round(X(hx-r*1.0)),Math.round(Y(hy+r*.55)),Math.round(r*2*k),q)}
+    const disc=(cx,cy,rr,c)=>{ctx.fillStyle=c;pxDisc(X(cx),Y(cy),rr*k,q)};const box=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(Math.round(X(x)),Math.round(Y(y)),Math.max(1,Math.round(w*k)),Math.max(1,Math.round(h*k)))};
+    const poly=(pts,c)=>{ctx.fillStyle=c;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1])));ctx.closePath();ctx.fill()};
+    const nk=f.nk,hp=f.hp,tx=hp[0]-nk[0],ty=hp[1]-nk[1],tl=Math.hypot(tx,ty)||1,px=-ty/tl,py=tx/tl;ctx.globalAlpha=kp;
+    // greaves and sabatons
+    (f.ft||[]).forEach((ft,i)=>{const o=off*(i?1:-1)*.4,x=ft[0]+o;box(x-r*.5,ft[1]-r*1.7,r*1.0,r*1.75,KN.dk);box(x-r*.4,ft[1]-r*1.6,r*.8,r*1.45,i?KN.mid:KN.st);box(x-r*.4,ft[1]-r*1.6,r*.2,r*1.3,KN.lt);box(x-r*.45,ft[1]-r*1.0,r*.9,r*.18,KN.gd);box(x-r*.55,ft[1]-r*.35,r*1.25,r*.4,KN.dk);box(x-r*.45,ft[1]-r*.3,r*1.05,r*.25,KN.st)});
+    // breastplate with gold trim
+    {const o=off*.6,w1=r*1.1,w2=r*.8,P=[[nk[0]+px*w1,nk[1]+py*w1+o],[nk[0]-px*w1,nk[1]-py*w1+o],[hp[0]-px*w2,hp[1]-py*w2+o],[hp[0]+px*w2,hp[1]+py*w2+o]];
+      poly(P.map(([a,b])=>[a+(a-(nk[0]+hp[0])/2)*.14,b+(b-(nk[1]+hp[1])/2)*.08]),KN.dk);poly(P,KN.mid);
+      poly([P[0],[(P[0][0]+P[1][0])/2,(P[0][1]+P[1][1])/2],[(P[3][0]+P[2][0])/2,(P[3][1]+P[2][1])/2],P[3]],KN.lt);
+      poly([[(P[0][0]*3+P[1][0])/4,(P[0][1]*3+P[1][1])/4],[(P[0][0]+P[1][0]*3)/4,(P[0][1]+P[1][1]*3)/4],[(P[3][0]+P[2][0]*3)/4,(P[3][1]+P[2][1]*3)/4],[(P[3][0]*3+P[2][0])/4,(P[3][1]*3+P[2][1])/4]],KN.st);
+      ctx.fillStyle=KN.wh;for(let t=.12;t<.6;t+=.09)ctx.fillRect(Math.round(X(nk[0]+tx*t-px*r*.45)),Math.round(Y(nk[1]+ty*t-py*r*.45+o)),q,q);
+      ctx.fillStyle=KN.gd;for(let t=0;t<=1;t+=.1){ctx.fillRect(Math.round(X(P[0][0]+(P[1][0]-P[0][0])*t)),Math.round(Y(P[0][1]+(P[1][1]-P[0][1])*t)),q,q*2)}
+      // belt with buckle
+      box(hp[0]-r*.95,hp[1]-r*.25+o/k*0,r*1.9,r*.42,KN.gd2);box(hp[0]-r*.95,hp[1]-r*.25,r*1.9,r*.2,KN.gd);box(hp[0]-r*.22,hp[1]-r*.32,r*.44,r*.56,KN.gl);box(hp[0]-r*.1,hp[1]-r*.2,r*.2,r*.3,KN.gd2)}
+    // front tabard hanging from the belt, gold hem
+    {const sw=Math.sin(now/240)*r*.2,T=[[hp[0]-r*.6,hp[1]+r*.2],[hp[0]+r*.6,hp[1]+r*.2],[hp[0]+r*.75+sw,hp[1]+r*2.7],[hp[0]-r*.75+sw,hp[1]+r*2.7]];poly(T,KN.tb);poly([T[0],[hp[0]-r*.1,T[0][1]],[hp[0]-r*.2+sw,T[3][1]],T[3]],KN.tb2);
+      ctx.fillStyle=KN.gd;for(let t=0;t<=1;t+=.1)ctx.fillRect(Math.round(X(T[3][0]+(T[2][0]-T[3][0])*t)),Math.round(Y(T[3][1]-r*.15)),q,q);for(let t=0;t<=1;t+=.12){ctx.fillRect(Math.round(X(T[0][0]+(T[3][0]-T[0][0])*t)),Math.round(Y(T[0][1]+(T[3][1]-T[0][1])*t)),q,q);ctx.fillRect(Math.round(X(T[1][0]+(T[2][0]-T[1][0])*t)),Math.round(Y(T[1][1]+(T[2][1]-T[1][1])*t)),q,q)}}
+    // layered pauldrons with gold edges
+    [[1,-off],[-1,off]].forEach(([sd,o])=>{const cx=nk[0]+px*r*1.0*sd+o*.3,cy=nk[1]+py*r*1.0*sd+r*.2;disc(cx,cy,r*.7,KN.dk);disc(cx,cy-r*.05,r*.6,sd>0?KN.mid:KN.st);disc(cx-r*.15,cy-r*.2,r*.3,KN.lt);box(cx-r*.6,cy+r*.18,r*1.2,r*.18,KN.gd);box(cx-r*.55,cy+r*.45,r*1.1,r*.16,KN.st);box(cx-r*.5,cy+r*.45,r*1.0,r*.08,KN.gd)});
+    // gauntlets
+    if(f.hx!=null){disc(f.hx,f.hy,r*.45,KN.dk);disc(f.hx,f.hy,r*.35,KN.mid);box(f.hx-r*.35,f.hy-r*.45,r*.7,r*.12,KN.gd)}
+    if(f.bx!=null){disc(f.bx,f.by,r*.42,KN.dk);disc(f.bx,f.by,r*.32,KN.st)}
+    // flat-topped great helm: gold brow band, eye slit and breathing holes
+    {const hx=f.hd[0],hy=f.hd[1]-off*1.2,w=r*2.15,h=r*2.25,tl=hx-w/2,tp=hy-h*.55;
+      box(tl-r*.12,tp-r*.12,w+r*.24,h+r*.2,KN.dk);box(tl,tp,w,h,KN.mid);box(tl,tp,w*.38,h,KN.lt);box(tl+w*.7,tp,w*.3,h,KN.st);box(tl+r*.15,tp,w-r*.3,r*.2,KN.wh);
+      box(tl,tp+h*.3,w,r*.28,KN.gd);box(tl,tp+h*.3+r*.28,w,r*.1,KN.gd2);
+      box(tl+w*.18,tp+h*.47,w*.82,r*.26,KN.dk);ctx.fillStyle=Math.sin(now/240)>-.4?'#bfe9ff':'#ffffff';ctx.fillRect(Math.round(X(tl+w*.7)),Math.round(Y(tp+h*.5)),Math.max(q,Math.round(r*.3*k)),Math.max(1,Math.round(r*.14*k)));
+      for(let yy=0;yy<3;yy++)for(let xx=0;xx<3;xx++)box(tl+w*(.55+xx*.13),tp+h*(.68+yy*.09),r*.12,r*.12,KN.dk);
+      box(tl,tp+h-r*.22,w,r*.22,KN.gd);box(tl+w*.47,tp+h*.3,r*.22,h*.7,KN.st)}
     ctx.restore();
     if(kp>=1&&Math.random()<.08){const p=PMx();spawn(p.x+(Math.random()-.5)*p.w,p.feet-Math.random()*p.h,{vy:-.02*U(),color:'#ffffff',size:st.ps*.35,life:300,shape:'plus'})}}
