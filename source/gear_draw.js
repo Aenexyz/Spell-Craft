@@ -60,7 +60,7 @@
       if(gv.t==='spikeglove'){ctx.fillStyle=gv.f;for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(gx+r*.3,gy+i*r*.24-r*.08);ctx.lineTo(gx+r*.62,gy+i*r*.24);ctx.lineTo(gx+r*.3,gy+i*r*.24+r*.08);ctx.fill()}}}
     const hk=g.head&&g.head.key;
     if(hk&&typeof itemsImg!=='undefined'&&itemsImg.complete&&itemsImg.naturalWidth&&ITEM_ATLAS.idx[hk]!=null){
-      const TOP={iron_helm:8,mystic_hood:8,gold_helm:18,plumed_helm:20}[hk]??8,ii=ITEM_ATLAS.idx[hk],cs=ITEM_ATLAS.cols,sc=r*2.5/48;
+      const TOP={iron_helm:8,mystic_hood:8,gold_helm:18,plumed_helm:20,knight_helm:8,reaper_cowl:4,dragon_helm:12,astral_kabuto:22}[hk]??8,ii=ITEM_ATLAS.idx[hk],cs=ITEM_ATLAS.cols,sc=r*2.5/48;
       ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(itemsImg,(ii%cs)*64,Math.floor(ii/cs)*64,64,64,hx-32*sc,hy-r*1.2-TOP*sc,64*sc,64*sc);ctx.restore()}
     spk('head',[hx,hy-r*.6],r*2.2,r*2,1);
     spk('chest',[(nk[0]+hp[0])/2,(nk[1]+hp[1])/2],r*1.6,r*2.4,2);

@@ -10,7 +10,8 @@ Open `index.html` in any modern browser. It is a single self-contained file (all
 
 - Card fusion with dozens of unique combinations (Laser Beam with phoenix, Lightning Strike, Gatling Punch, Solar Flare, Tidal Wave, Void Rift, Judgment, Grave Grasp, Hellfire, Thermal Shock, Shatter Bolt, Aurora, Typhoon, Phoenix Arrow, Frost Comet, Thunder Rain, Seraph Arrow, Dragonfire Lance, Thunder Spear, Heaven's Lance, Omnislash, Iaido Flash, Dragon Rush, Hurricane Kick, Titan Smash, Meteor, Earthquake, Ice Age, Freezing/Burning/Aqua/Abyssal Slash, Air Volley, Stone Punch, Healing Rain, Bulwark and more)
 - Mana system: element cards cost mana, physical cards restore it, skip a turn to recover
-- Gear that shows on the hero (helmets, chest armour, capes, staffs, amulets) with stat bonuses
+- Gear that shows on the hero, with four 5-piece sets (Knight of the Oath, Reaper's Harvest, Dragon Slayer, Astral Ronin) and set bonuses
+- Gold from battles and chests, spent at the Wandering Merchant on skill cards, gear and potions
 - Three floors: Mushroom Woods, Volcanic Rift and Ember Hollow, with elite two-monster fights
 - Animated hero sprites, monster sprite sheets and particle effects
 

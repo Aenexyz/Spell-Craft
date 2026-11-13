@@ -5,14 +5,14 @@ const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(M
 const pickN=(arr,n)=>shuffle(arr).slice(0,n);
 function newGame(){
   S={v:2,phase:'title',mana:100,maxMana:100,hp:50,maxHp:50,baseMax:50,gear:{},perm:{atk:0,def:0},deck:[],uid:0,level:0,node:0,route:[],enemy:null,hand:[],draw:[],disc:[],sel:[],
-    block:0,barrier:0,barrierT:0,thorns:null,dodge:0,parry:null,counter:null,log:[],codex:[],turns:0,kills:0,ev:null,reward:null,busy:false,codexOpen:false,charOpen:false,acq:null,toast:null};
+    gold:0,block:0,barrier:0,barrierT:0,thorns:null,dodge:0,parry:null,counter:null,log:[],codex:[],turns:0,kills:0,ev:null,reward:null,busy:false,codexOpen:false,charOpen:false,acq:null,toast:null};
   ['stab','punch','block'].forEach(k=>addCard(k));addCard(rnd(ELEMS));
   S.gear.weapon={key:'starter_sword',rarity:'common',stats:{},cardLvl:1};
   S.route=buildLevel(0);
 }
 function addCard(key,lvl=1){S.deck.push({id:'c'+(++S.uid),key,lvl})}
 function buildLevel(li){
-  const L=LEVELS[li],evs=shuffle(EVENT_KEYS);let mi=0,ei=0;
+  const L=LEVELS[li],evs=shuffle(EVENT_KEYS.filter(k=>k!=='merchant'));evs.splice(Math.floor(Math.random()*Math.max(1,LAYOUT.filter(t=>t==='ev').length)),0,'merchant');let mi=0,ei=0;
   return LAYOUT.map(t=>{
     if(t==='m'){const P=L.pool.length,idx=Math.min(P-1,Math.floor(mi*P/6+Math.random()*P*.2));mi++;return{k:'m',id:L.pool[idx]}}
     if(t==='elite'){const top=shuffle(L.pool.slice(Math.floor(L.pool.length/2))),ids=[top[0],top[1]||top[0]];return{k:'elite',id:ids[0],ids}}
@@ -36,8 +36,14 @@ function nodeName(n){
 function stats(){
   const t={atk:S.perm.atk||0,def:S.perm.def||0,lv:{}};
   Object.values(S.gear).forEach(g=>{for(const k in g.stats){if(k==='lv'){for(const e in g.stats.lv)t.lv[e]=(t.lv[e]||0)+g.stats.lv[e]}else t[k]=(t[k]||0)+g.stats[k]}});
+  const sc=setCounts();for(const id in sc){const B=SETS[id].bonus;for(const n in B)if(sc[id]>=+n)for(const k in B[n])t[k]=(t[k]||0)+B[n][k]}
   return t;
 }
+function setCounts(){const c={};Object.values(S.gear).forEach(g=>{const s=g&&ITEMS[g.key]&&ITEMS[g.key].set;if(s)c[s]=(c[s]||0)+1});return c}
+const SET_TEXT={phys:v=>`+${v} damage on physical attacks`,physPct:v=>`+${v}% physical damage`,stunBlunt:v=>`Blunt hits have a ${v}% chance to stun`,barrierStart:v=>`Start every battle behind a ${v}-point barrier`,ls:v=>`Heal ${v}% of all damage you deal`,bleedHit:v=>`Physical hits make it bleed ${v} a turn for 2 turns`,execute:v=>`Enemies below ${v}% HP take double damage`,eliteDmg:v=>`+${v}% damage to elites and bosses`,dragonbane:()=>'Physical hits set it burning, and burning enemies take +30% physical damage',dodge:v=>`+${v}% dodge chance every turn`,mregen:v=>`Restore ${v} mana at the start of each turn`,supernova:()=>'Critical hits deal double damage, and every 3rd combo is a guaranteed critical star burst',def:v=>`+${v} block at the start of each turn`,fire:v=>`+${v} Fire damage`};
+function setBonusLines(id){const S2=SETS[id],B=S2.bonus,n=setCounts()[id]||0;return Object.keys(B).map(k=>({need:+k,on:n>=+k,title:S2.title&&S2.title[k],text:Object.entries(B[k]).map(([s,v])=>SET_TEXT[s]?SET_TEXT[s](v):`+${v} ${s}`).join(', ')}))}
+function setHTML(key,compact){const id=ITEMS[key].set;if(!id)return '';const S2=SETS[id],n=setCounts()[id]||0,tot=SET_PIECES[id].length;if(compact)return `<span class="setline" style="--sc:${S2.color}">${S2.name} set · ${n}/${tot}</span>`;
+  return `<div class="setbox" style="--sc:${S2.color}"><b>${S2.name}</b> <span class="num">${n}/${tot}</span><ul>${setBonusLines(id).map(l=>`<li class="${l.on?'on':''}"><span class="num">${l.need}</span>${l.title?`<i>${l.title}:</i> `:''}${l.text}</li>`).join('')}</ul></div>`}
 function recalc(){const old=S.maxHp;S.maxHp=S.baseMax+(stats().hp||0);if(S.maxHp>old)S.hp+=S.maxHp-old;S.hp=Math.min(S.hp,S.maxHp)}
 function grantedCards(){return Object.entries(S.gear).filter(([,g])=>ITEMS[g.key].grant).map(([slot,g])=>({id:'g-'+slot,key:ITEMS[g.key].grant,lvl:g.cardLvl||1,granted:true,slot}))}
 function battleDeck(){return S.deck.concat(grantedCards())}
@@ -131,6 +137,16 @@ function fuse(c1,c2){
   if(r.dmg.length&&r.kind==='support')r.kind='cast';
   return r;
 }
+const PHYS_T=['slash','pierce','blunt'];
+function gearMods(R,g){if(!R.dmg.length)return;const E=S.enemy;R.gtags=[];
+  if(g.phys){const p=R.dmg.find(p=>PHYS_T.includes(p.t));if(p)p.p+=g.phys}
+  if(g.physPct)R.dmg.forEach(p=>{if(PHYS_T.includes(p.t))p.p=Math.round(p.p*(1+g.physPct/100))});
+  if(E&&g.dragonbane&&E.burn>0&&R.dmg.some(p=>PHYS_T.includes(p.t))){R.dmg.forEach(p=>{if(PHYS_T.includes(p.t))p.p=Math.round(p.p*1.3)});R.gtags.push('Dragonsbane +30%')}
+  let m=1;if(E&&g.eliteDmg&&(E.elite||E.boss)){m*=1+g.eliteDmg/100;R.gtags.push(`Slayer +${g.eliteDmg}%`)}
+  if(E&&g.execute&&E.hp<=E.max*g.execute/100){m*=2;R.gtags.push('Execute ×2')}
+  if(g.berserk&&S.hp<=S.maxHp/2){m*=1+g.berserk/100;R.gtags.push(`Berserk +${g.berserk}%`)}
+  if(g.firstStrike&&!S.struck){m*=1+g.firstStrike/100;R.gtags.push(`First strike +${g.firstStrike}%`)}
+  if(m!==1)R.dmg.forEach(p=>p.p=Math.round(p.p*m));R.bonus=R.dmg.reduce((a,p)=>a+p.p,0)-R.base}
 function gearFuse(c1,c2){
   const R=fuse(c1,c2),g=stats();
   R.base=R.dmg.reduce((a,p)=>a+p.p,0);
@@ -144,13 +160,14 @@ function gearFuse(c1,c2){
     R.dmg=R.dmg.map(p=>p.t===el?{t:el,p:effLv(ic)*n+(g[el]||0),k:sk}:{...p,k:sk});R.base=R.dmg.reduce((a,p)=>a+p.p,0)-(g[el]||0)-(g.slash||0)}
   if(R.dmg.length&&g.atk)R.dmg[0].p+=g.atk;
   R.bonus=R.dmg.reduce((a,p)=>a+p.p,0)-R.base;
+  gearMods(R,g);
   if(R.spell&&ESPELL[R.spell].prep&&S.enemy)ESPELL[R.spell].prep(R,S.enemy);return R;
 }
 
 /* ================= loot ================= */
 function rollLoot(boost,minR){
   if(!minR&&Math.random()<.22){const k=rnd(POTION_KEYS);return{key:k,rarity:'common',stats:{...ITEMS[k].stats}}}
-  const k=rnd(GEAR_KEYS),r=Math.random(),n=S.level*5+S.node*.35+(boost||0);
+  let k=rnd(GEAR_KEYS);if(ITEMS[k].set&&Math.random()<.45)k=rnd(GEAR_KEYS);const r=Math.random(),n=S.level*5+S.node*.35+(boost||0);
   let rarity=r<.04+n*.012?'epic':r<.2+n*.025?'rare':'common';
   if(ITEMS[k].grant&&RANK[rarity]<1)rarity='rare';
   if(ITEMS[k].fixed)rarity=ITEMS[k].fixed;
@@ -159,7 +176,7 @@ function rollLoot(boost,minR){
   for(const s in ITEMS[k].stats){if(s==='revive'){st.revive=1}else if(s==='elv'){st.elv=rarity==='epic'?2:1}else if(s==='lv'){st.lv={};for(const e in ITEMS[k].stats.lv)st.lv[e]=rarity==='epic'?2:1}else st[s]=Math.max(1,Math.round(ITEMS[k].stats[s]*mult))}
   return{key:k,rarity,stats:st};
 }
-const STAT_TEXT={addl:v=>`+${v} Lightning damage added to every attack`,soul:v=>`Each kill adds +${v} Dark damage to every attack`,souls:v=>v?`Souls gathered: +${v} Dark damage now`:null,revive:()=>'If you fall, revive once with 50% HP and 30% mana (the amulet then shatters)',elv:v=>`+${v} level to all Element cards`,mcost:v=>`Element cards cost ${v} less mana`,atk:v=>`+${v} damage on every attack`,def:v=>`+${v} block at the start of each turn`,hp:v=>`+${v} max HP`,regen:v=>`Heal ${v} more after each fight`,
+const STAT_TEXT={phys:v=>`+${v} damage on physical attacks`,dodge:v=>`+${v}% dodge chance every turn`,mregen:v=>`Restore ${v} mana each turn`,crit:v=>`${v}% critical hit chance (×1.5 damage)`,ls:v=>`Heal ${v}% of all damage you deal`,bleedHit:v=>`Physical hits make it bleed ${v} a turn for 2 turns`,stunBlunt:v=>`Blunt hits have a ${v}% chance to stun`,berserk:v=>`+${v}% damage while below half HP`,firstStrike:v=>`Your first combo each battle deals +${v}% damage`,gold:v=>`+${v}% gold from battles`,addl:v=>`+${v} Lightning damage added to every attack`,soul:v=>`Each kill adds +${v} Dark damage to every attack`,souls:v=>v?`Souls gathered: +${v} Dark damage now`:null,revive:()=>'If you fall, revive once with 50% HP and 30% mana (the amulet then shatters)',elv:v=>`+${v} level to all Element cards`,mcost:v=>`Element cards cost ${v} less mana`,atk:v=>`+${v} damage on every attack`,def:v=>`+${v} block at the start of each turn`,hp:v=>`+${v} max HP`,regen:v=>`Heal ${v} more after each fight`,
   heal:v=>`Restores ${v} HP now`,pdef:v=>`+${v} block each turn, permanently`,php:v=>`+${v} max HP, permanently`,patk:v=>`+${v} damage on every attack, permanently`};
 function statLines(st,key){
   const out=[];
@@ -227,6 +244,7 @@ function startBattle(n){
   S.enemy=S.foes[0];S.tgt=S.enemy;
   S.draw=shuffle(battleDeck().map(c=>c.id));S.hand=[];S.disc=[];S.sel=[];
   S.block=stats().def;S.barrier=0;S.barrierT=0;S.manaGuard=0;S.manaGuardT=0;S.iceAge=0;S.stoneSkin=false;Stage.iceFloor(false);S.thorns=null;S.dodge=0;S.parry=null;S.counter=null;S.guarding=false;S.rainNext=0;S.embrace=false;S.reflect=false;S.efield=false;S.busy=false;
+  {const g=stats();S.struck=false;S.combos=0;if(g.barrierStart){S.barrier=g.barrierStart;S.barrierT=3}if(g.dodge)S.dodge=g.dodge}
   S.log=[duo?`An elite pair blocks the road: ${ids.map(i=>ENEMIES[i].name).join(' and ')}. Tap a monster to target it.`:`${elite?'An elite ':''}${d.name} blocks the road.`];
   drawHand();S.phase='battle';render();
 }
@@ -287,6 +305,7 @@ function doFuse(){
   const cost=fuseCost(...S.sel.map(card));if(cost>S.mana){S.toast=`Not enough mana. This needs ${cost}, you have ${S.mana}.`;render();return}
   S.busy=true;S.mana=Math.min(S.maxMana,S.mana-cost);if(cost<0)setTimeout(()=>Stage.float('player',`+${-cost}`,'#6cb2ff','MANA',0),250);
   const[c1,c2]=S.sel.map(card);const R=gearFuse(c1,c2);
+  {const g=stats();S.combos=(S.combos||0)+1;S.struck=true;if(R.dmg.length&&!R.crit&&!R.charged){const nova=g.supernova&&S.combos%3===0;if(nova||(g.crit&&Math.random()*100<g.crit)){R.crit=true;R.nova=nova;R.dmg.forEach(p=>p.p=Math.round(p.p*(g.supernova?2:1.5)))}}}
   if(R.charged){if(R.charged.float){R.mult=R.charged.lo+Math.random()*(R.charged.hi-R.charged.lo);R.dmg[0].p=Math.round(R.charged.sum*R.mult)+R.bonus}else{const lo=R.charged.ilo||3,hi=R.charged.ihi||7;R.mult=lo+Math.floor(Math.random()*(hi-lo+1));R.dmg[0].p=R.charged.sum*R.mult+(R.charged.add||0)+R.bonus;if(R.charged.crit&&R.mult>=R.charged.crit)R.crit=true}}
   render();
   const delay=Stage.perform(R);
@@ -337,6 +356,8 @@ function applyFuse(c1,c2,R){
   if(R.quake)(S.foes||[]).filter(F=>F!==E&&F.hp>0).forEach(F=>{let d=0;for(let q=0;q<R.ticks;q++)d+=tickDmg(F,R,q);if(!F.known.includes('earth'))F.known.push('earth');F.hp-=d;const fn=ENEMIES[F.id].name;notes.push(`the quake hits ${fn} for ${d}`);
     Stage.withFoe(F.slot,()=>{Stage.float('enemy',tickDmg(F,R,R.ticks-1),hexOf('earth'),'',0);Stage.hitEnemy(['earth']);if(F.hp<=0){Stage.enemyDie();notes.push(`<span class="w">${fn} falls</span>`)}else if(modOf(F,'earth')!==0&&!F.stun&&Math.random()*100<R.stunChance){F.stun=true;Stage.float('enemy','STUN','#f2d24b','',300);notes.push(`<span class="w">stunned ${fn}</span>`)}})});if(E.mud>0)E.mud--;if(R.mud&&E.hp>0){E.mud=R.mud;notes.push('<span class="w">the ground under it turns to mud</span>')}
   const healP=h=>{h=Math.min(h,S.maxHp-S.hp);if(h>0){S.hp+=h;Stage.float('player',`+${h}`,'#7fe08a','HEAL',200)}};
+  {const g=stats(),ph=R.dmg.some(p=>PHYS_T.includes(p.t));if(ph&&E.hp>0){if(g.bleedHit)bleed(E,notes,2,g.bleedHit);if(g.stunBlunt&&R.dmg.some(p=>p.t==='blunt')&&!E.stun&&Math.random()*100<g.stunBlunt){E.stun=true;notes.push('<span class="w">stunned it</span>');Stage.float('enemy','STUN','#f2d24b','',320)}if(g.dragonbane&&modOf(E,'fire')!==0){E.burn=Math.max(E.burn,2);notes.push('<span class="w">dragonfire sets it burning</span>')}}
+   if(g.ls&&total>0)healP(Math.max(1,Math.round(total*g.ls/100)));if(R.nova){Stage.nova&&Stage.nova();notes.push('<span class="w">SUPERNOVA!</span>')}}
   if(R.drain&&total>0)Stage.drainFx(1000,true);else if(R.lifesteal&&total>0)Stage.drainFx(1500,false);
   if(R.lifesteal&&total>0)healP(Math.round(total*R.lifesteal));
   if(R.drain&&total>0)healP(total);
@@ -444,18 +465,20 @@ function finishEnemyTurn(){
   if(S.hp<=0&&tryRevive()){}
   if(S.hp<=0){S.hp=0;Stage.playerDie();render();setTimeout(()=>{S.phase='over';render()},1100);return}
   S.block=stats().def;S.turns++;drawHand();S.busy=false;
+  {const g=stats();if(g.dodge)S.dodge=Math.max(S.dodge,g.dodge);if(g.mregen){const m=Math.min(g.mregen,S.maxMana-S.mana);if(m>0){S.mana+=m;Stage.float('player',`+${m}`,'#6cb2ff','MANA',120)}}}
   if(S.regen&&S.regen.t>0){const h=Math.min(S.regen.amt,S.maxHp-S.hp);if(h>0)S.hp+=h;Stage.float('player',`+${h}`,'#ffd36b','SANCTUM',150);if(--S.regen.t<=0)S.regen=null}
   render();
   if(S.rainNext){const lv=S.rainNext,flat=S.rainFlat;S.rainNext=0;S.busy=true;render();const ts=flat?Stage.healRain(150):Stage.holyRain(150);ts.forEach((t,i)=>setTimeout(()=>{if(S.phase!=='battle')return;healTick(lv,i,flat);if(i===4){S.busy=false;render()}},t))}
 }
 function itemProcs(E,notes){const g=stats();[['lightning',g.addl],['dark',g.souls]].forEach(([t,v],i)=>{if(!v||E.hp<=0)return;const{d,m}=partDmg(E,{t,p:v});if(!E.known.includes(t))E.known.push(t);E.hp-=d;Stage.float('enemy',d,hexOf(t),t==='dark'?'SOULS':'STORM',260+i*160);if(t==='lightning')Stage.zap();notes.push(m===0?`<span class="r">${TYPENAME[t]} had no effect</span>`:`+${d} ${TYPENAME[t]} from your gear`)})}
 function winBattle(){
-  const n=curNode(),def=ENEMIES[S.enemy.id],fs=S.foes||[S.enemy];S.kills+=fs.length;{const sl=Object.values(S.gear).find(g=>g&&g.key==='soul_lantern');if(sl){const add=sl.stats.soul*fs.length;sl.stats.souls=(sl.stats.souls||0)+add;S.toast=`Soul Lantern gathers ${add} soul${add>1?'s':''}: +${sl.stats.souls} Dark damage on every attack.`}}const fname=fs.map(f=>ENEMIES[f.id].name).join(' & ');
+  const n=curNode(),def=ENEMIES[S.enemy.id],fs=S.foes||[S.enemy];S.kills+=fs.length;Object.values(S.gear).filter(g=>g&&g.stats&&g.stats.soul).forEach(sl=>{const add=sl.stats.soul*fs.length;sl.stats.souls=(sl.stats.souls||0)+add;S.toast=`${ITEMS[sl.key].name} gathers ${add} soul${add>1?'s':''}: +${sl.stats.souls} Dark damage on every attack.`});
+  {const g=stats(),L=S.level;let gold=0;fs.forEach(f=>{let b=(8+L*5)*(.8+Math.random()*.4);if(f.elite)b*=2;if(f.boss)b*=4;gold+=b});gold=Math.round(gold*(1+(g.gold||0)/100));S.gold=(S.gold||0)+gold;S.lastGold=gold}const fname=fs.map(f=>ENEMIES[f.id].name).join(' & ');
   const h=Math.min(5+(stats().regen||0),S.maxHp-S.hp);S.hp+=h;
   const boss=n.k==='boss',elite=n.k==='elite';
   const offers=rollOffers(3,{minItem:boss||elite?1:0,minR:boss?'epic':elite?'rare':null,boost:boss?6:elite?3:0});
-  S.reward={healed:h,name:(elite?'Elite ':'')+fname,boss};
-  S.drop={offers,then:boss?'nextlevel':'advance',title:`${(elite?'Elite ':'')+fname} dropped 3 cards. Take one.`,skip:boss?(S.level>=LEVELS.length-1?'Skip and finish':'Skip and go to the next level'):'Skip'};
+  S.reward={healed:h,name:(elite?'Elite ':'')+fname,boss,gold:S.lastGold};
+  S.drop={offers,then:boss?'nextlevel':'advance',title:`${(elite?'Elite ':'')+fname} dropped ${S.lastGold} gold and 3 cards. Take one.`,skip:boss?(S.level>=LEVELS.length-1?'Skip and finish':'Skip and go to the next level'):'Skip'};
   S.iceAge=0;S.stoneSkin=false;Stage.iceFloor(false);S.phase='reward';Stage.pose('celebrate',1100);
   render();
 }
@@ -488,7 +511,16 @@ function nextLevel(){
 }
 
 /* ================= events ================= */
-function startEvent(id){S.ev={id,step:'main',msg:null,offers:id==='merchant'?pickN(ACQ_KEYS,3):null,offer:null,loot:null};S.phase='event';S.busy=false;render()}
+function shopPrice(base){return Math.round(base*(1+.3*S.level))}
+function buildShop(){const cards=pickN(ACQ_KEYS,4).map(k=>{const lv=Math.random()<.3?2:1;return{key:k,lvl:lv,price:shopPrice(lv>1?60:35)}});const used=new Set(),items=[];for(let i=0;i<4;i++){let L,t=0;do{L=rollLoot(2+S.level*2+(i===3?6:0),i===3?'rare':null);t++}while((used.has(L.key)||!ITEMS[L.key].slot)&&t<20);used.add(L.key);items.push({loot:L,price:shopPrice({common:45,rare:90,epic:160}[L.rarity]*(ITEMS[L.key].set?1.25:1))})}return{cards,items,potion:{price:shopPrice(20)}}}
+function buyShop(kind,i){const sh=S.ev&&S.ev.shop;if(!sh)return;const o=kind==='potion'?sh.potion:sh[kind][i];if(!o||o.sold)return;if((S.gold||0)<o.price){S.toast=`Not enough gold. You need ${o.price}, you have ${S.gold||0}.`;render();return}
+  S.gold-=o.price;o.sold=true;
+  if(kind==='cards'&&S.deck.length>=MAX_CARDS){Stage.playerBurst('#ffd36b');offerCard(o.key,'none');return}
+  if(kind==='cards'){addCard(o.key);const c=S.deck[S.deck.length-1];c.lvl=o.lvl;S.toast=`Bought ${CARDS[o.key].name} (level ${o.lvl}).`}
+  else if(kind==='items'){useLoot(o.loot);S.toast=`Bought it! ${o.loot.msg}`}
+  else{const h=Math.min(25,S.maxHp-S.hp);S.hp+=h;S.toast=`You drink the potion and recover ${h} HP.`;Stage.float('player',`+${h}`,'#7fe08a','HEAL')}
+  Stage.playerBurst('#ffd36b');render()}
+function startEvent(id){S.ev={id,step:'main',msg:null,offers:null,shop:id==='merchant'?buildShop():null,offer:null,loot:null};S.phase='event';S.busy=false;render()}
 function upgradeCard(c){if(c.lvl>=5)return false;c.lvl++;return true}
 function evOption(i){
   const ev=S.ev;
@@ -496,7 +528,7 @@ function evOption(i){
     if(i===0){const h=Math.min(Math.round(S.maxHp*.35),S.maxHp-S.hp);S.hp+=h;ev.msg=`You rest by the fire and recover ${h} HP.`;ev.step='done';Stage.playerBurst('#7fe08a')}
     else ev.step='train';
   }else if(ev.id==='chest'){
-    ev.msg='The lid creaks open. Take one of the cards inside.';ev.step='done';S.drop={offers:rollOffers(3,{minItem:1,boost:4}),then:'stay',title:'Treasure! Take one.',skip:'Take nothing'};
+    {const gd=shopPrice(25+Math.floor(Math.random()*20));S.gold=(S.gold||0)+gd;ev.msg=`The lid creaks open: ${gd} gold glitters inside, along with some cards. Take one.`}ev.step='done';S.drop={offers:rollOffers(3,{minItem:1,boost:4}),then:'stay',title:'Treasure! Take one.',skip:'Take nothing'};
   }else if(ev.id==='shrine'){
     if(i===0){const h=Math.min(20,S.maxHp-S.hp);S.hp+=h;ev.msg=`Warm light settles over you. You heal ${h} HP.`;ev.step='done';Stage.playerBurst('#fff0b3')}
     else if(i===1){const k=rnd(ELEMS);ev.msg=`The altar answers with a ${CARDS[k].name} card.`;ev.step='done';offerCard(k,'none');return}
@@ -508,7 +540,7 @@ function evOption(i){
     else{advance();return}
   }else if(ev.id==='mimic'){
     if(i===0){
-      if(Math.random()<.6){ev.msg='Inside, wrapped in old cloth, are three cards.';S.drop={offers:rollOffers(3,{minItem:1,boost:2}),then:'stay',title:'The chest holds 3 cards. Take one.',skip:'Take nothing'}}
+      if(Math.random()<.6){const gd=shopPrice(15+Math.floor(Math.random()*15));S.gold=(S.gold||0)+gd;ev.msg=`Inside, wrapped in old cloth, are ${gd} gold and three cards.`;S.drop={offers:rollOffers(3,{minItem:1,boost:2}),then:'stay',title:'The chest holds 3 cards. Take one.',skip:'Take nothing'}}
       else{S.hp=Math.max(1,S.hp-8);ev.msg='It was a mimic! It bites for 8 before you pry two cards from its teeth.';Stage.hitPlayer(false);Stage.float('player','-8','#ff6b5e','');S.drop={offers:rollOffers(2,{noItems:true}),then:'stay',title:'Pried from the mimic. Take one.',skip:'Take nothing'}}
       ev.step='done';
     }else{advance();return}
@@ -637,6 +669,7 @@ function resultHTML(){
   L('water','#4aa8ff',(cost>0?`Mana −${cost}`:cost<0?`Mana +${-cost}`:'No mana')+(R.fslash?`, +${3*R.segs.length} back`:''));
   if(R.charged&&!R.lstrike)L('arrowshot','var(--phys)',R.charged.float?'Power ×0.8–10':`Power ×${R.charged.ilo||3}–${R.charged.ihi||7}`);
   if(R.charged&&R.charged.crit)L('lightning','var(--lightning)','Crit chance 50%');
+  if(R.gtags)R.gtags.forEach(t=>L('punch','var(--brass)',t));{const g=stats();if(R.dmg.length&&(g.crit||g.supernova))L('lightning','var(--brass)',g.supernova&&((S.combos||0)+1)%3===0?'SUPERNOVA crit':`Crit ${g.crit||0}%`)}
   {const g=stats();if(R.dmg.length&&g.addl)L('lightning','var(--lightning)',`+${g.addl} Lightning (item)`);if(R.dmg.length&&g.souls)L('dark','var(--dark)',`+${g.souls} Dark (souls)`)}
   if(R.dodgeAdd)L('dodge','var(--guard)',`Dodge +${R.dodgeAdd}%`);
   if(R.segs)L('multi','var(--phys)',`Hits ×${R.segs.length}`);
@@ -748,7 +781,7 @@ function deckHTML(act,withGranted){
 }
 function itemCardHTML(e,opts={}){
   const it=ITEMS[e.key],rar=it.slot?e.rarity:'potion';
-  return `<div class="icard ${rar}">${itemIcon(e.key,opts.size||64)}<div class="icard-body"><div class="eyebrow">${it.slot?SLOTNAME[it.slot]:'Potion'}${it.slot?` · <span class="rar ${e.rarity}">${e.rarity}</span>`:''}</div><b>${it.name}</b><ul class="stats">${statLines(e.stats,e.key).map(x=>`<li>${x}</li>`).join('')}</ul></div></div>`;
+  return `<div class="icard ${rar}">${itemIcon(e.key,opts.size||64)}<div class="icard-body"><div class="eyebrow">${it.slot?SLOTNAME[it.slot]:'Potion'}${it.slot?` · <span class="rar ${e.rarity}">${e.rarity}</span>`:''}</div><b>${it.name}</b><ul class="stats">${statLines(e.stats,e.key).map(x=>`<li>${x}</li>`).join('')}</ul>${opts.noset?'':setHTML(e.key)}</div></div>`;
 }
 function rewardItemHTML(L,i){
   const it=ITEMS[L.key],cur=it.slot?S.gear[it.slot]:null;
@@ -761,7 +794,7 @@ function itemFaceHTML(L,i){
     <span class="card-top"><span class="card-cat">${it.slot?SLOTNAME[it.slot]:'Potion'}</span>${it.slot&&L.rarity!=='common'?`<span class="rar ${L.rarity}">${L.rarity}</span>`:''}</span>
     <span class="card-icon">${itemIcon(L.key,50)}</span>
     <span class="card-name">${it.name}</span>
-    <span class="card-desc">${lines.join(' · ')}${cur?`<i>Replaces ${ITEMS[cur.key].name}</i>`:''}</span></button>`;
+    <span class="card-desc">${it.set?setHTML(L.key,true):''}${lines.join(' · ')}${cur?`<i>Replaces ${ITEMS[cur.key].name}</i>`:''}</span></button>`;
 }
 function dropHTML(){
   const D=S.drop;if(!D||D.taken)return '';
@@ -803,12 +836,18 @@ function eventLayerHTML(){
     body=`<p class="ev-hint">You chose <b>${CARDS[ev.offer].name}</b>. Tap the card you'll give in exchange.</p><div class="card-row ev-cards">${S.deck.map(c=>cardHTML(c,{act:'evcard',small:true})).join('')}</div><button type="button" class="btn btn-sm" data-act="evback">Back</button>`;
   }else{
     const opts=EV_OPTS[ev.id];
-    const trade=ev.id==='merchant'?ev.offers.map(k=>`<button type="button" class="ev-opt" data-act="evoffer" data-key="${k}" style="--oc:${typeColor(k)}"><span class="ev-ic">${icon(k)}</span><b>${CARDS[k].name}</b><span>Trade one of your cards for this ${CATLABEL[CARDS[k].cat].toLowerCase()} card.</span></button>`).join(''):'';
+    const trade='';
+    if(ev.shop){body=shopHTML(ev.shop);return `<div class="ev-layer shop"><div class="ev-head"><span class="ev-hic">${icon(E.icon)}</span><div><h2>${E.name}</h2><p>${E.text}</p></div><span class="gold-pill big">${coin()}<b class="num">${S.gold||0}</b></span></div>${body}</div>`}
     body=`<div class="ev-opts">${trade}${opts.map((o,i)=>`<button type="button" class="ev-opt" data-act="evopt" data-i="${i}" style="--oc:${o[3]}"><span class="ev-ic">${icon(o[2])}</span><b>${o[0]}</b><span>${o[1]}</span></button>`).join('')}</div>`;
   }
   return `<div class="ev-layer"><div class="ev-head"><span class="ev-hic">${icon(E.icon)}</span><div><h2>${E.name}</h2><p>${E.text}</p></div></div>${body}</div>`;
 }
 
+function coin(){return '<span class="coin" aria-hidden="true"></span>'}
+function shopHTML(sh){const g=S.gold||0,btn=(kind,i,o)=>`<button type="button" class="btn buy" data-act="buy" data-kind="${kind}" data-i="${i}" ${o.sold||g<o.price?'disabled':''}>${o.sold?'Sold':`${coin()}<b class="num">${o.price}</b>`}</button>`;
+  return `<div class="shop-wrap"><h3 class="shop-h">Skill cards <span class="eyebrow">${S.deck.length}/${MAX_CARDS} in your deck</span></h3><div class="shop-row">${sh.cards.map((o,i)=>`<div class="shop-tile ${o.sold?'sold':''}">${cardHTML({key:o.key,lvl:o.lvl},{small:true})}${btn('cards',i,o)}</div>`).join('')}</div>
+    <h3 class="shop-h">Gear <span class="eyebrow">equips right away</span></h3><div class="shop-row">${sh.items.map((o,i)=>{const it=ITEMS[o.loot.key];return `<div class="shop-tile item ${o.sold?'sold':''} ${o.loot.rarity}"><div class="shop-item ${o.loot.rarity}">${itemIcon(o.loot.key,56)}<span class="eyebrow">${SLOTNAME[it.slot]} · <span class="rar ${o.loot.rarity}">${o.loot.rarity}</span></span><b>${it.name}</b>${setHTML(o.loot.key,true)}<ul class="stats">${statLines(o.loot.stats,o.loot.key).map(x=>`<li>${x}</li>`).join('')}</ul></div>${btn('items',i,o)}</div>`}).join('')}</div>
+    <div class="shop-foot"><div class="shop-tile mini ${sh.potion.sold?'sold':''}">${itemIcon('red_potion',36)}<span>Healing potion · restores 25 HP</span>${btn('potion',0,sh.potion)}</div><button type="button" class="btn" data-act="evopt" data-i="1">Leave the shop</button></div></div>`}
 function endHTML(win){
   const n=curNode();
   return `<section class="screen"><div class="eyebrow">${win?'Adventure complete':'Fallen'}</div>
@@ -841,14 +880,15 @@ function acqHTML(){
 function charHTML(){
   if(!S.charOpen)return '';
   const g=stats();const sum=[];
-  sum.push(['Max HP',`${S.maxHp}`]);sum.push(['Mana',`${S.mana}/${S.maxMana}`]);sum.push(['Element card cost',`${Math.max(0,10-(g.mcost||0))} mana`]);sum.push(['Attack bonus',`+${g.atk||0}`]);sum.push(['Block each turn',`+${g.def||0}`]);sum.push(['Heal after fights',`${5+(g.regen||0)}`]);
+  sum.push(['Gold',`${S.gold||0}`]);if(g.crit)sum.push(['Critical chance',`${g.crit}%`]);if(g.dodge)sum.push(['Dodge each turn',`${g.dodge}%`]);if(g.ls)sum.push(['Lifesteal',`${g.ls}%`]);if(g.mregen)sum.push(['Mana each turn',`+${g.mregen}`]);sum.push(['Max HP',`${S.maxHp}`]);sum.push(['Mana',`${S.mana}/${S.maxMana}`]);sum.push(['Element card cost',`${Math.max(0,10-(g.mcost||0))} mana`]);sum.push(['Attack bonus',`+${g.atk||0}`]);sum.push(['Block each turn',`+${g.def||0}`]);sum.push(['Heal after fights',`${5+(g.regen||0)}`]);
   Object.keys(TYPENAME).forEach(t=>{if(g[t])sum.push([`${TYPENAME[t]} damage`,`+${g[t]}`])});
   Object.entries(g.lv).forEach(([k,v])=>sum.push([`${CARDS[k].name} level`,`+${v}`]));
   return `<div class="modal" data-act="closechar"><div class="modal-box wide" role="dialog" aria-label="Character" data-stop="1">
     <div class="modal-head"><h2 style="font-size:28px;color:var(--brass)">Character</h2><button type="button" class="btn" data-act="closechar">Close</button></div>
     <div class="char-stats">${sum.map(([k,v])=>`<div><span>${k}</span><b class="num">${v}</b></div>`).join('')}</div>
+    ${Object.keys(setCounts()).length?`<h3 class="sec-h">Set bonuses</h3><div class="sets">${Object.keys(setCounts()).map(id=>setHTML(SET_PIECES[id][0])).join('')}</div>`:''}
     <h3 class="sec-h">Equipment <span class="eyebrow">item cards · separate from your 8 skill cards</span></h3>
-    <div class="equip">${Object.keys(SLOTNAME).map(sl=>{const e=S.gear[sl];return e?`<div class="eslot">${itemCardHTML(e,{size:48})}</div>`:`<div class="eslot empty"><span class="eyebrow">${SLOTNAME[sl]}</span><span>Empty</span></div>`}).join('')}</div>
+    <div class="equip">${Object.keys(SLOTNAME).map(sl=>{const e=S.gear[sl];return e?`<div class="eslot">${itemCardHTML(e,{size:48,noset:true})}${ITEMS[e.key].set?setHTML(e.key,true):''}</div>`:`<div class="eslot empty"><span class="eyebrow">${SLOTNAME[sl]}</span><span>Empty</span></div>`}).join('')}</div>
     <h3 class="sec-h">Skill cards <span class="eyebrow">${S.deck.length}/${MAX_CARDS}</span></h3>
     <div class="card-row">${S.deck.map(c=>cardHTML(c,{small:true})).join('')}</div>
     ${grantedCards().length?`<h3 class="sec-h">Item skills <span class="eyebrow">from equipped items</span></h3><div class="card-row">${grantedCards().map(c=>cardHTML(c,{small:true})).join('')}</div>`:''}
@@ -880,15 +920,15 @@ function render(){
   else if(ph==='over')main=endHTML(false);
   else if(ph==='win')main=endHTML(true);
   const toast=S.toast?`<div class="toast" role="status">${S.toast}</div>`:'';
-  $top.innerHTML=`<header class="top"><div class="brand"><h1>SpellCraft</h1><span class="eyebrow">Level ${S.level+1} · ${LEVELS[S.level].name}</span></div>
+  $top.innerHTML=`<header class="top"><div class="brand"><h1>SpellCraft</h1><span class="eyebrow">Level ${S.level+1} · ${LEVELS[S.level].name}${ph!=='title'?` · <span class="gold-pill">${coin()}<b class="num">${S.gold||0}</b></span>`:''}</span></div>
     <div class="top-actions">${ph!=='title'?'<button type="button" class="btn" data-act="char">Character</button>':''}<button type="button" class="btn mob-btn ${MOB?'on':''}" data-act="mobile" aria-pressed="${MOB}" title="Show card options and your hand larger, below the battle">Mobile</button><button type="button" class="btn" data-act="codex">Codex <span class="num">${S.codex.length}</span></button>${ph!=='title'?'<button type="button" class="btn" data-act="restart">Restart</button>':''}</div></header>${routeHTML()}${toast}`;
   $main.innerHTML=main;
   $result.innerHTML=resultHTML();
   $fdock.innerHTML='';if(MOB){const sk=$main.querySelector('.skip-btn'),fb=$result.querySelector('[data-act=fuse]');if(sk)$fdock.appendChild(sk);if(fb)$fdock.appendChild(fb)}
   $hud.innerHTML=hudHTML();
-  const dh=dropHTML()||eventLayerHTML();document.body.classList.toggle('mob',MOB);if(MOB){$drop.innerHTML='';$dock.innerHTML=dh}else{$dock.innerHTML='';$drop.innerHTML=dh}
+  const dh=dropHTML()||eventLayerHTML();document.body.classList.toggle('mob',MOB);const toDock=MOB||dh.includes('ev-layer shop');$dock.classList.toggle('shopdock',!MOB&&toDock);if(toDock){$drop.innerHTML='';$dock.innerHTML=dh}else{$dock.innerHTML='';$drop.innerHTML=dh}
   document.querySelector('.stage-wrap').classList.toggle('in-battle',ph==='battle');
-  document.querySelector('.stage-wrap').classList.toggle('in-drop',!!dh&&!MOB);
+  document.querySelector('.stage-wrap').classList.toggle('in-drop',!!dh&&!toDock);
   $modal.innerHTML=acqHTML()||charHTML()||codexHTML();
   const n=curNode();
   $label.textContent=ph==='title'?'':ph==='win'?'Adventure complete':ph==='travel'?`Level ${S.level+1} · ${LEVELS[S.level].name}`:nodeName(n);
@@ -921,6 +961,7 @@ document.getElementById('app').addEventListener('click',e=>{
     case 'skip':if(S.reward.boss)nextLevel();else advance();break;
     case 'evopt':evOption(+b.dataset.i);break;
     case 'evoffer':S.ev.offer=b.dataset.key;S.ev.step='give';render();break;
+    case 'buy':buyShop(b.dataset.kind,+b.dataset.i);break;
     case 'evback':S.ev.step='main';render();break;
     case 'evcard':evCard(id);break;
     case 'evtake':S.ev.cardTaken=true;offerCard(b.dataset.key,'none');break;

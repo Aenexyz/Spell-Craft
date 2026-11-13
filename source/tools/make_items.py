@@ -283,7 +283,7 @@ ITEMS = {
  'archmage_staff': ('crook', {'a': '#9a4ad8', 'b': '#5b2a9a', 'c': '#e8c8ff', 'd': '#d8a93a', 'e': '#3a2a5a'}, 'weapon'),
 }
 idx = json.load(open('items.json'))['idx']; idx['starter_sword'] = 36; idx['ember_staff'] = 37; idx['frost_wand'] = 38; idx['archmage_staff'] = 39; idx['phoenix_amulet'] = 40; idx['storm_rod'] = 41; idx['soul_lantern'] = 42
-atlas = Image.new('RGBA', (8 * 64, 6 * 64), (0, 0, 0, 0))
+atlas = Image.new('RGBA', (8 * 64, 9 * 64), (0, 0, 0, 0))
 look = {}
 def hexrgb(h): return tuple(int(h[i:i + 2], 16) for i in (1, 3, 5)) + (255,)
 for key, (shape, pal, kind) in ITEMS.items():

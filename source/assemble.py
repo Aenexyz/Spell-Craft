@@ -6,7 +6,7 @@ lines=src.split('\n')
 def grab(start,end):
   i=src.index(start);j=src.index(end,i);return src[i:j]
 sprites=grab('const PLAYER_TOP=[','const ITEM_ATLAS=')
-atlas=re.search(r'const ITEM_ATLAS=.*?;\n',src).group(0).replace('"rows": 5','"rows": 6').replace('"purple_potion": 35}}','"purple_potion": 35, "starter_sword": 36, "ember_staff": 37, "frost_wand": 38, "archmage_staff": 39, "phoenix_amulet": 40, "storm_rod": 41, "soul_lantern": 42}}')
+atlas=re.search(r'const ITEM_ATLAS=.*?;\n',src).group(0).replace('"rows": 5','"rows": 6').replace('"purple_potion": 35}}','"purple_potion": 35, "starter_sword": 36, "ember_staff": 37, "frost_wand": 38, "archmage_staff": 39, "phoenix_amulet": 40, "storm_rod": 41, "soul_lantern": 42, "knight_helm": 43, "knight_plate": 44, "knight_gauntlets": 45, "knight_sabatons": 46, "knight_shield": 47, "reaper_cowl": 48, "reaper_shroud": 49, "bone_bracers": 50, "soul_chain": 51, "reaper_scythe": 52, "dragon_helm": 53, "dragon_mail": 54, "wyrm_boots": 55, "dragon_heart": 56, "dragonfang": 57, "astral_kabuto": 58, "starweave_haori": 59, "comet_sandals": 60, "nebula_obi": 61, "starfall_katana": 62, "berserker_band": 63, "iron_knuckles": 64, "serrated_pendant": 65, "assassin_sash": 66, "lucky_purse": 67}}').replace('"rows": 6','"rows": 9')
 hero=re.search(r'const HERO=\{.*?\};\n',src,re.S).group(0)
 sprites=sprites.replace(hero,'const HERO='+open('hero2.json').read()+';\n');assert 'fslash' in sprites
 stage=grab('const Stage=(()=>{','/* ================= fusion')
@@ -536,6 +536,8 @@ R("    P.dx=pdx;const px=homeP()+pdx;let ptop;","    if(P.mv){const t=now-P.mv.t
 R("const pick=(n,i,pose,p)=>({c:heroCanv[n][i],f:HERO[n][i],key:n+i,pose,p,n});","const pick=(n,i,pose,p)=>({c:heroCanv[n][i],f:HERO[n][i],key:n+i,pose,p,n});\n    if(P.mv&&now-P.mv.t0<=P.mv.dur&&!P.dead){const fr=P.mv.frame(now-P.mv.t0);if(fr&&HERO[fr[0]])return pick(fr[0],Math.max(0,Math.min(HERO[fr[0]].length-1,fr[1])))}")
 R("      if(P.seq&&P.seq.lift&&now<P.seq.until)oy+=P.seq.lift(now-P.seq.t0)+(hf.f.jy||0)*k*.45;","      if(P.seq&&P.seq.lift&&now<P.seq.until)oy+=P.seq.lift(now-P.seq.t0)+(hf.f.jy||0)*k*.45;\n      if(P.mv&&now-P.mv.t0<=P.mv.dur){const t=now-P.mv.t0;oy+=P.mv.y(t);rot+=P.mv.rot(t);if(P.mv.ghost&&!P.mv.hide(t)){P.gh=P.gh||[];if(!P.ghT||now-P.ghT>30){P.ghT=now;P.gh.push({x:px+ox,y:feet+oy,c:hf.c,key:hf.key,ax:hf.f.ax,fy:hf.f.fy||hf.c.height,fl:P.teleFlip,t:now,col:P.mv.ghost,rot})}}}\n      if(P.gh&&P.gh.length){P.gh=P.gh.filter(g=>now-g.t<260);P.gh.forEach(g=>{const a=1-(now-g.t)/260;ctx.save();ctx.globalAlpha=.5*a;ctx.translate(g.x,g.y);ctx.rotate(g.rot);ctx.scale(g.fl?-1:1,1);ctx.drawImage(tintC('gh'+g.key,g.c,g.col),-g.ax*k,-g.fy*k,g.c.width*k,g.c.height*k);ctx.restore()})}")
 
+R("    reviveFx(){","    nova(){setTimeout(()=>{const m=enemyMetrics();if(!m)return;const x=m.x,y=m.feet-m.h*.5;flash('#fff3c0',0,.45);shake(0,st.ps*3);ring(x,y,m.h*1.1,'#ffd36b',0,520,3);ring(x,y,m.h*.7,'#4fd8ff',80,480,2.2);for(let i=0;i<10;i++){const a=i/10*6.283;addFx(0,520,p=>{const r=m.h*(.2+1.1*p),px=x+Math.cos(a)*r,py=y+Math.sin(a)*r,sz=st.ps*(1.6-1.2*p);ctx.save();ctx.globalAlpha=1-p;ctx.fillStyle=i%2?'#ffd36b':'#ffffff';ctx.fillRect(px-sz*1.5,py-sz*.3,sz*3,sz*.6);ctx.fillRect(px-sz*.3,py-sz*1.5,sz*.6,sz*3);ctx.restore()})}for(let i=0;i<30;i++){const a=Math.random()*6.283,v=(.1+Math.random()*.3)*U();spawn(x,y,{vx:Math.cos(a)*v,vy:Math.sin(a)*v,color:['#ffffff','#ffd36b','#4fd8ff','#ff6fd8'][i%4],size:st.ps*.6,life:520})}},0)},\n    reviveFx(){")
+
 css_add="""
 .item-ic{image-rendering:pixelated}
 .card-mana{font-family:var(--f-num);font-weight:700;font-size:14px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:#e8f3ff;background:radial-gradient(circle at 35% 30%,#6cb2ff,#2a5fc0 70%);border:1px solid #9fcaff;box-shadow:0 0 6px #4aa8ff88}
@@ -743,6 +745,35 @@ body.mob #app{padding-bottom:160px}
 .icard-face.rare .card-name,.ichoice.rare b,.icard.rare b{text-shadow:0 0 8px color-mix(in srgb,var(--glow-rare) 70%,transparent)}
 .icard-face.epic .card-name,.ichoice.epic b,.icard.epic b{text-shadow:0 0 10px color-mix(in srgb,var(--glow-epic) 80%,transparent)}
 @media (prefers-reduced-motion:reduce){.icard-face.rare,.ichoice.rare,.icard.rare,.slotbox.rare,.loot.rare,.icard-face.epic,.ichoice.epic,.icard.epic,.slotbox.epic,.loot.epic{animation:none;box-shadow:0 0 0 1px currentColor,0 0 16px 3px color-mix(in srgb,var(--glow-rare) 60%,transparent)}}
+
+.coin{display:inline-block;width:.95em;height:.95em;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff6c0 0 18%,#ffd36b 30%,#c9902a 70%,#7a5418 100%);box-shadow:inset 0 0 0 1px #7a5418;vertical-align:-.12em;margin-right:.25em}
+.gold-pill{display:inline-flex;align-items:center;gap:2px;color:#ffd36b;font-weight:700;letter-spacing:.02em}
+.gold-pill.big{margin-left:auto;font-size:22px;padding:6px 12px;border-radius:999px;background:#0d1618cc;border:1px solid #ffd36b55}
+.ev-layer.shop{overflow:auto;justify-content:flex-start}
+.ev-layer.shop .ev-head{align-items:center;width:100%;max-width:980px}
+.shop-wrap{width:100%;max-width:980px;display:flex;flex-direction:column;gap:8px}
+.shop-h{margin:4px 0 0;font-size:15px;color:var(--brass);display:flex;gap:10px;align-items:baseline}
+.shop-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.shop-tile{display:flex;flex-direction:column;align-items:center;gap:6px;transition:opacity .2s}
+.shop-tile.sold{opacity:.4}
+.shop-tile .card.small{pointer-events:none}
+.shop-item{width:190px;min-height:150px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;padding:10px;border-radius:12px;background:var(--felt-2,#0d1618);border:1px solid var(--line)}
+.shop-item.rare{border-color:var(--glow-rare);animation:glowRare 2.2s ease-in-out infinite}
+.shop-item.epic{border-color:var(--glow-epic);animation:glowEpic 1.8s ease-in-out infinite}
+.shop-item b{font-size:15px}.shop-item .stats{margin:0;padding:0;list-style:none;font-size:12px;color:var(--muted)}
+.btn.buy{min-width:90px;justify-content:center;color:#ffd36b;border-color:#ffd36b66}
+.btn.buy[disabled]{opacity:.5;cursor:not-allowed}
+.shop-foot{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;margin-top:6px}
+.shop-tile.mini{flex-direction:row;gap:10px;padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--felt-2,#0d1618);font-size:13px}
+.setline{display:block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--sc);text-shadow:0 0 8px color-mix(in srgb,var(--sc) 50%,transparent)}
+.setbox{margin-top:6px;padding:8px 10px;border-radius:10px;border:1px solid color-mix(in srgb,var(--sc) 55%,transparent);background:color-mix(in srgb,var(--sc) 10%,transparent);font-size:12px}
+.setbox b{color:var(--sc)}.setbox ul{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:3px}
+.setbox li{opacity:.5;display:flex;gap:6px}.setbox li.on{opacity:1}.setbox li .num{min-width:16px;height:16px;border-radius:50%;display:inline-grid;place-items:center;font-size:10px;background:#0006;border:1px solid var(--sc);color:var(--sc)}
+.setbox li.on .num{background:var(--sc);color:#0d1618}
+.sets{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+body.mob #mobDock .ev-layer.shop{max-height:none}
+#mobDock.shopdock{margin-top:12px}
+#mobDock .ev-layer.shop{position:static;inset:auto;border-radius:14px;border:1px solid var(--line);padding:16px;background:var(--felt-2,#0d1618);overflow:visible;align-items:center}
 """
 head2='<meta charset="utf-8">\n'+head.replace('</style>',css_add+'</style>').replace('<title>Fusebound</title>','<title>SpellCraft</title>')
 body_skel=body_skel.replace('<div class="stage-label" id="stageLabel"></div>','<div class="stage-label" id="stageLabel"></div><div id="hudLayer"></div><div id="resultLayer"></div><div id="dropLayer"></div>')
