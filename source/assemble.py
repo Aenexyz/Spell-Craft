@@ -6,7 +6,7 @@ lines=src.split('\n')
 def grab(start,end):
   i=src.index(start);j=src.index(end,i);return src[i:j]
 sprites=grab('const PLAYER_TOP=[','const ITEM_ATLAS=')
-atlas=re.search(r'const ITEM_ATLAS=.*?;\n',src).group(0).replace('"rows": 5','"rows": 6').replace('"purple_potion": 35}}','"purple_potion": 35, "starter_sword": 36, "ember_staff": 37, "frost_wand": 38, "archmage_staff": 39, "phoenix_amulet": 40, "storm_rod": 41, "soul_lantern": 42, "knight_helm": 43, "knight_plate": 44, "knight_gauntlets": 45, "knight_sabatons": 46, "knight_shield": 47, "reaper_cowl": 48, "reaper_shroud": 49, "bone_bracers": 50, "soul_chain": 51, "reaper_scythe": 52, "dragon_helm": 53, "dragon_mail": 54, "wyrm_boots": 55, "dragon_heart": 56, "dragonfang": 57, "astral_kabuto": 58, "starweave_haori": 59, "comet_sandals": 60, "nebula_obi": 61, "starfall_katana": 62, "berserker_band": 63, "iron_knuckles": 64, "serrated_pendant": 65, "assassin_sash": 66, "lucky_purse": 67, "emberbrand": 68, "tidecaller": 69, "stormfang": 70}}').replace('"rows": 6','"rows": 9')
+atlas=re.search(r'const ITEM_ATLAS=.*?;\n',src).group(0).replace('"rows": 5','"rows": 6').replace('"purple_potion": 35}}','"purple_potion": 35, "starter_sword": 36, "ember_staff": 37, "frost_wand": 38, "archmage_staff": 39, "phoenix_amulet": 40, "storm_rod": 41, "soul_lantern": 42, "knight_helm": 43, "knight_plate": 44, "knight_gauntlets": 45, "knight_sabatons": 46, "knight_shield": 47, "reaper_cowl": 48, "reaper_shroud": 49, "bone_bracers": 50, "soul_chain": 51, "reaper_scythe": 52, "dragon_helm": 53, "dragon_mail": 54, "wyrm_boots": 55, "dragon_heart": 56, "dragonfang": 57, "astral_kabuto": 58, "starweave_haori": 59, "comet_sandals": 60, "nebula_obi": 61, "starfall_katana": 62, "berserker_band": 63, "iron_knuckles": 64, "serrated_pendant": 65, "assassin_sash": 66, "lucky_purse": 67, "emberbrand": 68, "tidecaller": 69, "stormfang": 70, "butcher_cleaver": 71, "explosion_orb": 72}}').replace('"rows": 6','"rows": 10')
 hero=re.search(r'const HERO=\{.*?\};\n',src,re.S).group(0)
 sprites=sprites.replace(hero,'const HERO='+open('hero2.json').read()+';\n');assert 'fslash' in sprites
 stage=grab('const Stage=(()=>{','/* ================= fusion')
@@ -583,11 +583,20 @@ R("        if(g&&e.state!=='die'){\n          const bw0=m0.w;","""        if(g&&
 R("    if(S&&S.phase==='battle'&&!P.dead){\n      const cy=feet-H*.13;","    if(S&&S.phase==='battle'&&!P.dead){\n      const cy=feet-H*.13;\n      if(S.poison&&Math.random()<dt/110){const pm=playerMetrics();spawn(pm.x+(Math.random()-.5)*pm.w,pm.feet-Math.random()*pm.h*.8,{vy:-.025*U(),vx:0,color:Math.random()<.5?'#9be05a':'#5fbf2a',size:st.ps*(.7+Math.random()*.6),life:900})}")
 
 R("""seeker:{fw:152,fh:82,foot:54,bw:14,bh:24,k:1,anims:{idle:24,run:10,attack:8,attack2:8,hit:9,die:20},src:ASSET.seeker}};""","""seeker:{fw:152,fh:82,foot:54,bw:14,bh:24,k:1,anims:{idle:24,run:10,attack:8,attack2:8,hit:9,die:20},src:ASSET.seeker},
-    slime:{noflip:true,fw:64,fh:48,foot:48,bw:40,bh:28,k:.75,anims:{idle:8,run:8,attack:8,attack2:8,hit:4,die:10},src:ASSET.slime}};""")
+    slime:{noflip:true,fw:64,fh:48,foot:48,bw:40,bh:28,k:.75,anims:{idle:8,run:8,attack:8,attack2:8,hit:4,die:10},src:ASSET.slime},
+    bee:{noflip:true,fly:true,fw:32,fh:32,foot:24,bw:18,bh:14,k:.6,anims:{idle:4,run:4,attack:6,attack2:6,hit:3,die:6},src:ASSET.bee},
+    bat:{noflip:true,fly:true,fw:32,fh:32,foot:22,bw:22,bh:14,k:.62,anims:{idle:4,run:4,attack:6,attack2:6,hit:3,die:6},src:ASSET.bat}};""")
 R("function mkFoes(n,state){const ids=n.ids||[n.id],OX=ids.length>1?[-.075,.095]:[0];","function mkFoes(n,state){const ids=n.ids||[n.id],OX=n.ox||(ids.length>1?[-.075,.095]:[0]);")
 R("      let dx=e.dx||0;if(e.act){","      if(e.popT){const pt=(now-e.popT)/520;if(pt>=1){e.dx=0;e.popT=0}else e.dx=e.popDx*(1-pt)*(1-pt)}\n      let dx=e.dx||0;if(e.act){")
 R("    poisonFx(){","    addFoes(list){const now=performance.now();list.forEach(f=>{const o={id:f.id,elite:false,state:'idle',slot:f.slot,ox:f.ox,dx:(f.fromOx-f.ox)*st.W,popT:now,popDx:(f.fromOx-f.ox)*st.W};st.foes[f.slot]=o;const m=enemyMetricsOf(o);burst(m.x+o.dx,m.feet-m.h*.4,'#7fe02a',16,.18*st.H/400,.05*st.H/400)})},\n    poisonFx(){")
 R("    if(st.bg==='swamp'){ctx.save();","    if(st.bg==='night'){const tn=performance.now(),ps=st.ps;const BA=['X.......X','XX.....XX','.XXX.XXX.','...XXX...','....X....'],BB=['...X.X...','..XXXXX..','.XXXXXXX.','XX..X..XX','X.......X'];\n      for(let i=0;i<7;i++){const sp=.022+(i%3)*.009,s=Math.max(1,Math.round(ps*(.8+(i%3)*.3))),span=st.W+s*40,bx=st.W+s*10-((tn*sp*st.W/400+i*span/7*1.37)%span),by=st.H*(.08+((i*37)%45)/100)+Math.sin(tn/480+i*2.1)*ps*4,fr=(Math.floor(tn/(110+i*9))+i)%2?BA:BB;\n        ctx.fillStyle=i%3===2?'#05040a':'#0d0a14';fr.forEach((row,ry)=>{for(let rx=0;rx<row.length;rx++)if(row[rx]==='X')ctx.fillRect(Math.round(bx+rx*s),Math.round(by+ry*s),s,s)});ctx.fillStyle='#ff4a4a';ctx.fillRect(Math.round(bx+3*s),Math.round(by+(fr===BA?3:2)*s),Math.max(1,s*.6),Math.max(1,s*.6))}}\n    if(st.bg==='swamp'){ctx.save();")
+
+R("slot:i,ox:OX[i]||0}))}","slot:i,ox:OX[i]||0,oy:n.oy?n.oy[i]||0:0}))}")
+R("const F=famOf(e);return{x:homeE()+(e.ox||0)*st.W+(e.dx||0),feet:feetY(),","const F=famOf(e);return{x:homeE()+(e.ox||0)*st.W+(e.dx||0),feet:feetY()-(e.oy||0)*st.H+(e.oy&&e.state==='die'?Math.min(1,(performance.now()-e.t0)/900)*(e.oy||0)*st.H:0),")
+R("    st.foes.filter(f=>!f.gone).sort((a,b)=>(b.ox||0)-(a.ox||0)).forEach(e=>{\n    {\n","    const FEET0=feet;\n    st.foes.filter(f=>!f.gone).sort((a,b)=>(b.ox||0)-(a.ox||0)).forEach(e=>{\n    {\n      const feet=FEET0-(e.oy||0)*st.H+(e.oy&&e.state==='die'?Math.min(1,(now-e.t0)/900)*(e.oy||0)*st.H:0),fly=e.oy?Math.sin(now/260+(e.slot||0)*1.9)*st.ps*1.4:0;\n")
+R("          shadow(ex,feet,F.bw*mps,alpha);","          shadow(ex,FEET0,F.bw*mps*(e.oy?.55:1),alpha*(e.oy?.5:1));")
+R("          const F=famOf(e),mps=mpsOf(e),fw=F.fw*mps,fh=F.fh*mps,x0=Math.round(ex-fw/2),y0=Math.round(feet-F.foot*mps);","          const F=famOf(e),mps=mpsOf(e),fw=F.fw*mps,fh=F.fh*mps,x0=Math.round(ex-fw/2),y0=Math.round(feet-F.foot*mps+fly);")
+R("    poisonFx(){","    cleaveFx(){const m=enemyMetrics();if(!m)return;ring(m.x,m.feet-m.h*.5,m.h*1.2,'#e6eaf0',0,380,2);shake(160,st.ps*1.2)},\n    explodeFx(){st.foes.forEach(f=>{if(f.gone||f.state==='die')return;const m=enemyMetricsOf(f);burst(m.x,m.feet-m.h*.5,'#ff9a3a',22,.32*st.H/400,.04*st.H/400);burst(m.x,m.feet-m.h*.5,'#fff2b0',10,.22*st.H/400);ring(m.x,m.feet-m.h*.5,m.h*1.5,'#ffb347',120,520,3)});flash('#ff8a2a',220,.22);shake(380,st.ps*2.6)},\n    poisonFx(){")
 
 css_add="""
 .item-ic{image-rendering:pixelated}
@@ -881,6 +890,10 @@ body.mob .pc-desc{font-size:11px;line-height:1.3;display:-webkit-box;-webkit-lin
 body.mob .pc-meta{font-size:10px;padding:2px 5px}
 body.mob .pc-tag{font-size:9.5px;padding:3px 6px 3px 4px;top:5px;left:5px}
 body.mob .path-foot{font-size:11px;text-align:center}
+.dup-box{display:flex;gap:16px;align-items:center;padding:14px 16px;margin:0 0 14px;border:1px solid #7fd0ff66;border-radius:12px;background:linear-gradient(135deg,#10222a,#0d1618);box-shadow:0 0 0 1px #000,0 8px 24px #0008}
+.dup-txt{display:flex;flex-direction:column;gap:6px;min-width:0}.dup-txt b{font-size:16px}.dup-txt span{color:var(--muted);font-size:13px}
+.dup-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.hud-bleed{color:#ffb0b6;background:#2a0c10cc;border-color:#ff5a6488}
 """
 head2='<meta charset="utf-8">\n'+head.replace('</style>',css_add+'</style>').replace('<title>Fusebound</title>','<title>SpellCraft</title>')
 body_skel=body_skel.replace('<div class="stage-label" id="stageLabel"></div>','<div class="stage-label" id="stageLabel"></div><div id="hudLayer"></div><div id="resultLayer"></div><div id="dropLayer"></div>')

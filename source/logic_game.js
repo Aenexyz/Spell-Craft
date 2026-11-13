@@ -15,7 +15,8 @@ function wpick(W){const t=W.reduce((a,w)=>a+w[1],0);let r=Math.random()*t;for(co
 function genChoices(li,step){const L=LEVELS[li];
   if(step===ROUTE_LEN-1)return[{k:'boss',id:L.boss}];
   const seen=S.seenEv||(S.seenEv=[]);
-  const mon=()=>{const P=L.pool.length,idx=Math.min(P-1,Math.floor(step/ROUTE_LEN*P+Math.random()*P*.35));return{k:'m',id:L.pool[idx]}};
+  const swarmId=li===0?'bee':li===3?'bloodbat':null;
+  const mon=()=>{if(swarmId&&step>=1&&Math.random()<.2){const R=()=>(Math.random()-.5)*.02;return{k:'m',id:swarmId,swarm:true,ids:[swarmId,swarmId,swarmId,swarmId,swarmId],ox:[0,-.085,.09,-.045,.055].map(v=>v+R()),oy:[.17,.08,.11,.3,.29].map(v=>v+R())}}const P=L.pool.length,idx=Math.min(P-1,Math.floor(step/ROUTE_LEN*P+Math.random()*P*.35));return{k:'m',id:L.pool[idx]}};
   const elite=()=>{if(L.aura==='poison'&&Math.random()<.5)return{k:'elite',id:'poisonslime',ids:['poisonslime']};const top=shuffle(L.pool.slice(Math.floor(L.pool.length/2)));return{k:'elite',id:top[0],ids:[top[0],top[1]||top[0]]}};
   const ev=()=>{const o=EVENT_KEYS.filter(k=>!seen.includes(k)&&k!=='merchant');return{k:'ev',id:o.length?rnd(o):rnd(EVENT_KEYS)}};
   const W=[['m',5],['elite',step>=4?2:0],['ev',2],['chest',1.1],['camp',step>=5?1.1:0],['vault',step>=3?1.2:0]];
@@ -43,12 +44,12 @@ const curNode=()=>S.route[S.node];
 const isFight=n=>n&&(n.k==='m'||n.k==='elite'||n.k==='boss');
 function stageNode(n){
   if(!n)return null;
-  if(isFight(n))return{fight:true,id:n.id,ids:n.ids,elite:n.k==='elite'};
+  if(isFight(n))return{fight:true,id:n.id,ids:n.ids,ox:n.ox,oy:n.oy,elite:n.k==='elite'};
   return{fight:false,prop:n.k==='ev'?EVENTS[n.id].prop:(n.k==='chest'||n.k==='vault')?'chest':null};
 }
 function nodeName(n){
   if(!n)return'';
-  if(n.k==='m')return ENEMIES[n.id].name;if(n.k==='elite')return'Elite '+[...new Set((n.ids||[n.id]).filter(i=>!ENEMIES[i].spawned).map(i=>ENEMIES[i].name))].join(' & ');if(n.k==='boss')return ENEMIES[n.id].name;
+  if(n.k==='m')return n.swarm?ENEMIES[n.id].swarmName:ENEMIES[n.id].name;if(n.k==='elite')return'Elite '+[...new Set((n.ids||[n.id]).filter(i=>!ENEMIES[i].spawned).map(i=>ENEMIES[i].name))].join(' & ');if(n.k==='boss')return ENEMIES[n.id].name;
   if(n.k==='ev')return EVENTS[n.id].name;if(n.k==='camp')return'Camp';if(n.k==='chest')return'Treasure Chest';if(n.k==='vault')return'Locked Vault';return'';
 }
 function stats(){
@@ -191,10 +192,10 @@ function rollLoot(boost,minR){
   if(ITEMS[k].fixed)rarity=ITEMS[k].fixed;
   if(minR&&RANK[rarity]<RANK[minR])rarity=minR;
   const mult={common:1,rare:1.5,epic:2}[rarity],st={};
-  for(const s in ITEMS[k].stats){if(s==='revive'){st.revive=1}else if(s==='elv'){st.elv=rarity==='epic'?2:1}else if(s==='lv'){st.lv={};for(const e in ITEMS[k].stats.lv)st.lv[e]=rarity==='epic'?2:1}else st[s]=Math.max(1,Math.round(ITEMS[k].stats[s]*mult))}
+  for(const s in ITEMS[k].stats){if(s==='revive'){st.revive=1}else if(s==='elv'){st.elv=rarity==='epic'?2:1}else if(s==='cleave'||s==='boom'||s==='boomCh'){st[s]=ITEMS[k].stats[s]+(s==='boomCh'?{common:0,rare:5,epic:10}[rarity]:0)}else if(s==='lv'){st.lv={};for(const e in ITEMS[k].stats.lv)st.lv[e]=rarity==='epic'?2:1}else st[s]=Math.max(1,Math.round(ITEMS[k].stats[s]*mult))}
   return{key:k,rarity,stats:st};
 }
-const STAT_TEXT={igniteHit:v=>`Physical hits add ${v} turn${v>1?'s':''} of burning`,burnDmg:v=>`Burning deals +${v} damage per turn`,soakHit:()=>'Physical hits soak the enemy for 2 turns',tideHeal:v=>`Heal ${v} HP each time you hit a soaked enemy`,zap:v=>`Physical hits have a ${v}% chance to call a 8-damage lightning bolt that stuns 50% of the time`,phys:v=>`+${v} damage on physical attacks`,dodge:v=>`+${v}% dodge chance every turn`,mregen:v=>`Restore ${v} mana each turn`,crit:v=>`${v}% critical hit chance (×1.5 damage)`,ls:v=>`Heal ${v}% of all damage you deal`,bleedHit:v=>`Physical hits make it bleed ${v} a turn for 2 turns`,stunBlunt:v=>`Blunt hits have a ${v}% chance to stun`,berserk:v=>`+${v}% damage while below half HP`,firstStrike:v=>`Your first combo each battle deals +${v}% damage`,gold:v=>`+${v}% gold from battles`,addl:v=>`+${v} Lightning damage added to every attack`,soul:v=>`Each kill adds +${v} Dark damage to every attack`,souls:v=>v?`Souls gathered: +${v} Dark damage now`:null,revive:()=>'If you fall, revive once with 50% HP and 30% mana (the amulet then shatters)',elv:v=>`+${v} level to all Element cards`,mcost:v=>`Element cards cost ${v} less mana`,atk:v=>`+${v} damage on every attack`,def:v=>`+${v} block at the start of each turn`,hp:v=>`+${v} max HP`,regen:v=>`Heal ${v} more after each fight`,
+const STAT_TEXT={cleave:v=>`Splashes ${v}% of every hit's damage to all other enemies`,boomCh:v=>`Elemental spells have a ${v}% chance to explode`,boom:v=>`Explosions hit every enemy for ${v}% of the spell's damage`,igniteHit:v=>`Physical hits add ${v} turn${v>1?'s':''} of burning`,burnDmg:v=>`Burning deals +${v} damage per turn`,soakHit:()=>'Physical hits soak the enemy for 2 turns',tideHeal:v=>`Heal ${v} HP each time you hit a soaked enemy`,zap:v=>`Physical hits have a ${v}% chance to call a 8-damage lightning bolt that stuns 50% of the time`,phys:v=>`+${v} damage on physical attacks`,dodge:v=>`+${v}% dodge chance every turn`,mregen:v=>`Restore ${v} mana each turn`,crit:v=>`${v}% critical hit chance (×1.5 damage)`,ls:v=>`Heal ${v}% of all damage you deal`,bleedHit:v=>`Physical hits make it bleed ${v} a turn for 2 turns`,stunBlunt:v=>`Blunt hits have a ${v}% chance to stun`,berserk:v=>`+${v}% damage while below half HP`,firstStrike:v=>`Your first combo each battle deals +${v}% damage`,gold:v=>`+${v}% gold from battles`,addl:v=>`+${v} Lightning damage added to every attack`,soul:v=>`Each kill adds +${v} Dark damage to every attack`,souls:v=>v?`Souls gathered: +${v} Dark damage now`:null,revive:()=>'If you fall, revive once with 50% HP and 30% mana (the amulet then shatters)',elv:v=>`+${v} level to all Element cards`,mcost:v=>`Element cards cost ${v} less mana`,atk:v=>`+${v} damage on every attack`,def:v=>`+${v} block at the start of each turn`,hp:v=>`+${v} max HP`,regen:v=>`Heal ${v} more after each fight`,
   heal:v=>`Restores ${v} HP now`,pdef:v=>`+${v} block each turn, permanently`,php:v=>`+${v} max HP, permanently`,patk:v=>`+${v} damage on every attack, permanently`};
 function statLines(st,key){
   const out=[];
@@ -259,13 +260,13 @@ function setTarget(F){S.enemy=F;S.tgt=F;Stage.focus(F.slot||0)}
 function startBattle(n){
   const d=ENEMIES[n.id],L=LEVELS[S.level],elite=n.k==='elite',boss=n.k==='boss';
   const ids=n.ids||[n.id],duo=ids.length>1;
-  S.foes=ids.map((id,slot)=>{const dd=ENEMIES[id],hp=Math.round(dd.hp*(boss?1:L.hp)*(elite?(duo?1.15:1.5):1));return{id,slot,elite,boss,hp,max:hp,block:0,str:0,bonus:boss?0:L.dmg+(elite?(duo?1:2):0),burn:0,chill:0,curse:0,soak:0,stun:false,step:slot,known:[],enraged:false}});
-  S.foes.forEach(F=>{const dd=ENEMIES[F.id];F.abil=(dd.abil||[]).slice();if(F.elite&&L.revive&&F.slot===0)F.abil.push('revive');if(F.abil.includes('ward'))F.ward=true;if(F.abil.includes('revive'))F.undying=true});S.poison=null;
+  S.foes=ids.map((id,slot)=>{const dd=ENEMIES[id],hp=Math.round(dd.hp*(boss?1:L.hp)*(elite?(duo?1.15:1.5):1));return{id,slot,elite,boss,hp,max:hp,block:0,str:0,bonus:boss?0:dd.swarm?Math.round(L.dmg/3):L.dmg+(elite?(duo?1:2):0),burn:0,chill:0,curse:0,soak:0,stun:false,step:slot,known:[],enraged:false}});
+  S.foes.forEach(F=>{const dd=ENEMIES[F.id];F.abil=(dd.abil||[]).slice();if(F.elite&&L.revive&&F.slot===0)F.abil.push('revive');if(F.abil.includes('ward'))F.ward=true;if(F.abil.includes('revive'))F.undying=true});S.poison=null;S.pbleed=null;
   S.enemy=S.foes[0];S.tgt=S.enemy;
   S.draw=shuffle(battleDeck().map(c=>c.id));S.hand=[];S.disc=[];S.sel=[];
   S.block=stats().def;S.barrier=0;S.barrierT=0;S.manaGuard=0;S.manaGuardT=0;S.iceAge=0;S.stoneSkin=false;Stage.iceFloor(false);S.thorns=null;S.dodge=0;S.parry=null;S.counter=null;S.guarding=false;S.rainNext=0;S.embrace=false;S.reflect=false;S.efield=false;S.busy=false;
   {const g=stats();S.struck=false;S.combos=0;if(g.barrierStart){S.barrier=g.barrierStart;S.barrierT=3}if(g.dodge)S.dodge=g.dodge}
-  S.log=[duo?`An elite pair blocks the road: ${ids.map(i=>ENEMIES[i].name).join(' and ')}. Tap a monster to target it.`:`${elite?'An elite ':''}${d.name} blocks the road.`];
+  S.log=[n.swarm?`A ${d.swarmName.toLowerCase()} surrounds you: ${ids.length} ${d.name}s, each attacking on its own. Tap one to target it.`:duo?`An elite pair blocks the road: ${ids.map(i=>ENEMIES[i].name).join(' and ')}. Tap a monster to target it.`:`${elite?'An elite ':''}${d.name} blocks the road.`];
   drawHand();S.phase='battle';render();
 }
 function drawHand(){
@@ -284,6 +285,7 @@ function intentText(E){
   let val;
   if(t==='multi')val=`${ch(v+s)} × ${n}`;
   else if(t==='poison')val=`${ch(v+s)} +☠${n}`;
+  else if(t==='bleed')val=`${ch(v+s)} +🩸${n}`;
   else if(t==='def')val=`+${v}`;else if(t==='buff')val=`+${v}`;else if(t==='heal')val=`+${v}`;
   else val=ch(v+s);
   return{label:I.label,val,icon:I.icon,cls:I.cls||'',note:I.note||'',type:t};
@@ -374,6 +376,7 @@ function applyFuse(c1,c2,R){
   if(R.dmg.length&&!R.breaker&&E.block>0){const ab=Math.min(E.block,total);E.block-=ab;total-=ab;if(ab)notes.push(`${ab} absorbed by its shield`)}
   else if(R.breaker&&E.block>0&&R.dmg.length)notes.push('broke through its shield');
   E.hp-=total;if(E.vulnT>0&&--E.vulnT===0)E.vuln=0;
+  splashFx(E,R,total,notes);
   if(R.dmg.length&&E.hp>0)itemProcs(E,notes);
   if(R.crit)notes.push('<span class="w">critical hit!</span>');
   if(R.stunChance&&E.hp>0&&modOf(E,R.stunType||'earth')!==0&&!E.stun&&Math.random()*100<R.stunChance){E.stun=true;notes.push('<span class="w">stunned it</span>');Stage.float('enemy','STUN','#f2d24b','',300)}
@@ -414,6 +417,7 @@ function applyFuse(c1,c2,R){
   if(R.stun&&modOf(E,'lightning')!==0&&!E.stun){E.stun=true;notes.push('<span class="w">stunned it</span>')}
   if(R.spell&&ESPELL[R.spell].apply)ESPELL[R.spell].apply(R,E,notes,total);
   if(R.heal&&S.poison){S.poison=null;notes.push('<span class="w">cleansed the poison</span>')}
+  if(R.heal&&S.pbleed){S.pbleed=null;notes.push('<span class="w">closed your wounds</span>')}
   if(R.warded)notes.push('<span class="r">its Spell Ward absorbed the damage</span>');
   if(E.hp<=0)foeRevive(E,notes);
   log(`${CARDS[c1.key].name} + ${CARDS[c2.key].name} → <b>${R.name}</b>${R.dmg.length?` for ${total}`:''}${notes.length?'. '+notes.join(', '):''}.`);
@@ -475,13 +479,14 @@ function enemyAct(){
   if(E.frozen){E.frozen=false;log(`${def.name} is frozen solid and loses its turn.`);E.step++;Stage.float('enemy','FROZEN','#82d4ff','');Stage.shatter();render();setTimeout(foeEnd,800);return}
   if(E.stun){E.stun=false;log(`${def.name} is stunned and loses its turn.`);E.step++;Stage.float('enemy','STUNNED','#f2d24b','');render();setTimeout(foeEnd,700);return}
   const[t,v,n]=intentOf(E);E.step++;const s=E.str+E.bonus;
-  if(['atk','heavy','drain','multi','stab','poison'].includes(t)){
+  if(['atk','heavy','drain','multi','stab','poison','bleed'].includes(t)){
     Stage.enemyAttack(t==='heavy'?720:t==='multi'?520+n*90:560,t);
     setTimeout(()=>{
       fieldShock(E);
       if(t==='multi'){let sum=0;for(let i=0;i<n;i++)sum+=hurtPlayer(v+s,i*110);log(`${def.name} strikes ${n} times for ${sum}.`)}
       else{const d=hurtPlayer(v+s,0,t==='stab');
-        if(t==='poison'&&d>0){const p=S.poison||{d:0,t:0};p.d=Math.min(15,p.d+n);p.t=Math.max(p.t,3);S.poison=p;Stage.float('player',`☠ ${p.d}`,'#9be05a','POISONED',260);Stage.poisonFx&&Stage.poisonFx();log(`${def.name} hits you with venom for ${d}. You are poisoned (${p.d} a turn).`)}
+        if(t==='bleed'&&d>0){const p=S.pbleed||{d:0,t:0};p.d=Math.min(8,p.d+n);p.t=Math.max(p.t,2);S.pbleed=p;Stage.float('player',`🩸 ${p.d}`,'#ff5a64','BLEEDING',260);Stage.playerBurst('#c0303a');log(`${def.name} bites you for ${d}. You are bleeding (${p.d} a turn).`)}
+        else if(t==='poison'&&d>0){const p=S.poison||{d:0,t:0};p.d=Math.min(15,p.d+n);p.t=Math.max(p.t,3);S.poison=p;Stage.float('player',`☠ ${p.d}`,'#9be05a','POISONED',260);Stage.poisonFx&&Stage.poisonFx();log(`${def.name} hits you with venom for ${d}. You are poisoned (${p.d} a turn).`)}
         else if(t==='drain'){E.hp=Math.min(E.max,E.hp+d);log(`${def.name} drains ${d} HP from you.`);if(d){Stage.float('enemy',`+${d}`,'#7fe08a','',250);Stage.enemyBurst('#b18bff')}}
         else log(`${def.name} uses ${INTENTS[t].label.toLowerCase()} for ${d}.`)}
       render();
@@ -501,6 +506,7 @@ function finishEnemyTurn(){
   S.lava=null;
   S.dodge=0;S.parry=null;S.counter=null;S.guarding=false;S.guardEls=[];if(S.embrace){S.embrace=false;Stage.unembrace()}S.reflect=false;S.efield=false;
   if(S.manaGuardT>0&&--S.manaGuardT===0)S.manaGuard=0;if(S.iceAge>0&&--S.iceAge===0)Stage.iceFloor(false);S.stoneSkin=false;if(S.barrier>0){S.barrierT--;if(S.barrierT<=0){S.barrier=0;S.thorns=null}}
+  if(S.pbleed&&S.hp>0){const p=S.pbleed;S.hp-=p.d;Stage.float('player',`-${p.d}`,'#ff5a64','BLEED',260);Stage.playerBurst('#c0303a');log(`Bleeding deals ${p.d} to you.`);if(--p.t<=0)S.pbleed=null}
   if(S.poison&&S.hp>0){const p=S.poison;S.hp-=p.d;Stage.float('player',`-${p.d}`,'#9be05a','POISON',100);Stage.poisonFx&&Stage.poisonFx();log(`Poison deals ${p.d} to you.`);if(--p.t<=0)S.poison=null}
   if(S.hp<=0&&tryRevive()){}
   if(S.hp<=0){S.hp=0;Stage.playerDie();render();setTimeout(()=>{S.phase='over';render()},1100);return}
@@ -510,10 +516,15 @@ function finishEnemyTurn(){
   render();
   if(S.rainNext){const lv=S.rainNext,flat=S.rainFlat;S.rainNext=0;S.busy=true;render();const ts=flat?Stage.healRain(150):Stage.holyRain(150);ts.forEach((t,i)=>setTimeout(()=>{if(S.phase!=='battle')return;healTick(lv,i,flat);if(i===4){S.busy=false;render()}},t))}
 }
+function sideHit(F,d,col,tag,delay,notes){if(F.hp<=0||d<=0)return;F.hp-=d;const fn=ENEMIES[F.id].name;Stage.withFoe(F.slot,()=>{Stage.float('enemy',d,col,tag,delay);Stage.enemyBurst(col,10)});if(F.hp<=0&&!foeRevive(F,notes)){setTimeout(()=>Stage.withFoe(F.slot,()=>Stage.enemyDie()),delay);notes.push(`<span class="w">${fn} falls</span>`)}}
+function splashFx(E,R,total,notes){if(!R.dmg.length||total<=0||R.warded)return;const g=stats();
+  if(g.cleave){const others=(S.foes||[]).filter(F=>F!==E&&F.hp>0);if(others.length){const d=Math.max(1,Math.round(total*g.cleave/100));Stage.cleaveFx&&Stage.cleaveFx();others.forEach((F,i)=>sideHit(F,d,'#e6eaf0','CLEAVE',120+i*60,notes));notes.push(`<span class="w">the cleaver splashes ${d} to ${others.length} other${others.length>1?'s':''}</span>`)}}
+  if(g.boom&&R.dmg.some(p=>ELEMS.includes(p.t))&&Math.random()*100<(g.boomCh||0)){const d=Math.max(1,Math.round(total*g.boom/100));Stage.explodeFx&&Stage.explodeFx();
+    (S.foes||[E]).filter(F=>F.hp>0||F===E).forEach((F,i)=>{if(F===E){E.hp-=d;Stage.float('enemy',d,'#ff9a3a','EXPLOSION!',260)}else sideHit(F,d,'#ff9a3a','BOOM',260+i*60,notes)});notes.push(`<span class="w">EXPLOSION! ${d} to every enemy</span>`)}}
 function itemProcs(E,notes){const g=stats();[['lightning',g.addl],['dark',g.souls]].forEach(([t,v],i)=>{if(!v||E.hp<=0)return;const{d,m}=partDmg(E,{t,p:v});if(!E.known.includes(t))E.known.push(t);E.hp-=d;Stage.float('enemy',d,hexOf(t),t==='dark'?'SOULS':'STORM',260+i*160);if(t==='lightning')Stage.zap();notes.push(m===0?`<span class="r">${TYPENAME[t]} had no effect</span>`:`+${d} ${TYPENAME[t]} from your gear`)})}
 function winBattle(){
   const n=curNode(),def=ENEMIES[S.enemy.id],fs=S.foes||[S.enemy];S.kills+=fs.length;Object.values(S.gear).filter(g=>g&&g.stats&&g.stats.soul).forEach(sl=>{const add=sl.stats.soul*fs.length;sl.stats.souls=(sl.stats.souls||0)+add;S.toast=`${ITEMS[sl.key].name} gathers ${add} soul${add>1?'s':''}: +${sl.stats.souls} Dark damage on every attack.`});
-  {let kk=0;fs.forEach(f=>{if(f.elite||f.boss)kk=1});if(!kk&&Math.random()<.15)kk=1;if(kk){S.keys=(S.keys||0)+1;S.lastKey=1}else S.lastKey=0}
+  {let kk=0;if(fs.some(f=>f.elite||f.boss))kk=Math.random()<.5?1:0;else if(Math.random()<.075)kk=1;if(kk){S.keys=(S.keys||0)+1;S.lastKey=1}else S.lastKey=0}
   {const g=stats(),L=S.level;let gold=0;fs.forEach(f=>{let b=(8+L*5)*(.8+Math.random()*.4);if(f.elite)b*=2;if(f.boss)b*=4;gold+=b});gold=Math.round(gold*(1+(g.gold||0)/100));S.gold=(S.gold||0)+gold;S.lastGold=gold}const fname=fs.map(f=>ENEMIES[f.id].name).join(' & ');
   const h=Math.min(5+(stats().regen||0),S.maxHp-S.hp);S.hp+=h;
   const boss=n.k==='boss',elite=n.k==='elite';
@@ -539,7 +550,7 @@ function dropPick(i){
   else{useLoot(o.loot);S.toast=o.loot.msg;finishDrop()}
 }
 function advance(){
-  S.node++;S.poison=null;
+  S.node++;S.poison=null;S.pbleed=null;
   if(S.node>=ROUTE_LEN){nextLevel();return}
   choosePath();
 }
@@ -556,11 +567,16 @@ function shopPrice(base){return Math.round(base*(1+.3*S.level))}
 function buildShop(){const cards=pickN(ACQ_KEYS,4).map(k=>{const lv=Math.random()<.3?2:1;return{key:k,lvl:lv,price:shopPrice(lv>1?60:35)}});const used=new Set(),items=[];for(let i=0;i<4;i++){let L,t=0;do{L=rollLoot(2+S.level*2+(i===3?6:0),i===3?'rare':null);t++}while((used.has(L.key)||!ITEMS[L.key].slot)&&t<20);used.add(L.key);items.push({loot:L,price:shopPrice({common:45,rare:90,epic:160}[L.rarity]*(ITEMS[L.key].set?1.25:1))})}return{cards,items,potion:{price:shopPrice(20)}}}
 function buyShop(kind,i){const sh=S.ev&&S.ev.shop;if(!sh)return;const o=kind==='potion'?sh.potion:sh[kind][i];if(!o||o.sold)return;if((S.gold||0)<o.price){S.toast=`Not enough gold. You need ${o.price}, you have ${S.gold||0}.`;render();return}
   S.gold-=o.price;o.sold=true;
+  if(kind==='cards'&&S.deck.some(c=>c.key===o.key)){S.ev.dup={key:o.key,lvl:o.lvl};render();return}
   if(kind==='cards'&&S.deck.length>=MAX_CARDS){Stage.playerBurst('#ffd36b');offerCard(o.key,'none');return}
   if(kind==='cards'){addCard(o.key);const c=S.deck[S.deck.length-1];c.lvl=o.lvl;S.toast=`Bought ${CARDS[o.key].name} (level ${o.lvl}).`}
   else if(kind==='items'){useLoot(o.loot);S.toast=`Bought it! ${o.loot.msg}`}
   else{const h=Math.min(25,S.maxHp-S.hp);S.hp+=h;S.toast=`You drink the potion and recover ${h} HP.`;Stage.float('player',`+${h}`,'#7fe08a','HEAL')}
   Stage.playerBurst('#ffd36b');render()}
+function dupChoice(up){const ev=S.ev,dp=ev&&ev.dup;if(!dp)return;ev.dup=null;
+  if(up){const cs=S.deck.filter(c=>c.key===dp.key&&c.lvl<5).sort((a,b)=>b.lvl-a.lvl);if(cs.length){const c=cs[0],add=Math.max(1,dp.lvl-1);c.lvl=Math.min(5,c.lvl+add);S.toast=`${CARDS[dp.key].name} upgraded to level ${c.lvl}.`;Stage.playerBurst('#7fd0ff');render();return}}
+  if(S.deck.length>=MAX_CARDS){offerCard(dp.key,'none');return}
+  addCard(dp.key);S.deck[S.deck.length-1].lvl=dp.lvl;S.toast=`Added a second ${CARDS[dp.key].name} (level ${dp.lvl}) to your deck.`;Stage.playerBurst('#ffd36b');render()}
 function startEvent(id){S.ev={id,step:'main',msg:null,offers:null,shop:id==='merchant'?buildShop():null,offer:null,loot:null};S.phase='event';S.busy=false;render()}
 function upgradeCard(c){if(c.lvl>=5)return false;c.lvl++;return true}
 function evOption(i){
@@ -573,7 +589,7 @@ function evOption(i){
       const offers=[0,1,2].map(i=>{let L,t=0;do{L=rollLoot(14+S.level*3,Math.random()<.35?'epic':'rare');t++}while(t<10&&!ITEMS[L.key].slot);return{type:'item',loot:L}});S.drop={offers,then:'stay',title:'The vault is yours. Take one treasure.',skip:'Take nothing'};Stage.playerBurst('#ffd36b')}
     else{advance();return}
   }else if(ev.id==='chest'){
-    {const gd=shopPrice(25+Math.floor(Math.random()*20)),key=Math.random()<.35;S.gold=(S.gold||0)+gd;if(key)S.keys=(S.keys||0)+1;ev.msg=`The lid creaks open: ${gd} gold glitters inside${key?', with an old brass key':''}, along with some cards. Take one.`}ev.step='done';S.drop={offers:rollOffers(3,{minItem:1,boost:4}),then:'stay',title:'Treasure! Take one.',skip:'Take nothing'};
+    {const gd=shopPrice(25+Math.floor(Math.random()*20)),key=Math.random()<.175;S.gold=(S.gold||0)+gd;if(key)S.keys=(S.keys||0)+1;ev.msg=`The lid creaks open: ${gd} gold glitters inside${key?', with an old brass key':''}, along with some cards. Take one.`}ev.step='done';S.drop={offers:rollOffers(3,{minItem:1,boost:4}),then:'stay',title:'Treasure! Take one.',skip:'Take nothing'};
   }else if(ev.id==='shrine'){
     if(i===0){const h=Math.min(20,S.maxHp-S.hp);S.hp+=h;ev.msg=`Warm light settles over you. You heal ${h} HP.`;ev.step='done';Stage.playerBurst('#fff0b3')}
     else if(i===1){const k=rnd(ELEMS);ev.msg=`The altar answers with a ${CARDS[k].name} card.`;ev.step='done';offerCard(k,'none');return}
@@ -648,6 +664,7 @@ function statusHTML(E){
 function playerStatusHTML(){
   const s=[`<span class="chip st" style="--tc:var(--guard)">${icon('block')}Block ${S.block}</span>`];
   if(S.poison)s.push(`<span class="chip st" style="--tc:#9be05a">Poison ${S.poison.d} · ${S.poison.t}t</span>`);
+  if(S.pbleed)s.push(`<span class="chip st" style="--tc:#ff5a64">Bleeding ${S.pbleed.d} · ${S.pbleed.t}t</span>`);
   if(S.barrier)s.push(`<span class="chip st" style="--tc:${S.thorns?typeColor(S.thorns):'var(--guard)'}">${icon('shield')}Barrier ${S.barrier} · ${S.barrierT}t</span>`);
   if(S.dodge)s.push(`<span class="chip st" style="--tc:var(--wind)">${icon('dodge')}Dodge ${S.dodge}%</span>`);
   if(S.stoneSkin)s.push(`<span class="chip st" style="--tc:var(--earth)">${icon('earth')}Stone skin: immune</span>`);
@@ -786,7 +803,7 @@ function hudMini(E){
 function hudHTML(){
   if(S.phase!=='battle'||!S.enemy)return '';
   const E=S.tgt&&S.tgt.hp>0?S.tgt:S.enemy,d=ENEMIES[E.id],it=E.frozen?{icon:'ice',label:'Frozen',val:'',cls:'',note:''}:E.stun?{icon:'lightning',label:'Stunned',val:'',cls:'',note:''}:intentText(E);
-  return `<div class="hud hud-hero">${hbBar({hp:S.hp,max:S.maxHp,mp:S.mana,mpMax:S.maxMana,emb:'heal',embCol:'var(--ok)'})}<div class="hud-cap"><span class="eyebrow">You</span>${S.poison?`<span class="hud-pois" title="Poison: ${S.poison.d} damage at the start of each of your turns, ${S.poison.t} turns left. Healing cures it.">☠ Poison ${S.poison.d} · ${S.poison.t}t</span>`:''}</div></div>
+  return `<div class="hud hud-hero">${hbBar({hp:S.hp,max:S.maxHp,mp:S.mana,mpMax:S.maxMana,emb:'heal',embCol:'var(--ok)'})}<div class="hud-cap"><span class="eyebrow">You</span>${S.pbleed?`<span class="hud-pois hud-bleed" title="Bleeding: ${S.pbleed.d} damage at the start of each of your turns, ${S.pbleed.t} turns left. Healing stops it.">🩸 Bleed ${S.pbleed.d} · ${S.pbleed.t}t</span>`:''}${S.poison?`<span class="hud-pois" title="Poison: ${S.poison.d} damage at the start of each of your turns, ${S.poison.t} turns left. Healing cures it.">☠ Poison ${S.poison.d} · ${S.poison.t}t</span>`:''}</div></div>
   <div class="hud hud-mon">${hbBar({hp:E.hp,max:E.max,bl:E.block,emb:it.icon,embCol:it.cls==='heavy'?'var(--danger)':'var(--ink)',red:true,mirror:true})}
     <div class="hud-cap">${E.boss||E.elite?`<span class="eyebrow">${E.boss?'Boss':'Elite'}</span>`:''}<b class="hud-name">${d.name}</b><span class="hud-int ${it.cls}" title="Next move${it.note?': '+it.note:''}">${icon(it.icon)}${it.label}${it.val!==''?` <b class="num">${it.val}</b>`:''}</span></div>
     ${hudMini(E)}${abilHTML(E)}</div>`;
@@ -818,22 +835,22 @@ function titleHTML(){
 }
 const EV_BRIEF={shrine:'Pray at a humming altar. The old gods may bless a card, or your health.',smith:'A travelling smith tempers one of your cards for free.',merchant:'Spend your gold on new cards and gleaming gear.',mimic:'A lone chest by a dying fire. Is it… breathing?'};
 function pathInfo(n){const L=LEVELS[S.level];
-  if(n.k==='m'){const d=ENEMIES[n.id],hp=Math.round(d.hp*L.hp);return{tag:'Monster',title:d.name,desc:d.lore||'A lone creature blocks the trail.',meta:`${hp} HP · gold & a card`,col:'#ff7a4a',ic:NODE_ICON.m}}
-  if(n.k==='elite'){const ids=n.ids||[n.id],nm=[...new Set(ids.map(i=>ENEMIES[i].name))].join(' & ');return{tag:'Elite',title:nm,desc:`A hardened pack, tougher and hungrier than anything else on this road.${L.revive?' The leader refuses to stay dead.':''}`,meta:'Always drops a key',col:'#c49bff',ic:NODE_ICON.elite}}
+  if(n.k==='m'){const d=ENEMIES[n.id],hp=Math.round(d.hp*L.hp);if(n.swarm)return{tag:'Swarm',title:d.swarmName,desc:d.lore,meta:`5 × ${hp} HP · each attacks`,col:'#ffb347',ic:NODE_ICON.m};return{tag:'Monster',title:d.name,desc:d.lore||'A lone creature blocks the trail.',meta:`${hp} HP · gold & a card`,col:'#ff7a4a',ic:NODE_ICON.m}}
+  if(n.k==='elite'){const ids=n.ids||[n.id],nm=[...new Set(ids.map(i=>ENEMIES[i].name))].join(' & ');return{tag:'Elite',title:nm,desc:`A hardened pack, tougher and hungrier than anything else on this road.${L.revive?' The leader refuses to stay dead.':''}`,meta:'50% chance of a key',col:'#c49bff',ic:NODE_ICON.elite}}
   if(n.k==='boss'){const d=ENEMIES[n.id];return{tag:'Boss',title:d.name,desc:d.lore||'The master of this land.',meta:(d.abil||[]).map(a=>BOSS_ABIL[a].name).join(' · '),col:'#ff4a3a',ic:NODE_ICON.boss}}
   if(n.k==='ev'){const E=EVENTS[n.id];return{tag:'Event',title:E.name,desc:EV_BRIEF[n.id]||E.text,meta:n.id==='merchant'?`You have ${S.gold||0} gold`:'A chance encounter',col:n.id==='merchant'?'#7fd0ff':'#bfe9ff',ic:NODE_ICON.ev}}
   if(n.k==='camp')return{tag:'Rest',title:'Campfire',desc:'A quiet clearing and a warm fire. Rest to heal, or train a card to make it stronger.',meta:`HP ${S.hp}/${S.maxHp}`,col:'#7fe08a',ic:NODE_ICON.camp};
   if(n.k==='chest')return{tag:'Treasure',title:'Treasure Chest',desc:'A chest left on the roadside. Gold and a card inside, and maybe an old brass key.',meta:'No fight',col:'#ffd36b',ic:NODE_ICON.chest};
   if(n.k==='vault'){const has=S.keys>0;return{tag:'Locked',title:'Sealed Vault',desc:'An iron-bound door set into the rock. Hoarded gold and rare or epic gear wait behind it.',meta:has?`Uses 1 key · you have ${S.keys}`:'Key needed',col:'#ffd36b',ic:NODE_ICON.vault}}
   return{tag:'?',title:'?',desc:'',meta:'',col:'#9aa',ic:'event'}}
-function pathArt(n){try{return Stage.cardArt(n.k,n.k==='elite'?(n.ids||[n.id]).join(','):n.id||'',S.level)}catch(e){return''}}
+function pathArt(n){try{return Stage.cardArt(n.swarm?'swarm':n.k,n.k==='elite'?(n.ids||[n.id]).join(','):n.id||'',S.level)}catch(e){return''}}
 function pathHTML(){const ch=S.choices||[];
   return `<div class="path-layer"><div class="path-head"><div class="eyebrow">Level ${S.level+1} · ${LEVELS[S.level].name} · node ${S.node+1} of ${ROUTE_LEN}${S.node===ROUTE_LEN-2?' · the boss lies ahead':''}</div><h2>Choose your path</h2></div>
   <div class="path-cards">${ch.map((n,i)=>{const P=pathInfo(n),lock=n.k==='vault'&&!(S.keys>0),art=pathArt(n);return `<button type="button" class="pcard k-${n.k} ${lock?'locked':''}" data-act="path" data-i="${i}" style="--oc:${P.col}">
     <span class="pc-art" style="background-image:url(${art})"></span><span class="pc-shade"></span>
     <span class="pc-tag">${icon(P.ic)}${P.tag}</span>
     <span class="pc-body"><b class="pc-title">${P.title}</b><span class="pc-desc">${P.desc}</span>${P.meta?`<span class="pc-meta">${n.k==='vault'?keyIc()+' ':''}${P.meta}</span>`:''}</span></button>`}).join('')}</div>
-  <p class="path-foot"><span class="key-pill">${keyIc()}<b class="num">${S.keys||0}</b></span> Elites and bosses always drop a key. Chests and monsters sometimes do.</p></div>`}
+  <p class="path-foot"><span class="key-pill">${keyIc()}<b class="num">${S.keys||0}</b></span> Elites and bosses drop a key half the time. Chests and monsters rarely do.</p></div>`}
 function travelHTML(){return `<section class="screen"><div class="travel"><span class="eyebrow">On the road</span><span>Heading to <b>${NODE_LABEL[curNode().k].toLowerCase()}</b>, node ${S.node+1} of ${ROUTE_LEN}…</span></div><p class="lore" style="margin:0">Your deck and equipment are under the Character button.</p></section>`}
 function cardOffersHTML(keys,act){return `<div class="card-row">${keys.map(k=>cardHTML({key:k,lvl:1},{act})).join('')}</div>`}
 function rewardHTML(){
@@ -913,8 +930,10 @@ function eventLayerHTML(){
 
 function keyIc(){return '<span class="keyic" aria-hidden="true"></span>'}
 function coin(){return '<span class="coin" aria-hidden="true"></span>'}
+function dupHTML(){const dp=S.ev&&S.ev.dup;if(!dp)return'';const own=S.deck.filter(c=>c.key===dp.key),best=own.reduce((m,c)=>Math.max(m,c.lvl),0),canUp=own.some(c=>c.lvl<5),add=Math.max(1,dp.lvl-1);
+  return `<div class="dup-box" role="dialog" aria-label="Duplicate card"><div class="dup-card">${cardHTML({key:dp.key,lvl:dp.lvl},{small:true})}</div><div class="dup-txt"><b>You already own ${CARDS[dp.key].name}</b><span>Your best copy is level ${best}. Upgrade it, or keep this one as a second copy in your deck?</span><div class="dup-btns">${canUp?`<button type="button" class="btn btn-primary" data-act="dupup">Upgrade to level ${Math.min(5,best+add)}</button>`:''}<button type="button" class="btn" data-act="dupkeep">Keep second copy${S.deck.length>=MAX_CARDS?' (deck full: swap)':''}</button></div></div></div>`}
 function shopHTML(sh){const g=S.gold||0,btn=(kind,i,o)=>`<button type="button" class="btn buy" data-act="buy" data-kind="${kind}" data-i="${i}" ${o.sold||g<o.price?'disabled':''}>${o.sold?'Sold':`${coin()}<b class="num">${o.price}</b>`}</button>`;
-  return `<div class="shop-wrap"><h3 class="shop-h">Skill cards <span class="eyebrow">${S.deck.length}/${MAX_CARDS} in your deck</span></h3><div class="shop-row">${sh.cards.map((o,i)=>`<div class="shop-tile ${o.sold?'sold':''}">${cardHTML({key:o.key,lvl:o.lvl},{small:true})}${btn('cards',i,o)}</div>`).join('')}</div>
+  return `<div class="shop-wrap">${dupHTML()}<h3 class="shop-h">Skill cards <span class="eyebrow">${S.deck.length}/${MAX_CARDS} in your deck</span></h3><div class="shop-row">${sh.cards.map((o,i)=>`<div class="shop-tile ${o.sold?'sold':''}">${cardHTML({key:o.key,lvl:o.lvl},{small:true})}${btn('cards',i,o)}</div>`).join('')}</div>
     <h3 class="shop-h">Gear <span class="eyebrow">equips right away</span></h3><div class="shop-row">${sh.items.map((o,i)=>{const it=ITEMS[o.loot.key];return `<div class="shop-tile item ${o.sold?'sold':''} ${o.loot.rarity}"><div class="shop-item ${o.loot.rarity}">${itemIcon(o.loot.key,56)}<span class="eyebrow">${SLOTNAME[it.slot]} · <span class="rar ${o.loot.rarity}">${o.loot.rarity}</span></span><b>${it.name}</b>${setHTML(o.loot.key,true)}<ul class="stats">${statLines(o.loot.stats,o.loot.key).map(x=>`<li>${x}</li>`).join('')}</ul></div>${btn('items',i,o)}</div>`}).join('')}</div>
     <div class="shop-foot"><div class="shop-tile mini ${sh.potion.sold?'sold':''}">${itemIcon('red_potion',36)}<span>Healing potion · restores 25 HP</span>${btn('potion',0,sh.potion)}</div><button type="button" class="btn" data-act="evopt" data-i="1">Leave the shop</button></div></div>`}
 function endHTML(win){
@@ -1032,6 +1051,8 @@ document.getElementById('app').addEventListener('click',e=>{
     case 'evopt':evOption(+b.dataset.i);break;
     case 'evoffer':S.ev.offer=b.dataset.key;S.ev.step='give';render();break;
     case 'buy':buyShop(b.dataset.kind,+b.dataset.i);break;
+    case 'dupup':dupChoice(true);break;
+    case 'dupkeep':dupChoice(false);break;
     case 'evback':S.ev.step='main';render();break;
     case 'evcard':evCard(id);break;
     case 'evtake':S.ev.cardTaken=true;offerCard(b.dataset.key,'none');break;

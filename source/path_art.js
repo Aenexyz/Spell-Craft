@@ -41,6 +41,7 @@ function cardArt(kind,id,lvl){
     x.drawImage(im,X,Y,w,h);return{X,Y,w,h}};
   const T=kind;
   if(T==='m'){glow(36,58,16,'#ffffff10');putFoe(id,40,52,36);}
+  else if(T==='swarm'){glow(36,46,20,'#ffd36b18');const im=foeImg(id);if(im){const P=[[36,44],[21,52],[51,51],[28,65],[45,64]];P.forEach(([cx,cy],k)=>{const f=Math.min(18/im.height,22/im.width),kk=f>=1?Math.floor(f):1/Math.ceil(1/f),w=Math.round(im.width*kk),h=Math.round(im.height*kk);px(cx-2,GY+1,'#0005',5,1);x.drawImage(im,Math.round(cx-w/2),Math.round(cy-h/2+(k%2)),w,h)})}}
   else if(T==='elite'){glow(36,56,20,'#b18bff22');const ids=(id||'').split(',');if(ids[1]&&ids[1]!==ids[0])putFoe(ids[1],30,34,52,'#6a3aa8');const r=putFoe(ids[0],44,50,32,'#b18bff');if(r){for(let i=0;i<5;i++)px(r.X+rn()*r.w,r.Y-2-rn()*6,'#e4d4ff')}
     // elite star
     const sx=60,sy=10;[[0,-3],[0,-2],[0,-1],[0,0],[0,1],[0,2],[0,3],[-3,0],[-2,0],[-1,0],[1,0],[2,0],[3,0],[-1,-1],[1,-1],[-1,1],[1,1]].forEach(o=>px(sx+o[0],sy+o[1],'#d6b8ff'))}
