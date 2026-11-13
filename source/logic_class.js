@@ -2,7 +2,7 @@
 /* ===== Classes: Aegis Warden, Arcanist, Swordsman — passives and 3-card ultimates ===== */
 const CLASSES={
  warden:{name:'Aegis Warden',cat:'def',item:'warden_shield',col:'#59c9c2',tag:'Defender',
-   lines:['Fights with a shield as a weapon: starts with a Round Shield (Shield Bash), no sword','Shield attacks deal ×1.25 damage','Each turn: +1 block per card level in your deck','Shield Bash and Shield Throw count as Defense cards for the ultimate'],
+   lines:['Fights with shields: carries two (weapon and off-hand), starts with a Round Shield (Shield Bash), no sword','Shield attacks deal ×1.25 damage','Each turn: +1 block per card level in your deck','Shield Bash and Shield Throw count as Defense cards for the ultimate'],
    ult:'Citadel Crash',ultCat:'Defense',ultText:'Combine 3 Defense or shield cards: raise a fortress around you, then bring its walls crashing down on every enemy.'},
  arcanist:{name:'Arcanist',cat:'elem',item:'apprentice_wand',col:'#b18bff',tag:'Spellcaster',
    lines:['Starts with an Apprentice Wand (elements cost 1 less mana)','Affinity with your first element: its damage ×1.25','Starts with a random element card'],

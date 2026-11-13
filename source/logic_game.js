@@ -216,7 +216,7 @@ function itemIcon(key,size){
 function curLoot(){return (S.phase==='event'||S.phase==='chest')?S.ev&&S.ev.loot:null}
 function useLoot(given){
   const L=given||curLoot();if(!L||L.done)return;const it=ITEMS[L.key];
-  if(it.slot){let sl=it.slot;if(S.cls==='warden'&&sl==='shield'){const w=S.gear.weapon;if(!w||w.key==='warden_shield'||(ITEMS[w.key].slot==='shield'&&S.gear.shield))sl='weapon'}const old=S.gear[sl];S.gear[sl]={key:L.key,rarity:L.rarity,stats:L.stats,cardLvl:1};recalc();
+  if(it.slot){let sl=it.slot;if(S.cls==='warden'&&sl==='shield'){const w=S.gear.weapon,sv=g=>g?Object.values(g.stats||{}).reduce((a,v)=>a+(typeof v==='number'?v:0),0)+(g.key==='warden_shield'?-99:0):-999;if(!w)sl='weapon';else if(S.gear.shield&&(ITEMS[w.key].slot!=='shield'||sv(w)<=sv(S.gear.shield)))sl='weapon'}const old=S.gear[sl];S.gear[sl]={key:L.key,rarity:L.rarity,stats:L.stats,cardLvl:1};recalc();
     L.msg=`You equip the ${it.name}${old?` and stow the ${ITEMS[old.key].name}`:''}.${it.grant?` The ${CARDS[it.grant].name} card joins your deck.`:''}`;Stage.playerBurst(RARITY_GLOW[L.rarity])}
   else{const st=L.stats;
     if(st.heal){const h=Math.min(st.heal,S.maxHp-S.hp);S.hp+=h;L.msg=`You drink the ${it.name} and recover ${h} HP.`;Stage.float('player',`+${h}`,'#7fe08a','HEAL')}

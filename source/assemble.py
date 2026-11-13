@@ -610,6 +610,8 @@ R("      if(wpn&&wmode==='back'&&!(hf.n==='jump'&&wpn.key==='hunter_bow')&&","  
 R("      const shd=S&&S.gear&&S.gear.shield;\n      if(hf.n==='shield'","      const shd=S&&S.gear&&(S.gear.shield||(shW?wpn:null));\n      if(hf.n==='shield'")
 R("        if(wpn.key==='hunter_bow'){const bsz=62*.8*k*64/58,aim=","        if(shW){const ssz=sz*.78;ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(x0+hf.f.hx*k+3*k,y0+hf.f.hy*k);ctx.drawImage(itemsImg,(wi%wc)*64,Math.floor(wi/wc)*64,64,64,-ssz/2,-ssz*.55,ssz,ssz);ctx.restore()}\n        else if(wpn.key==='hunter_bow'){const bsz=62*.8*k*64/58,aim=")
 
+R("      const shd=S&&S.gear&&(S.gear.shield||(shW?wpn:null));\n      if(hf.n==='shield'","      const shd=S&&S.gear&&(S.gear.shield||(shW?wpn:null));\n      if(shW&&S.gear.shield&&hf.f.rig&&hf.n!=='die'&&!P.dead&&itemsImg.complete&&itemsImg.naturalWidth){const bi=ITEM_ATLAS.idx[(hf.n==='shield'?wpn:S.gear.shield).key],bc=ITEM_ATLAS.cols,bsz=44*k*64/58*.72;ctx.save();ctx.imageSmoothingEnabled=false;if(hf.n==='shield'&&hf.f.sh){ctx.globalAlpha=.95;ctx.drawImage(itemsImg,(bi%bc)*64,Math.floor(bi/bc)*64,64,64,x0+hf.f.sh[0]*k-bsz*.85,y0+hf.f.sh[1]*k-bsz*.55,bsz,bsz)}else{ctx.translate(x0+(hf.f.nk[0]-6)*k,y0+(hf.f.nk[1]+6)*k);ctx.rotate(-.15);ctx.drawImage(itemsImg,(bi%bc)*64,Math.floor(bi/bc)*64,64,64,-bsz/2,-bsz/2,bsz,bsz)}ctx.restore()}\n      if(hf.n==='shield'")
+
 css_add="""
 .item-ic{image-rendering:pixelated}
 .card-mana{font-family:var(--f-num);font-weight:700;font-size:14px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:#e8f3ff;background:radial-gradient(circle at 35% 30%,#6cb2ff,#2a5fc0 70%);border:1px solid #9fcaff;box-shadow:0 0 6px #4aa8ff88}

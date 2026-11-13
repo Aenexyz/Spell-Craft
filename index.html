@@ -2909,6 +2909,7 @@ window.__cardArt=cardArt;
       P.topY=feet+oy+((hf.f.hd?hf.f.hd[1]-hf.f.hd[2]:0)-(hf.f.fy||hf.c.height))*k;
       if(hf.f.hx!=null)P.handPt={x:px+ox+(hf.f.hx-hf.f.ax)*k,y:feet+oy+(hf.f.hy-(hf.f.fy||hf.c.height))*k};
       const shd=S&&S.gear&&(S.gear.shield||(shW?wpn:null));
+      if(shW&&S.gear.shield&&hf.f.rig&&hf.n!=='die'&&!P.dead&&itemsImg.complete&&itemsImg.naturalWidth){const bi=ITEM_ATLAS.idx[(hf.n==='shield'?wpn:S.gear.shield).key],bc=ITEM_ATLAS.cols,bsz=44*k*64/58*.72;ctx.save();ctx.imageSmoothingEnabled=false;if(hf.n==='shield'&&hf.f.sh){ctx.globalAlpha=.95;ctx.drawImage(itemsImg,(bi%bc)*64,Math.floor(bi/bc)*64,64,64,x0+hf.f.sh[0]*k-bsz*.85,y0+hf.f.sh[1]*k-bsz*.55,bsz,bsz)}else{ctx.translate(x0+(hf.f.nk[0]-6)*k,y0+(hf.f.nk[1]+6)*k);ctx.rotate(-.15);ctx.drawImage(itemsImg,(bi%bc)*64,Math.floor(bi/bc)*64,64,64,-bsz/2,-bsz/2,bsz,bsz)}ctx.restore()}
       if(hf.n==='shield'&&hf.f.sh&&shd&&itemsImg.complete&&itemsImg.naturalWidth){const si=ITEM_ATLAS.idx[shd.key],sc2=ITEM_ATLAS.cols,ssz=hf.f.sh[2]*1.25*k*64/58;ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(itemsImg,(si%sc2)*64,Math.floor(si/sc2)*64,64,64,x0+hf.f.sh[0]*k-ssz/2,y0+hf.f.sh[1]*k-ssz/2,ssz,ssz);ctx.restore()}
       if(hf.n==='jump'&&hf.f.hx!=null&&itemsImg.complete&&itemsImg.naturalWidth&&ITEM_ATLAS.idx.hunter_bow!=null){const wi=ITEM_ATLAS.idx.hunter_bow,wc=ITEM_ATLAS.cols,bsz=62*.8*k*64/58;ctx.save();ctx.imageSmoothingEnabled=true;ctx.translate(x0+hf.f.hx*k+2*k,y0+hf.f.hy*k);ctx.scale(-1,1);ctx.drawImage(itemsImg,(wi%wc)*64,Math.floor(wi/wc)*64,64,64,-bsz/2,-bsz/2,bsz,bsz);ctx.restore()}
       if(wpn&&wmode==='hand'&&itemsImg.complete&&itemsImg.naturalWidth&&hf.f.hx!=null&&hf.n!=='die'&&!P.dead){
@@ -3479,7 +3480,7 @@ function itemIcon(key,size){
 function curLoot(){return (S.phase==='event'||S.phase==='chest')?S.ev&&S.ev.loot:null}
 function useLoot(given){
   const L=given||curLoot();if(!L||L.done)return;const it=ITEMS[L.key];
-  if(it.slot){let sl=it.slot;if(S.cls==='warden'&&sl==='shield'){const w=S.gear.weapon;if(!w||w.key==='warden_shield'||(ITEMS[w.key].slot==='shield'&&S.gear.shield))sl='weapon'}const old=S.gear[sl];S.gear[sl]={key:L.key,rarity:L.rarity,stats:L.stats,cardLvl:1};recalc();
+  if(it.slot){let sl=it.slot;if(S.cls==='warden'&&sl==='shield'){const w=S.gear.weapon,sv=g=>g?Object.values(g.stats||{}).reduce((a,v)=>a+(typeof v==='number'?v:0),0)+(g.key==='warden_shield'?-99:0):-999;if(!w)sl='weapon';else if(S.gear.shield&&(ITEMS[w.key].slot!=='shield'||sv(w)<=sv(S.gear.shield)))sl='weapon'}const old=S.gear[sl];S.gear[sl]={key:L.key,rarity:L.rarity,stats:L.stats,cardLvl:1};recalc();
     L.msg=`You equip the ${it.name}${old?` and stow the ${ITEMS[old.key].name}`:''}.${it.grant?` The ${CARDS[it.grant].name} card joins your deck.`:''}`;Stage.playerBurst(RARITY_GLOW[L.rarity])}
   else{const st=L.stats;
     if(st.heal){const h=Math.min(st.heal,S.maxHp-S.hp);S.hp+=h;L.msg=`You drink the ${it.name} and recover ${h} HP.`;Stage.float('player',`+${h}`,'#7fe08a','HEAL')}
@@ -4380,7 +4381,7 @@ window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.ho
 /* ===== Classes: Aegis Warden, Arcanist, Swordsman — passives and 3-card ultimates ===== */
 const CLASSES={
  warden:{name:'Aegis Warden',cat:'def',item:'warden_shield',col:'#59c9c2',tag:'Defender',
-   lines:['Fights with a shield as a weapon: starts with a Round Shield (Shield Bash), no sword','Shield attacks deal ×1.25 damage','Each turn: +1 block per card level in your deck','Shield Bash and Shield Throw count as Defense cards for the ultimate'],
+   lines:['Fights with shields: carries two (weapon and off-hand), starts with a Round Shield (Shield Bash), no sword','Shield attacks deal ×1.25 damage','Each turn: +1 block per card level in your deck','Shield Bash and Shield Throw count as Defense cards for the ultimate'],
    ult:'Citadel Crash',ultCat:'Defense',ultText:'Combine 3 Defense or shield cards: raise a fortress around you, then bring its walls crashing down on every enemy.'},
  arcanist:{name:'Arcanist',cat:'elem',item:'apprentice_wand',col:'#b18bff',tag:'Spellcaster',
    lines:['Starts with an Apprentice Wand (elements cost 1 less mana)','Affinity with your first element: its damage ×1.25','Starts with a random element card'],
