@@ -162,6 +162,8 @@ const INTENTS={bleed:{label:'Bite',icon:'stab',cls:'bleed',note:'makes you bleed
 const SLOTSHORT={head:'Head',shoulders:'Pads',cape:'Cape',chest:'Body',hands:'Hand',feet:'Feet',weapon:'Wpn',shield:'Shld',neck:'Neck',charm:'Charm',belt:'Belt'};
 const SLOTNAME={head:'Head',shoulders:'Shoulders',cape:'Cape',chest:'Chest',hands:'Hands',feet:'Feet',weapon:'Weapon',shield:'Shield',neck:'Neck',charm:'Charm',belt:'Belt'};
 const ITEMS={
+  warden_shield:{name:"Warden's Round Shield",slot:'shield',stats:{def:1},grant:'shieldbash',starter:true},
+  apprentice_wand:{name:'Apprentice Wand',slot:'weapon',stats:{mcost:1},starter:true},
   starter_sword:{name:"Traveler's Sword",slot:'weapon',stats:{},grant:'slash',starter:true},
   iron_helm:{name:'Iron Helm',slot:'head',stats:{hp:8}},
   mystic_hood:{name:'Mystic Hood',slot:'head',stats:{hp:4,mcost:2}},

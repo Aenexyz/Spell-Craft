@@ -183,7 +183,7 @@ function gearFuse(c1,c2){
   if(R.dmg.length&&g.atk)R.dmg[0].p+=g.atk;
   R.bonus=R.dmg.reduce((a,p)=>a+p.p,0)-R.base;
   gearMods(R,g);
-  if(R.spell&&ESPELL[R.spell].prep&&S.enemy)ESPELL[R.spell].prep(R,S.enemy);return R;
+  if(R.spell&&ESPELL[R.spell].prep&&S.enemy)ESPELL[R.spell].prep(R,S.enemy);clsMods(R,c1,c2);return R;
 }
 
 /* ================= loot ================= */
@@ -267,7 +267,7 @@ function startBattle(n){
   S.foes.forEach(F=>{const dd=ENEMIES[F.id];F.abil=(dd.abil||[]).slice();if(F.elite&&L.revive&&F.slot===0)F.abil.push('revive');if(F.abil.includes('ward'))F.ward=true;if(F.abil.includes('revive'))F.undying=true});S.poison=null;S.pbleed=null;
   S.enemy=S.foes[0];S.tgt=S.enemy;
   S.draw=shuffle(battleDeck().map(c=>c.id));S.hand=[];S.disc=[];S.sel=[];
-  clearDefense(true);S.block=stats().def;S.barrier=0;S.barrierT=0;S.manaGuard=0;S.manaGuardT=0;S.iceAge=0;S.stoneSkin=false;Stage.iceFloor(false);S.thorns=null;S.dodge=0;S.parry=null;S.counter=null;S.guarding=false;S.rainNext=0;S.embrace=false;S.reflect=false;S.efield=false;S.busy=false;
+  clearDefense(true);S.block=stats().def+clsBlock();S.barrier=0;S.barrierT=0;S.manaGuard=0;S.manaGuardT=0;S.iceAge=0;S.stoneSkin=false;Stage.iceFloor(false);S.thorns=null;S.dodge=0;S.parry=null;S.counter=null;S.guarding=false;S.rainNext=0;S.embrace=false;S.reflect=false;S.efield=false;S.busy=false;
   {const g=stats();S.struck=false;S.combos=0;if(g.barrierStart){S.barrier=g.barrierStart;S.barrierT=3}if(g.dodge)S.dodge=g.dodge}
   S.log=[n.swarm?`A ${d.swarmName.toLowerCase()} surrounds you: ${ids.length} ${d.name}s, each attacking on its own. Tap one to target it.`:duo?`An elite pair blocks the road: ${ids.map(i=>ENEMIES[i].name).join(' and ')}. Tap a monster to target it.`:`${elite?'An elite ':''}${d.name} blocks the road.`];
   drawHand();S.phase='battle';render();
@@ -327,6 +327,7 @@ function skipTurn(){
   render();setTimeout(enemyTurn,700);
 }
 function doFuse(){
+  if(S.sel.length===3){doUltimate();return}
   if(S.busy||S.sel.length<2)return;
   const cost=fuseCost(...S.sel.map(card));if(cost>S.mana){S.toast=`Not enough mana. This needs ${cost}, you have ${S.mana}.`;render();return}
   S.busy=true;S.mana=Math.min(S.maxMana,S.mana-cost);if(cost<0)setTimeout(()=>Stage.float('player',`+${-cost}`,'#6cb2ff','MANA',0),250);
@@ -379,7 +380,7 @@ function applyFuse(c1,c2,R){
   if(R.dmg.length&&!R.breaker&&E.block>0){const ab=Math.min(E.block,total);E.block-=ab;total-=ab;if(ab)notes.push(`${ab} absorbed by its shield`)}
   else if(R.breaker&&E.block>0&&R.dmg.length)notes.push('broke through its shield');
   E.hp-=total;if(E.vulnT>0&&--E.vulnT===0)E.vuln=0;
-  splashFx(E,R,total,notes);
+  splashFx(E,R,total,notes);clsAfterHit(E,R,total,notes);
   if(R.dmg.length&&E.hp>0)itemProcs(E,notes);
   if(R.crit)notes.push('<span class="w">critical hit!</span>');
   if(R.stunChance&&E.hp>0&&modOf(E,R.stunType||'earth')!==0&&!E.stun&&Math.random()*100<R.stunChance){E.stun=true;notes.push('<span class="w">stunned it</span>');Stage.float('enemy','STUN','#f2d24b','',300)}
@@ -531,7 +532,7 @@ function finishEnemyTurn(){
   if(S.poison&&S.hp>0){const p=S.poison;S.hp-=p.d;Stage.float('player',`-${p.d}`,'#9be05a','POISON',100);Stage.poisonFx&&Stage.poisonFx();log(`Poison deals ${p.d} to you.`);if(--p.t<=0)S.poison=null}
   if(S.hp<=0&&tryRevive()){}
   if(S.hp<=0){S.hp=0;Stage.playerDie();render();setTimeout(()=>{S.phase='over';render()},1100);return}
-  {const carry=S.bulwark?Math.floor((S.block||0)/2):0;S.bulwark=false;S.block=stats().def+carry;if(carry){Stage.float('player',`+${carry}`,'#59c9c2','BULWARK',140);log(`Bulwark keeps ${carry} block for this turn.`)}}S.turns++;drawHand();S.busy=false;
+  {const carry=S.bulwark?Math.floor((S.block||0)/2):0;S.bulwark=false;S.block=stats().def+carry+clsBlock();if(carry){Stage.float('player',`+${carry}`,'#59c9c2','BULWARK',140);log(`Bulwark keeps ${carry} block for this turn.`)}}S.turns++;drawHand();S.busy=false;
   {const g=stats();if(g.dodge)S.dodge=Math.max(S.dodge,g.dodge);if(g.mregen){const m=Math.min(g.mregen,S.maxMana-S.mana);if(m>0){S.mana+=m;Stage.float('player',`+${m}`,'#6cb2ff','MANA',120)}}}
   if(S.regen&&S.regen.t>0){const h=Math.min(S.regen.amt,S.maxHp-S.hp);if(h>0)S.hp+=h;Stage.float('player',`+${h}`,'#ffd36b','SANCTUM',150);if(--S.regen.t<=0)S.regen=null}
   render();
@@ -741,6 +742,7 @@ function describe(R){
 }
 function resultHTML(){
   if(S.phase!=='battle'||S.busy)return '';
+  if(S.sel.length===3)return ultHTML();
   if(S.sel.length<2)return `<div class="rhint">${S.sel.length?'Pick one more card':'Pick 2 cards to combine'}</div>`;
   const E=S.enemy;const[c1,c2]=S.sel.map(card);if(!c1||!c2)return '';const R=gearFuse(c1,c2);
   const cost=fuseCost(c1,c2),low=cost>S.mana;
@@ -756,7 +758,8 @@ function resultHTML(){
   L('water','#4aa8ff',(cost>0?`Mana −${cost}`:cost<0?`Mana +${-cost}`:'No mana')+(R.fslash?`, +${3*R.segs.length} back`:''));
   if(R.charged&&!R.lstrike)L('arrowshot','var(--phys)',R.charged.float?'Power ×0.8–10':`Power ×${R.charged.ilo||3}–${R.charged.ihi||7}`);
   if(R.charged&&R.charged.crit)L('lightning','var(--lightning)','Crit chance 50%');
-  if(R.gtags)R.gtags.forEach(t=>L('punch','var(--brass)',t));{const g=stats();if(R.dmg.length&&(g.crit||g.supernova))L('lightning','var(--brass)',g.supernova&&((S.combos||0)+1)%3===0?'SUPERNOVA crit':`Crit ${g.crit||0}%`)}
+  if(R.gtags)R.gtags.forEach(t=>L('punch','var(--brass)',t));
+  if(S.cls&&[c1,c2].every(c=>CARDS[c.key].cat===CLASSES[S.cls].cat))L('ult',CLASSES[S.cls].col,`Add a 3rd ${CLASSES[S.cls].ultCat} card: ${CLASSES[S.cls].ult}`);{const g=stats();if(R.dmg.length&&(g.crit||g.supernova))L('lightning','var(--brass)',g.supernova&&((S.combos||0)+1)%3===0?'SUPERNOVA crit':`Crit ${g.crit||0}%`)}
   {const g=stats();if(R.dmg.length&&g.addl)L('lightning','var(--lightning)',`+${g.addl} Lightning (item)`);if(R.dmg.length&&g.souls)L('dark','var(--dark)',`+${g.souls} Dark (souls)`)}
   if(R.dodgeAdd)L('dodge','var(--guard)',`Dodge +${R.dodgeAdd}%`);
   if(R.segs)L('multi','var(--phys)',`Hits ×${R.segs.length}`);
@@ -1030,18 +1033,18 @@ function render(){
   else if(ph==='over')main=endHTML(false);
   else if(ph==='win')main=endHTML(true);
   const toast=S.toast?`<div class="toast" role="status">${S.toast}</div>`:'';
-  $top.innerHTML=`<header class="top"><div class="brand"><h1>SpellCraft</h1><span class="eyebrow">Level ${S.level+1} · ${LEVELS[S.level].name}${ph!=='title'?` · <span class="gold-pill">${coin()}<b class="num">${S.gold||0}</b></span> · <span class="key-pill">${keyIc()}<b class="num">${S.keys||0}</b></span>`:''}</span></div>
+  $top.innerHTML=`<header class="top"><div class="brand"><h1>SpellCraft</h1><span class="eyebrow">Level ${S.level+1} · ${LEVELS[S.level].name}${ph!=='title'?` · ${S.cls?`<span class="cls-pill" style="--oc:${CLASSES[S.cls].col}">${CLASSES[S.cls].name}${S.affinity&&S.cls==='arcanist'?` · ${TYPENAME[S.affinity]}`:''}</span> · `:''}<span class="gold-pill">${coin()}<b class="num">${S.gold||0}</b></span> · <span class="key-pill">${keyIc()}<b class="num">${S.keys||0}</b></span>`:''}</span></div>
     <div class="top-actions">${ph!=='title'?'<button type="button" class="btn" data-act="char">Character</button>':''}<button type="button" class="btn mob-btn ${MOB?'on':''}" data-act="mobile" aria-pressed="${MOB}" title="Show card options and your hand larger, below the battle">Mobile</button><button type="button" class="btn" data-act="codex">Codex <span class="num">${S.codex.length}</span></button>${ph!=='title'?'<button type="button" class="btn" data-act="restart">Restart</button>':''}</div></header>${routeHTML()}${toast}`;
   $main.innerHTML=main;
   $result.innerHTML=resultHTML();
   $fdock.innerHTML='';if(MOB){const sk=$main.querySelector('.skip-btn'),fb=$result.querySelector('[data-act=fuse]');if(sk)$fdock.appendChild(sk);if(fb)$fdock.appendChild(fb)}
   $hud.innerHTML=hudHTML();
-  const dh=dropHTML()||eventLayerHTML()||(ph==='path'?pathHTML():'');document.body.classList.toggle('mob',MOB);const toDock=(MOB&&ph!=='path')||dh.includes('ev-layer shop');$dock.classList.toggle('shopdock',!MOB&&toDock);if(toDock){$drop.innerHTML='';$dock.innerHTML=dh}else{$dock.innerHTML='';$drop.innerHTML=dh}
+  const dh=dropHTML()||eventLayerHTML()||(ph==='path'?pathHTML():ph==='class'?classHTML():'');document.body.classList.toggle('mob',MOB);const toDock=(MOB&&ph!=='path'&&ph!=='class')||dh.includes('ev-layer shop');$dock.classList.toggle('shopdock',!MOB&&toDock);if(toDock){$drop.innerHTML='';$dock.innerHTML=dh}else{$dock.innerHTML='';$drop.innerHTML=dh}
   document.querySelector('.stage-wrap').classList.toggle('in-battle',ph==='battle');
   document.querySelector('.stage-wrap').classList.toggle('in-drop',!!dh&&!toDock);
   $modal.innerHTML=acqHTML()||charHTML()||codexHTML();
   const n=curNode();
-  $label.textContent=ph==='title'?'':ph==='win'?'Adventure complete':(ph==='travel'||ph==='path')?`Level ${S.level+1} · ${LEVELS[S.level].name}`:nodeName(n);
+  $label.textContent=ph==='title'?'':ph==='win'?'Adventure complete':(ph==='travel'||ph==='path'||ph==='class')?`Level ${S.level+1} · ${LEVELS[S.level].name}`:nodeName(n);
   const cur=$top.querySelector('.node.cur');if(cur)cur.scrollIntoView({block:'nearest',inline:'center'});
   if(S.toast){clearTimeout(render.tt);render.tt=setTimeout(()=>{S.toast=null;const t=$top.querySelector('.toast');if(t)t.remove()},3200)}
 }
@@ -1055,12 +1058,13 @@ document.getElementById('app').addEventListener('click',e=>{
   if(act==='mobile'){MOB=!MOB;try{localStorage.setItem('fb_mobile',MOB?'1':'0')}catch(e){}render();if(MOB&&$dock.innerHTML)$dock.scrollIntoView({block:'nearest',behavior:'smooth'});return}
   if(act==='target'){if(S.phase==='battle'&&!S.busy&&S.foes){const F=S.foes[+id];if(F&&F.hp>0){setTarget(F);S.sel=S.sel;render()}}return}
   switch(act){
-    case 'start':S.node=0;S.route=[];choosePath();break;
+    case 'start':S.node=0;S.route=[];S.phase='class';render();break;
+    case 'class':pickClass(b.dataset.k);break;
     case 'path':pickPath(+b.dataset.i);break;
     case 'sel':
       if(S.busy)return;
       if(S.sel.includes(id))S.sel=S.sel.filter(x=>x!==id);
-      else if(S.sel.length<2)S.sel.push(id);
+      else if(S.sel.length<2||canThird(id))S.sel.push(id);
       else S.sel=[S.sel[0],id];
       render();break;
     case 'unsel':if(S.busy)return;S.sel=S.sel.filter(x=>x!==id);render();break;
@@ -1097,6 +1101,7 @@ function start(data){
     S=data.S;S.busy=false;if(S.foes&&S.foes.length){S.enemy=S.foes.find(f=>S.enemy&&f.slot===S.enemy.slot)||S.foes[0];S.tgt=S.enemy}else if(S.enemy){S.enemy.slot=0;S.foes=[S.enemy];S.tgt=S.enemy}Stage.setBg(LEVELS[S.level].bg||'forest');if(S.maxMana==null){S.maxMana=100;S.mana=100}
     if(S.phase==='travel'){travel();return}
     S.seenEv=S.seenEv||[];if(S.keys==null)S.keys=0;
+    if(S.phase==='class'){S.busy=false;render();return}
     if(S.phase==='path'){if(!S.choices)S.choices=genChoices(S.level,S.node);S.busy=false;render();return}
     const n=curNode();
     if(S.phase==='battle'){Stage.place(stageNode(n));if(S.iceAge>0)Stage.iceFloor(true)}

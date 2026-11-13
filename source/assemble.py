@@ -6,7 +6,7 @@ lines=src.split('\n')
 def grab(start,end):
   i=src.index(start);j=src.index(end,i);return src[i:j]
 sprites=grab('const PLAYER_TOP=[','const ITEM_ATLAS=')
-atlas=re.search(r'const ITEM_ATLAS=.*?;\n',src).group(0).replace('"rows": 5','"rows": 6').replace('"purple_potion": 35}}','"purple_potion": 35, "starter_sword": 36, "ember_staff": 37, "frost_wand": 38, "archmage_staff": 39, "phoenix_amulet": 40, "storm_rod": 41, "soul_lantern": 42, "knight_helm": 43, "knight_plate": 44, "knight_gauntlets": 45, "knight_sabatons": 46, "knight_shield": 47, "reaper_cowl": 48, "reaper_shroud": 49, "bone_bracers": 50, "soul_chain": 51, "reaper_scythe": 52, "dragon_helm": 53, "dragon_mail": 54, "wyrm_boots": 55, "dragon_heart": 56, "dragonfang": 57, "astral_kabuto": 58, "starweave_haori": 59, "comet_sandals": 60, "nebula_obi": 61, "starfall_katana": 62, "berserker_band": 63, "iron_knuckles": 64, "serrated_pendant": 65, "assassin_sash": 66, "lucky_purse": 67, "emberbrand": 68, "tidecaller": 69, "stormfang": 70, "butcher_cleaver": 71, "explosion_orb": 72}}').replace('"rows": 6','"rows": 10')
+atlas=re.search(r'const ITEM_ATLAS=.*?;\n',src).group(0).replace('"rows": 5','"rows": 6').replace('"purple_potion": 35}}','"purple_potion": 35, "starter_sword": 36, "ember_staff": 37, "frost_wand": 38, "archmage_staff": 39, "phoenix_amulet": 40, "storm_rod": 41, "soul_lantern": 42, "knight_helm": 43, "knight_plate": 44, "knight_gauntlets": 45, "knight_sabatons": 46, "knight_shield": 47, "reaper_cowl": 48, "reaper_shroud": 49, "bone_bracers": 50, "soul_chain": 51, "reaper_scythe": 52, "dragon_helm": 53, "dragon_mail": 54, "wyrm_boots": 55, "dragon_heart": 56, "dragonfang": 57, "astral_kabuto": 58, "starweave_haori": 59, "comet_sandals": 60, "nebula_obi": 61, "starfall_katana": 62, "berserker_band": 63, "iron_knuckles": 64, "serrated_pendant": 65, "assassin_sash": 66, "lucky_purse": 67, "emberbrand": 68, "tidecaller": 69, "stormfang": 70, "butcher_cleaver": 71, "explosion_orb": 72, "warden_shield": 23, "apprentice_wand": 38}}').replace('"rows": 6','"rows": 10')
 hero=re.search(r'const HERO=\{.*?\};\n',src,re.S).group(0)
 sprites=sprites.replace(hero,'const HERO='+open('hero2.json').read()+';\n');assert 'fslash' in sprites
 stage=grab('const Stage=(()=>{','/* ================= fusion')
@@ -142,6 +142,7 @@ R("  let last=performance.now();",open('spells_vfx.js').read()+"\n  let last=per
 R("  let last=performance.now();",open('phys_vfx.js').read()+"\n  let last=performance.now();")
 R("  let last=performance.now();",open('def_vfx.js').read()+"\n  let last=performance.now();")
 R("  let last=performance.now();",open('gen_vfx.js').read()+"\n  let last=performance.now();")
+R("  let last=performance.now();",open('ult_vfx.js').read()+"\n  let last=performance.now();")
 R("    enemyAttack(dur){if(st.enemy)st.enemy.act={t0:performance.now(),dur:dur||560}},",
 """    enemyAttack(dur,type){if(!st.enemy)return;st.enemy.act={t0:now_(),dur:dur||560,type};if(type==='heavy'){const m=enemyMetrics();ring(m.x,m.feet-m.h*.5,m.h,'#e8574d',0,500,2.4);flash('#ff3a2a',260,.18);shake(280,st.ps*2.2)}},
     perform(R){const d=this._perform(R);
@@ -901,9 +902,28 @@ body.mob .path-foot{font-size:11px;text-align:center}
 .dup-txt{display:flex;flex-direction:column;gap:6px;min-width:0}.dup-txt b{font-size:16px}.dup-txt span{color:var(--muted);font-size:13px}
 .dup-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .hud-bleed{color:#ffb0b6;background:#2a0c10cc;border-color:#ff5a6488}
+
+.cls-pill{color:var(--oc);font-weight:700;letter-spacing:.04em}
+.class-layer .path-cards{gap:22px}
+.ccard{animation:pcin .4s cubic-bezier(.2,.9,.3,1.2) backwards,cfloat 3.4s ease-in-out infinite;animation-delay:0s,var(--fd)}
+.ccard:hover,.ccard:focus-visible{animation-play-state:running,paused}
+@keyframes cfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.cc-art{position:relative;flex:0 0 40%;display:grid;place-items:center;background:radial-gradient(circle at 50% 60%,color-mix(in srgb,var(--oc) 45%,#0b1214) 0%,#0b1214 72%);overflow:hidden}
+.cc-art .icon-item,.cc-art span:not(.cc-glow){position:relative;filter:drop-shadow(0 6px 0 #0008) drop-shadow(0 0 12px var(--oc));animation:cbob 2.4s ease-in-out infinite}
+.cc-glow{position:absolute;inset:-20%;background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--oc) 30%,transparent) 0 8deg,transparent 8deg 24deg);animation:cspin 14s linear infinite;opacity:.55}
+@keyframes cspin{to{transform:rotate(360deg)}}
+@keyframes cbob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-6px) rotate(4deg)}}
+.cc-list{margin:0;padding-left:16px;font-size:12px;line-height:1.35;color:#cfdad8;display:flex;flex-direction:column;gap:2px}
+.cc-ult{font-size:11px;color:var(--muted);line-height:1.3}
+.ult-card{border-color:var(--oc)!important;box-shadow:0 0 0 1px var(--oc),0 0 24px color-mix(in srgb,var(--oc) 45%,transparent)}
+.ult-card .new-tag{background:var(--oc);color:#0b1214}
+body.mob .class-layer .pcard{height:400px}
+body.mob .cc-art{flex-basis:30%}
+body.mob .cc-list{font-size:10.5px;padding-left:12px}
+body.mob .cc-ult{display:none}
 """
 head2='<meta charset="utf-8">\n'+head.replace('</style>',css_add+'</style>').replace('<title>Fusebound</title>','<title>SpellCraft</title>')
 body_skel=body_skel.replace('<div class="stage-label" id="stageLabel"></div>','<div class="stage-label" id="stageLabel"></div><div id="hudLayer"></div><div id="resultLayer"></div><div id="dropLayer"></div>')
-js='<script>\n/*__ASSETS__*/\n(()=>{\ntry{const rs=document.documentElement.style;rs.setProperty(\'--items-url\',`url("${ASSET.items}")`);[[\'frame\',\'hbFrame\'],[\'g\',\'hbG\'],[\'b\',\'hbB\'],[\'r\',\'hbR\']].forEach(([k,a])=>rs.setProperty(\'--hb-\'+k,`url("${ASSET[a]}")`))}catch(e){}\n'+open('logic_data.js').read()+'\n'+open('logic_spells.js').read()+open('logic_gen.js').read()+'\n'+sprites+atlas+'\nlet S;\n'+stage+'\n'+open('logic_game.js').read()+'\n})();\n</script>\n'
+js='<script>\n/*__ASSETS__*/\n(()=>{\ntry{const rs=document.documentElement.style;rs.setProperty(\'--items-url\',`url("${ASSET.items}")`);[[\'frame\',\'hbFrame\'],[\'g\',\'hbG\'],[\'b\',\'hbB\'],[\'r\',\'hbR\']].forEach(([k,a])=>rs.setProperty(\'--hb-\'+k,`url("${ASSET[a]}")`))}catch(e){}\n'+open('logic_data.js').read()+'\n'+open('logic_spells.js').read()+open('logic_gen.js').read()+'\n'+sprites+atlas+'\nlet S;\n'+stage+'\n'+open('logic_game.js').read()+open('logic_class.js').read()+'\n})();\n</script>\n'
 open('fusebound.src.html','w').write(head2+body_skel+js)
 print('ok')

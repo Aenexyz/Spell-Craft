@@ -477,6 +477,25 @@ body.mob .path-foot{font-size:11px;text-align:center}
 .dup-txt{display:flex;flex-direction:column;gap:6px;min-width:0}.dup-txt b{font-size:16px}.dup-txt span{color:var(--muted);font-size:13px}
 .dup-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .hud-bleed{color:#ffb0b6;background:#2a0c10cc;border-color:#ff5a6488}
+
+.cls-pill{color:var(--oc);font-weight:700;letter-spacing:.04em}
+.class-layer .path-cards{gap:22px}
+.ccard{animation:pcin .4s cubic-bezier(.2,.9,.3,1.2) backwards,cfloat 3.4s ease-in-out infinite;animation-delay:0s,var(--fd)}
+.ccard:hover,.ccard:focus-visible{animation-play-state:running,paused}
+@keyframes cfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.cc-art{position:relative;flex:0 0 40%;display:grid;place-items:center;background:radial-gradient(circle at 50% 60%,color-mix(in srgb,var(--oc) 45%,#0b1214) 0%,#0b1214 72%);overflow:hidden}
+.cc-art .icon-item,.cc-art span:not(.cc-glow){position:relative;filter:drop-shadow(0 6px 0 #0008) drop-shadow(0 0 12px var(--oc));animation:cbob 2.4s ease-in-out infinite}
+.cc-glow{position:absolute;inset:-20%;background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--oc) 30%,transparent) 0 8deg,transparent 8deg 24deg);animation:cspin 14s linear infinite;opacity:.55}
+@keyframes cspin{to{transform:rotate(360deg)}}
+@keyframes cbob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-6px) rotate(4deg)}}
+.cc-list{margin:0;padding-left:16px;font-size:12px;line-height:1.35;color:#cfdad8;display:flex;flex-direction:column;gap:2px}
+.cc-ult{font-size:11px;color:var(--muted);line-height:1.3}
+.ult-card{border-color:var(--oc)!important;box-shadow:0 0 0 1px var(--oc),0 0 24px color-mix(in srgb,var(--oc) 45%,transparent)}
+.ult-card .new-tag{background:var(--oc);color:#0b1214}
+body.mob .class-layer .pcard{height:400px}
+body.mob .cc-art{flex-basis:30%}
+body.mob .cc-list{font-size:10.5px;padding-left:12px}
+body.mob .cc-ult{display:none}
 </style>
 
 <div id="app">
@@ -654,6 +673,8 @@ const INTENTS={bleed:{label:'Bite',icon:'stab',cls:'bleed',note:'makes you bleed
 const SLOTSHORT={head:'Head',shoulders:'Pads',cape:'Cape',chest:'Body',hands:'Hand',feet:'Feet',weapon:'Wpn',shield:'Shld',neck:'Neck',charm:'Charm',belt:'Belt'};
 const SLOTNAME={head:'Head',shoulders:'Shoulders',cape:'Cape',chest:'Chest',hands:'Hands',feet:'Feet',weapon:'Weapon',shield:'Shield',neck:'Neck',charm:'Charm',belt:'Belt'};
 const ITEMS={
+  warden_shield:{name:"Warden's Round Shield",slot:'shield',stats:{def:1},grant:'shieldbash',starter:true},
+  apprentice_wand:{name:'Apprentice Wand',slot:'weapon',stats:{mcost:1},starter:true},
   starter_sword:{name:"Traveler's Sword",slot:'weapon',stats:{},grant:'slash',starter:true},
   iron_helm:{name:'Iron Helm',slot:'head',stats:{hp:8}},
   mystic_hood:{name:'Mystic Hood',slot:'head',stats:{hp:4,mcost:2}},
@@ -1209,7 +1230,7 @@ const SPRITES={
 "....kkkk......","...kggggk.....","..kggggggk....","..kgkkkkgk....","..kgkeekgkkk..","..kgkkkkgkbbk.",".kggggggggbbk.",".kgGggggGgbbk.",".kgGgffgGgbbk.",".kgGggggGgkkk.",".kgGggggGgk...",".kGGggggGGk...",".kkkkkkkkkk..."]}
 };
 const HERO={"idle": [{"w": 41, "h": 88, "ax": 23.9, "fy": 86, "hx": 39.0, "hy": 53.6, "hd": [24.0, 15.0, 13.6], "nk": [20.5, 31.0], "hp": [20.8, 65.0], "ft": [[9.4, 86.0], [32.5, 85.0]], "x": 0, "y": 0}, {"w": 41, "h": 87, "ax": 23.2, "fy": 85, "hx": 38.0, "hy": 52.3, "hd": [23.0, 14.0, 13.4], "nk": [20.0, 30.0], "hp": [20.2, 63.5], "ft": [[8.6, 85.0], [32.2, 84.0]], "x": 214, "y": 0}, {"w": 42, "h": 87, "ax": 24.0, "fy": 85, "hx": 39.0, "hy": 52.2, "hd": [24.0, 14.0, 13.4], "nk": [20.5, 30.0], "hp": [21.2, 63.5], "ft": [[10.3, 85.0], [33.1, 84.0]], "x": 428, "y": 0}, {"w": 40, "h": 90, "ax": 21.1, "fy": 88, "hx": 37.0, "hy": 54.6, "hd": [21.0, 15.0, 13.4], "nk": [18.5, 31.0], "hp": [19.0, 64.5], "ft": [[8.4, 87.0], [30.4, 87.0]], "x": 642, "y": 0}, {"w": 39, "h": 87, "ax": 21.6, "fy": 85, "hx": 37.0, "hy": 52.6, "hd": [21.0, 14.0, 13.2], "nk": [18.5, 30.0], "hp": [19.2, 62.9], "ft": [[9.2, 85.0], [30.3, 84.0]], "x": 856, "y": 0}], "walk": [{"w": 54, "h": 91, "ax": 32.3, "fy": 89, "hx": 46.0, "hy": 54.8, "hd": [32.0, 15.0, 15.0], "nk": [24.0, 33.0], "hp": [25.8, 70.5], "ft": [[8.3, 89.0], [45.1, 88.0]], "x": 1070, "y": 0}, {"w": 50, "h": 86, "ax": 30.8, "fy": 85, "hx": 45.0, "hy": 52.6, "hd": [31.0, 15.0, 14.6], "nk": [23.0, 32.0], "hp": [24.2, 68.4], "ft": [[8.3, 82.0], [41.2, 84.0]], "x": 0, "y": 173}, {"w": 50, "h": 89, "ax": 33.3, "fy": 87, "hx": 47.0, "hy": 53.2, "hd": [33.0, 14.0, 14.6], "nk": [24.0, 31.0], "hp": [22.2, 67.4], "ft": [[6.9, 87.0], [35.6, 85.0]], "x": 214, "y": 173}, {"w": 46, "h": 86, "ax": 29.6, "fy": 85, "hx": 42.0, "hy": 51.2, "hd": [30.0, 14.0, 14.1], "nk": [21.5, 31.0], "hp": [20.8, 66.3], "ft": [[10.3, 84.0], [30.7, 84.0]], "x": 428, "y": 173}, {"w": 53, "h": 87, "ax": 37.3, "fy": 86, "hx": 49.0, "hy": 50.8, "hd": [37.0, 15.0, 13.9], "nk": [27.0, 32.0], "hp": [23.5, 66.6], "ft": [[5.5, 85.0], [37.8, 85.0]], "x": 642, "y": 173}, {"w": 46, "h": 88, "ax": 30.3, "fy": 87, "hx": 41.0, "hy": 52.0, "hd": [30.0, 14.0, 13.9], "nk": [22.5, 31.0], "hp": [21.6, 65.8], "ft": [[10.2, 86.0], [32.1, 86.0]], "x": 856, "y": 173}, {"w": 61, "h": 92, "ax": 36.2, "fy": 91, "hx": 59.0, "hy": 42.6, "hd": [37.0, 15.0, 14.9], "nk": [26.0, 33.0], "hp": [25.5, 70.2], "ft": [[11.6, 90.0], [38.8, 88.0]], "x": 1070, "y": 173}], "punch": [{"w": 72, "h": 91, "ax": 37.9, "fy": 90, "hx": 68.0, "hy": 29.7, "hd": [38.0, 13.0, 12.6], "nk": [33.5, 28.0], "hp": [29.4, 59.4], "ft": [[4.6, 89.0], [46.6, 88.0]], "x": 0, "y": 346}, {"w": 78, "h": 86, "ax": 48.2, "fy": 85, "hx": 76.0, "hy": 29.8, "hd": [48.0, 13.0, 12.4], "nk": [38.0, 28.0], "hp": [33.3, 58.6], "ft": [[6.2, 84.0], [52.4, 83.0]], "x": 214, "y": 346}, {"w": 77, "h": 86, "ax": 42.7, "fy": 85, "hx": 75.0, "hy": 27.9, "hd": [43.0, 11.0, 12.1], "nk": [37.5, 25.0], "hp": [32.1, 54.7], "ft": [[7.0, 84.0], [46.4, 82.0]], "x": 428, "y": 346}, {"w": 72, "h": 87, "ax": 30.9, "fy": 86, "hx": 69.0, "hy": 27.0, "hd": [31.0, 13.0, 12.6], "nk": [35.5, 28.0], "hp": [29.8, 59.1], "ft": [[5.8, 85.0], [44.3, 84.0]], "x": 642, "y": 346}, {"w": 59, "h": 91, "ax": 35.2, "fy": 90, "hx": 57.0, "hy": 31.7, "hd": [35.0, 14.0, 13.0], "nk": [27.0, 30.0], "hp": [26.9, 62.5], "ft": [[6.6, 89.0], [47.2, 88.0]], "x": 856, "y": 346}], "kick": [{"w": 71, "h": 93, "ax": 37.1, "fy": 92, "hx": 69.0, "hy": 30.5, "hd": [37.0, 13.0, 12.6], "nk": [27.0, 28.0], "hp": [24.9, 59.6], "ft": [[6.7, 91.0], [39.0, 90.0]], "x": 1070, "y": 346}, {"w": 61, "h": 83, "ax": 32.5, "fy": 82, "hx": 55.0, "hy": 51.9, "hd": [32.0, 13.0, 12.1], "nk": [29.0, 27.0], "hp": [37.0, 56.1], "ft": [[32.0, 81.0], [55.5, 77.0]], "x": 0, "y": 519}, {"w": 72, "h": 91, "ax": 18.7, "fy": 90, "hx": 69.0, "hy": 29.7, "hd": [24.0, 16.0, 12.0], "nk": [23.5, 30.0], "hp": [26.0, 60.0], "ft": [[28.4, 89.0]], "x": 214, "y": 519}, {"w": 70, "h": 84, "ax": 25.1, "fy": 83, "hx": 67.0, "hy": 28.6, "hd": [25.0, 12.0, 12.0], "nk": [21.5, 26.0], "hp": [26.1, 55.8], "ft": [[30.1, 82.0]], "x": 428, "y": 519}, {"w": 48, "h": 90, "ax": 14.1, "fy": 89, "hx": 46.0, "hy": 29.6, "hd": [14.0, 13.0, 12.5], "nk": [14.0, 28.0], "hp": [14.5, 59.3], "ft": [[14.9, 88.0]], "x": 642, "y": 519}], "slash": [{"w": 97, "h": 89, "ax": 47.1, "fy": 88, "hx": 62.0, "hy": 48.5, "hd": [47.0, 15.0, 14.2], "nk": [33.5, 32.0], "hp": [27.6, 67.0], "ft": [[7.5, 87.0], [41.0, 83.0]], "x": 856, "y": 519}, {"w": 105, "h": 79, "ax": 48.8, "fy": 77, "hx": 66.0, "hy": 44.7, "hd": [49.0, 14.0, 13.9], "nk": [37.0, 31.0], "hp": [17.5, 59.8], "ft": [[6.5, 76.0]], "x": 1070, "y": 519}, {"w": 72, "h": 89, "ax": 49.2, "fy": 88, "hx": 60.0, "hy": 28.0, "hd": [56.0, 15.0, 14.0], "nk": [41.5, 32.0], "hp": [37.4, 66.8], "ft": [[14.3, 87.0], [55.8, 87.0]], "x": 0, "y": 692}, {"w": 114, "h": 110, "ax": 52.0, "fy": 109, "hx": 72.0, "hy": 70.6, "hd": [52.0, 37.0, 14.4], "nk": [39.0, 54.0], "hp": [39.2, 90.1], "ft": [[39.3, 108.0]], "x": 214, "y": 692}, {"w": 98, "h": 91, "ax": 31.7, "fy": 90, "hx": 59.0, "hy": 33.7, "hd": [32.0, 14.0, 13.6], "nk": [26.0, 30.0], "hp": [29.3, 63.8], "ft": [[7.7, 89.0], [55.8, 89.0]], "x": 428, "y": 692}, {"w": 92, "h": 91, "ax": 57.5, "fy": 90, "hx": 79.0, "hy": 45.6, "hd": [57.0, 14.0, 13.6], "nk": [52.5, 30.0], "hp": [57.0, 63.7], "ft": [[37.4, 89.0], [83.2, 89.0]], "x": 642, "y": 692}], "shield": [{"w": 48, "h": 87, "ax": 20.5, "fy": 86, "hx": 45.0, "hy": 39.8, "sh": [30.0, 40.5, 42, 25], "hd": [21.0, 13.0, 13.0], "nk": [19.0, 29.0], "hp": [19.0, 61.5], "ft": [[8.4, 85.0], [29.7, 84.0]], "x": 856, "y": 692}, {"w": 50, "h": 90, "ax": 18.1, "fy": 89, "hx": 48.0, "hy": 43.3, "sh": [34.5, 47.5, 38, 28], "hd": [18.0, 14.0, 13.9], "nk": [14.5, 31.0], "hp": [17.8, 65.7], "ft": [[8.6, 88.0], [31.4, 88.0]], "x": 1070, "y": 692}, {"w": 65, "h": 82, "ax": 34.2, "fy": 81, "hx": 62.0, "hy": 35.6, "sh": [44.0, 37.0, 37, 31], "hd": [34.0, 14.0, 13.0], "nk": [20.5, 30.0], "hp": [22.4, 62.5], "ft": [[7.8, 80.0], [39.1, 79.0]], "x": 0, "y": 865}, {"w": 72, "h": 91, "ax": 35.9, "fy": 90, "hx": 69.0, "hy": 40.8, "sh": [56.0, 38.0, 43, 31], "hd": [36.0, 14.0, 13.6], "nk": [32.0, 30.0], "hp": [27.7, 63.7], "ft": [[6.6, 89.0], [42.3, 89.0]], "x": 214, "y": 865}, {"w": 69, "h": 87, "ax": 25.1, "fy": 86, "hx": 66.0, "hy": 35.1, "sh": [46.0, 34.5, 42, 29], "hd": [24.0, 14.0, 13.9], "nk": [24.5, 31.0], "hp": [22.5, 65.7], "ft": [[7.4, 85.0], [35.3, 83.0]], "x": 428, "y": 865}], "beam": [{"w": 35, "h": 90, "ax": 16.7, "fy": 89, "hx": 32.0, "hy": 50.8, "hd": [17.0, 13.0, 12.4], "nk": [17.0, 28.0], "hp": [16.9, 58.9], "ft": [[6.2, 88.0], [27.3, 88.0]], "x": 642, "y": 865}, {"w": 56, "h": 86, "ax": 29.7, "fy": 85, "hx": 48.0, "hy": 53.9, "hd": [28.0, 13.0, 12.0], "nk": [27.0, 27.0], "hp": [29.6, 56.9], "ft": [[17.3, 84.0], [46.7, 82.0]], "x": 856, "y": 865}, {"w": 55, "h": 84, "ax": 40.8, "fy": 83, "hx": 39.0, "hy": 27.8, "hd": [41.0, 13.0, 12.4], "nk": [26.5, 28.0], "hp": [22.1, 58.6], "ft": [[7.1, 82.0], [30.2, 80.0]], "x": 1070, "y": 865}, {"w": 63, "h": 82, "ax": 46.3, "fy": 82, "hx": 61.0, "hy": 37.0, "hd": [46.0, 13.0, 12.4], "nk": [33.0, 28.0], "hp": [29.0, 58.7], "ft": [[7.5, 81.0], [44.5, 80.0]], "x": 0, "y": 1038}, {"w": 47, "h": 85, "ax": 25.0, "fy": 84, "hx": 25.0, "hy": 47.9, "gx": 24.0, "gy": 38.8, "cx": 33.4, "cy": 36.9, "hd": [24.0, 12.0, 11.0], "nk": [28.0, 25.0], "hp": [22.2, 52.0], "ft": [[7.9, 83.0], [23.2, 82.0]], "x": 214, "y": 1038}, {"w": 117, "h": 84, "ax": 44.1, "fy": 84, "hx": 65.0, "hy": 33.1, "gx": 61.0, "gy": 28.9, "cx": 88.4, "cy": 30.0, "hd": [44.0, 13.0, 12.4], "nk": [48.0, 28.0], "hp": [36.4, 56.7], "ft": [[7.3, 83.0], [44.1, 82.0]], "x": 428, "y": 1038}], "laser": [{"w": 34, "h": 90, "ax": 17.2, "fy": 89, "hx": 28.0, "hy": 32.2, "hd": [17.0, 12.0, 12.1], "nk": [17.0, 26.0], "hp": [16.7, 56.2], "ft": [[6.0, 89.0], [26.7, 89.0]], "x": 642, "y": 1038}, {"w": 37, "h": 90, "ax": 18.6, "fy": 89, "hx": 31.0, "hy": 35.6, "hd": [19.0, 12.0, 12.0], "nk": [18.0, 26.0], "hp": [17.1, 56.1], "ft": [[5.6, 89.0], [26.7, 89.0]], "x": 856, "y": 1038}, {"w": 53, "h": 90, "ax": 27.7, "fy": 90, "hx": 51.0, "hy": 19.6, "hd": [27.0, 12.0, 12.4], "nk": [29.5, 27.0], "hp": [25.7, 57.7], "ft": [[7.4, 89.0], [36.4, 87.0]], "x": 1070, "y": 1038}, {"w": 71, "h": 90, "ax": 44.8, "fy": 89, "hx": 69.0, "hy": 22.7, "hd": [45.0, 13.0, 12.0], "nk": [45.5, 27.0], "hp": [35.5, 55.4], "ft": [[5.5, 87.0], [42.5, 88.0]], "x": 0, "y": 1211}, {"w": 69, "h": 90, "ax": 42.0, "fy": 89, "hx": 67.0, "hy": 28.7, "hd": [42.0, 12.0, 12.2], "nk": [36.5, 27.0], "hp": [30.5, 56.9], "ft": [[6.7, 88.0], [41.7, 87.0]], "x": 214, "y": 1211}, {"w": 69, "h": 90, "ax": 37.8, "fy": 89, "hx": 67.0, "hy": 23.8, "hd": [38.0, 13.0, 12.0], "nk": [44.5, 27.0], "hp": [35.2, 55.6], "ft": [[7.7, 88.0], [41.2, 89.0]], "x": 428, "y": 1211}, {"w": 51, "h": 91, "ax": 18.0, "fy": 91, "hx": 49.0, "hy": 22.0, "hd": [18.0, 12.0, 11.7], "nk": [27.5, 26.0], "hp": [21.9, 54.7], "ft": [[6.8, 90.0], [23.1, 89.0]], "x": 642, "y": 1211}, {"w": 62, "h": 90, "ax": 29.0, "fy": 89, "hx": 60.0, "hy": 19.9, "hd": [28.0, 12.0, 11.7], "nk": [32.5, 26.0], "hp": [28.9, 55.0], "ft": [[7.7, 89.0], [41.9, 88.0]], "x": 856, "y": 1211}, {"w": 53, "h": 91, "ax": 18.3, "fy": 91, "hx": 51.0, "hy": 24.5, "hd": [18.0, 12.0, 11.7], "nk": [18.5, 22.0], "hp": [18.5, 51.3], "ft": [[10.1, 90.0], [26.7, 89.0]], "x": 1070, "y": 1211}, {"w": 55, "h": 90, "ax": 20.3, "fy": 90, "hx": 53.0, "hy": 24.6, "hd": [20.0, 12.0, 12.0], "nk": [34.0, 26.0], "hp": [26.9, 55.3], "ft": [[6.1, 89.0], [31.4, 89.0]], "x": 0, "y": 1384}], "fslash": [{"w": 93, "h": 106, "ax": 48.1, "fy": 105, "hx": 73.0, "hy": 60.1, "hd": [48.0, 14.0, 13.9], "nk": [43.5, 31.0], "hp": [39.5, 65.5], "ft": [[6.6, 105.0], [63.3, 104.0]], "x": 214, "y": 1384}, {"w": 93, "h": 108, "ax": 49.0, "fy": 107, "hx": 82.0, "hy": 35.0, "hd": [49.0, 14.0, 13.6], "nk": [44.0, 30.0], "hp": [40.0, 63.8], "ft": [[6.9, 106.0], [63.2, 106.0]], "x": 428, "y": 1384}, {"w": 79, "h": 145, "ax": 53.4, "fy": 144, "hx": 77.0, "hy": 48.8, "hd": [46.0, 52.0, 13.6], "nk": [43.0, 68.0], "hp": [39.7, 101.8], "ft": [[7.0, 143.0], [64.3, 143.0]], "x": 642, "y": 1384}, {"w": 73, "h": 160, "ax": 60.1, "fy": 159, "hx": 67.0, "hy": 55.4, "hd": [40.0, 60.0, 13.9], "nk": [42.0, 77.0], "hp": [39.0, 111.6], "ft": [[7.3, 158.0], [62.6, 158.0]], "x": 856, "y": 1384}, {"w": 108, "h": 108, "ax": 53.9, "fy": 107, "hx": 66.0, "hy": 69.6, "hd": [54.0, 14.0, 13.6], "nk": [70.0, 30.0], "hp": [57.1, 61.5], "ft": [[6.6, 107.0], [70.4, 106.0]], "x": 1070, "y": 1384}, {"w": 177, "h": 148, "ax": 130.0, "fy": 147, "hx": 162.0, "hy": 80.3, "hd": [97.0, 57.0, 13.9], "nk": [102.0, 74.0], "hp": [99.9, 108.7], "ft": [[60.7, 146.0], [134.4, 146.0]], "x": 0, "y": 1557}, {"w": 99, "h": 108, "ax": 56.1, "fy": 107, "hx": 73.0, "hy": 43.7, "hd": [56.0, 14.0, 13.6], "nk": [46.5, 30.0], "hp": [42.4, 63.8], "ft": [[7.4, 106.0], [67.3, 106.0]], "x": 214, "y": 1557}], "bslash": [{"w": 114, "h": 106, "ax": 48.6, "fy": 105, "hx": 91.0, "hy": 67.0, "hd": [49.0, 14.0, 13.5], "nk": [44.0, 30.0], "hp": [40.1, 63.4], "ft": [[7.1, 104.0], [63.5, 104.0]], "x": 428, "y": 1557}, {"w": 108, "h": 108, "ax": 55.9, "fy": 107, "hx": 91.0, "hy": 34.0, "hd": [55.0, 14.0, 13.3], "nk": [50.5, 30.0], "hp": [46.6, 63.1], "ft": [[13.7, 106.0], [69.4, 106.0]], "x": 642, "y": 1557}, {"w": 80, "h": 152, "ax": 23.8, "fy": 151, "hx": 78.0, "hy": 55.5, "hd": [46.0, 59.0, 13.5], "nk": [43.0, 75.0], "hp": [39.8, 108.5], "ft": [[7.1, 150.0], [64.6, 150.0]], "x": 856, "y": 1557}, {"w": 73, "h": 171, "ax": 22.1, "fy": 170, "hx": 71.0, "hy": 57.4, "hd": [39.0, 71.0, 13.9], "nk": [41.0, 88.0], "hp": [38.1, 122.6], "ft": [[6.7, 169.0], [61.6, 169.0]], "x": 1070, "y": 1557}, {"w": 108, "h": 108, "ax": 54.4, "fy": 107, "hx": 66.0, "hy": 69.6, "hd": [54.0, 14.0, 13.6], "nk": [70.0, 30.0], "hp": [57.1, 61.4], "ft": [[6.8, 106.0], [70.6, 106.0]], "x": 0, "y": 1730}, {"w": 212, "h": 159, "ax": 87.5, "fy": 158, "hx": 185.0, "hy": 51.2, "hd": [71.0, 68.0, 13.9], "nk": [72.5, 82.0], "hp": [72.0, 116.7], "ft": [[34.9, 157.0], [108.0, 157.0]], "x": 214, "y": 1730}, {"w": 120, "h": 133, "ax": 86.2, "fy": 132, "hx": 108.0, "hy": 61.9, "hd": [81.0, 39.0, 13.5], "nk": [71.5, 55.0], "hp": [67.5, 88.4], "ft": [[32.5, 131.0], [92.5, 131.0]], "x": 428, "y": 1730}], "aslash": [{"w": 111, "h": 106, "ax": 46.8, "fy": 105, "hx": 80.0, "hy": 66.0, "hd": [47.0, 14.0, 13.6], "nk": [42.0, 30.0], "hp": [38.6, 63.8], "ft": [[6.4, 105.0], [62.5, 104.0]], "x": 642, "y": 1730}, {"w": 101, "h": 108, "ax": 48.5, "fy": 107, "hx": 79.0, "hy": 35.0, "hd": [47.0, 14.0, 13.6], "nk": [42.5, 30.0], "hp": [39.4, 63.9], "ft": [[7.8, 107.0], [62.9, 106.0]], "x": 856, "y": 1730}, {"w": 78, "h": 147, "ax": 29.6, "fy": 146, "hx": 76.0, "hy": 50.0, "hd": [44.0, 53.0, 13.6], "nk": [43.5, 69.0], "hp": [40.1, 102.8], "ft": [[7.3, 146.0], [64.2, 145.0]], "x": 1070, "y": 1730}, {"w": 74, "h": 166, "ax": 31.8, "fy": 165, "hx": 72.0, "hy": 54.2, "hd": [40.0, 66.0, 13.6], "nk": [43.0, 82.0], "hp": [39.4, 115.8], "ft": [[6.6, 164.0], [61.7, 164.0]], "x": 0, "y": 1903}, {"w": 119, "h": 114, "ax": 55.7, "fy": 113, "hx": 106.0, "hy": 36.2, "hd": [54.0, 20.0, 13.9], "nk": [67.5, 37.0], "hp": [55.3, 69.5], "ft": [[6.6, 113.0], [71.2, 112.0]], "x": 214, "y": 1903}, {"w": 211, "h": 163, "ax": 113.2, "fy": 162, "hx": 194.0, "hy": 70.0, "hd": [70.0, 72.0, 13.6], "nk": [71.0, 86.0], "hp": [71.0, 120.0], "ft": [[34.2, 162.0], [108.0, 161.0]], "x": 428, "y": 1903}, {"w": 120, "h": 132, "ax": 93.0, "fy": 131, "hx": 111.0, "hy": 56.0, "hd": [84.0, 38.0, 13.9], "nk": [73.5, 55.0], "hp": [69.9, 89.6], "ft": [[35.8, 131.0], [95.4, 130.0]], "x": 642, "y": 1903}], "dslash": [{"w": 78, "h": 106, "ax": 47.6, "fy": 105, "hx": 76.0, "hy": 64.8, "hd": [48.0, 14.0, 13.3], "nk": [43.0, 30.0], "hp": [39.5, 63.2], "ft": [[7.1, 105.0], [63.1, 104.0]], "x": 856, "y": 1903}, {"w": 102, "h": 109, "ax": 51.0, "fy": 108, "hx": 79.0, "hy": 34.8, "hd": [47.0, 16.0, 13.6], "nk": [42.0, 32.0], "hp": [39.0, 65.9], "ft": [[7.7, 108.0], [63.0, 107.0]], "x": 1070, "y": 1903}, {"w": 79, "h": 144, "ax": 36.0, "fy": 143, "hx": 77.0, "hy": 48.1, "hd": [44.0, 50.0, 13.6], "nk": [44.5, 66.0], "hp": [40.7, 99.8], "ft": [[7.2, 143.0], [64.3, 142.0]], "x": 0, "y": 2076}, {"w": 75, "h": 166, "ax": 36.5, "fy": 165, "hx": 73.0, "hy": 54.4, "hd": [40.0, 66.0, 13.6], "nk": [43.5, 82.0], "hp": [39.8, 115.8], "ft": [[6.6, 165.0], [62.2, 165.0]], "x": 214, "y": 2076}, {"w": 118, "h": 115, "ax": 53.9, "fy": 114, "hx": 106.0, "hy": 36.7, "hd": [54.0, 21.0, 13.9], "nk": [67.0, 38.0], "hp": [55.0, 70.6], "ft": [[6.7, 114.0], [71.2, 113.0]], "x": 428, "y": 2076}, {"w": 211, "h": 163, "ax": 103.1, "fy": 162, "hx": 191.0, "hy": 78.1, "hd": [59.0, 73.0, 13.9], "nk": [59.5, 86.0], "hp": [67.8, 119.7], "ft": [[41.2, 162.0], [115.3, 161.0]], "x": 642, "y": 2076}, {"w": 84, "h": 108, "ax": 55.3, "fy": 107, "hx": 82.0, "hy": 37.9, "hd": [55.0, 14.0, 13.9], "nk": [44.0, 31.0], "hp": [41.0, 65.6], "ft": [[7.8, 107.0], [66.9, 106.0]], "x": 856, "y": 2076}], "jump": [{"w": 52, "h": 93, "ax": 37.2, "fy": 92, "hx": 49.0, "hy": 19.5, "jy": 0.0, "hd": [37.0, 13.0, 13.0], "nk": [20.0, 29.0], "hp": [21.2, 61.5], "ft": [[10.8, 92.0], [33.7, 90.0]], "x": 1070, "y": 2076}, {"w": 63, "h": 113, "ax": 48.3, "fy": 112, "hx": 58.0, "hy": 22.7, "jy": -31.7, "hd": [48.0, 14.0, 13.2], "nk": [34.0, 30.0], "hp": [22.7, 60.9], "ft": [[4.4, 111.0]], "x": 0, "y": 2249}, {"w": 72, "h": 125, "ax": 31.7, "fy": 125, "hx": 70.0, "hy": 25.4, "jy": -25.2, "hd": [32.0, 13.0, 13.0], "nk": [35.0, 29.0], "hp": [27.4, 60.6], "ft": [[12.0, 124.0]], "x": 214, "y": 2249}, {"w": 75, "h": 124, "ax": 30.2, "fy": 123, "hx": 73.0, "hy": 27.5, "jy": -23.6, "hd": [31.0, 13.0, 13.0], "nk": [30.5, 25.0], "hp": [23.7, 56.8], "ft": [[9.4, 123.0]], "x": 428, "y": 2249}, {"w": 72, "h": 126, "ax": 32.3, "fy": 125, "hx": 71.0, "hy": 25.7, "jy": -17.1, "hd": [30.0, 14.0, 13.4], "nk": [31.0, 26.0], "hp": [22.6, 58.5], "ft": [[5.6, 124.0]], "x": 642, "y": 2249}, {"w": 118, "h": 110, "ax": 69.5, "fy": 109, "hx": 116.0, "hy": 40.9, "jy": -53.6, "hd": [69.0, 15.0, 15.0], "nk": [54.5, 33.0], "hp": [33.8, 64.3], "ft": [[4.9, 108.0]], "x": 856, "y": 2249}], "die": [{"w": 36, "h": 118, "ax": 15.9, "fy": 117, "hx": 28.0, "hy": 64.2, "hd": [16.0, 14.0, 13.9], "nk": [14.0, 31.0], "hp": [15.6, 65.7], "ft": [[7.7, 116.0], [27.9, 115.0]], "x": 1070, "y": 2249}, {"w": 53, "h": 109, "ax": 35.8, "fy": 108, "hx": 43.0, "hy": 43.8, "hd": [36.0, 14.0, 13.9], "nk": [23.0, 31.0], "hp": [25.4, 65.6], "ft": [[11.6, 107.0], [45.0, 105.0]], "x": 0, "y": 2422}, {"w": 57, "h": 97, "ax": 42.3, "fy": 97, "hx": 49.0, "hy": 56.1, "hd": [42.0, 14.0, 13.9], "nk": [23.5, 31.0], "hp": [22.2, 65.7], "ft": [[8.6, 96.0], [33.5, 92.0]], "x": 214, "y": 2422}, {"w": 79, "h": 84, "ax": 47.4, "fy": 84, "hx": 74.0, "hy": 44.5, "hd": [47.0, 14.0, 13.9], "nk": [32.0, 31.0], "hp": [28.2, 65.6], "ft": [[13.8, 81.0], [39.1, 81.0]], "x": 428, "y": 2422}, {"w": 103, "h": 58, "ax": 30.9, "fy": 58, "hx": 101.0, "hy": 24.7, "hd": [18.0, 15.0, 13.6], "nk": [30.5, 31.0], "hp": [30.8, 65.0], "ft": [[10.5, 54.0], [50.9, 57.0]], "x": 642, "y": 2422}, {"w": 118, "h": 30, "ax": 35.4, "fy": 30, "hx": 117.0, "hy": 13.6, "hd": [103.0, 14.0, 13.6], "nk": [103.5, 27.0], "hp": [69.5, 28.0], "ft": [[3.5, 28.0], [65.4, 29.0]], "x": 856, "y": 2422}, {"w": 121, "h": 38, "ax": 36.3, "fy": 37, "hx": 119.0, "hy": 16.1, "hd": [106.0, 14.0, 13.6], "nk": [106.5, 27.0], "hp": [72.6, 30.0], "ft": [[3.9, 36.0]], "x": 1070, "y": 2422}, {"w": 116, "h": 51, "ax": 34.8, "fy": 50, "hx": 115.0, "hy": 27.1, "hd": [101.0, 27.0, 12.6], "nk": [101.5, 42.0], "hp": [70.0, 44.6], "ft": [[3.4, 50.0]], "x": 0, "y": 2595}, {"w": 118, "h": 29, "ax": 35.4, "fy": 29, "hx": 117.0, "hy": 13.5, "hd": [103.0, 13.0, 13.3], "nk": [103.5, 26.0], "hp": [70.2, 27.0], "ft": [[3.3, 27.0], [64.8, 28.0]], "x": 214, "y": 2595}, {"w": 136, "h": 80, "ax": 40.8, "fy": 79, "hx": 125.0, "hy": 31.8, "hd": [124.0, 31.0, 1.4], "nk": [124.0, 32.0], "hp": [121.0, 33.9], "ft": [[20.6, 77.0], [82.4, 78.0]], "x": 428, "y": 2595}]};
-const ITEM_ATLAS={"cols": 8, "rows": 10, "idx": {"iron_helm": 0, "mystic_hood": 1, "gold_helm": 2, "plumed_helm": 3, "steel_pauldrons": 4, "gilded_pauldrons": 5, "crimson_cape": 6, "azure_cape": 7, "shadow_cape": 8, "white_cape": 9, "steel_cuirass": 10, "leather_vest": 11, "royal_armor": 12, "iron_gauntlets": 13, "spiked_gauntlets": 14, "leather_boots": 15, "golden_greaves": 16, "steel_sword": 17, "frost_blade": 18, "battle_axe": 19, "war_spear": 20, "hunter_bow": 21, "dagger": 22, "kite_shield": 23, "spiked_shield": 24, "ruby_pendant": 25, "amber_pendant": 26, "sapphire_pendant": 27, "gold_torc": 28, "lantern": 29, "leather_belt": 30, "grim_totem": 31, "red_potion": 32, "blue_potion": 33, "green_potion": 34, "purple_potion": 35, "starter_sword": 36, "ember_staff": 37, "frost_wand": 38, "archmage_staff": 39, "phoenix_amulet": 40, "storm_rod": 41, "soul_lantern": 42, "knight_helm": 43, "knight_plate": 44, "knight_gauntlets": 45, "knight_sabatons": 46, "knight_shield": 47, "reaper_cowl": 48, "reaper_shroud": 49, "bone_bracers": 50, "soul_chain": 51, "reaper_scythe": 52, "dragon_helm": 53, "dragon_mail": 54, "wyrm_boots": 55, "dragon_heart": 56, "dragonfang": 57, "astral_kabuto": 58, "starweave_haori": 59, "comet_sandals": 60, "nebula_obi": 61, "starfall_katana": 62, "berserker_band": 63, "iron_knuckles": 64, "serrated_pendant": 65, "assassin_sash": 66, "lucky_purse": 67, "emberbrand": 68, "tidecaller": 69, "stormfang": 70, "butcher_cleaver": 71, "explosion_orb": 72}};
+const ITEM_ATLAS={"cols": 8, "rows": 10, "idx": {"iron_helm": 0, "mystic_hood": 1, "gold_helm": 2, "plumed_helm": 3, "steel_pauldrons": 4, "gilded_pauldrons": 5, "crimson_cape": 6, "azure_cape": 7, "shadow_cape": 8, "white_cape": 9, "steel_cuirass": 10, "leather_vest": 11, "royal_armor": 12, "iron_gauntlets": 13, "spiked_gauntlets": 14, "leather_boots": 15, "golden_greaves": 16, "steel_sword": 17, "frost_blade": 18, "battle_axe": 19, "war_spear": 20, "hunter_bow": 21, "dagger": 22, "kite_shield": 23, "spiked_shield": 24, "ruby_pendant": 25, "amber_pendant": 26, "sapphire_pendant": 27, "gold_torc": 28, "lantern": 29, "leather_belt": 30, "grim_totem": 31, "red_potion": 32, "blue_potion": 33, "green_potion": 34, "purple_potion": 35, "starter_sword": 36, "ember_staff": 37, "frost_wand": 38, "archmage_staff": 39, "phoenix_amulet": 40, "storm_rod": 41, "soul_lantern": 42, "knight_helm": 43, "knight_plate": 44, "knight_gauntlets": 45, "knight_sabatons": 46, "knight_shield": 47, "reaper_cowl": 48, "reaper_shroud": 49, "bone_bracers": 50, "soul_chain": 51, "reaper_scythe": 52, "dragon_helm": 53, "dragon_mail": 54, "wyrm_boots": 55, "dragon_heart": 56, "dragonfang": 57, "astral_kabuto": 58, "starweave_haori": 59, "comet_sandals": 60, "nebula_obi": 61, "starfall_katana": 62, "berserker_band": 63, "iron_knuckles": 64, "serrated_pendant": 65, "assassin_sash": 66, "lucky_purse": 67, "emberbrand": 68, "tidecaller": 69, "stormfang": 70, "butcher_cleaver": 71, "explosion_orb": 72, "warden_shield": 23, "apprentice_wand": 38}};
 
 let S;
 const Stage=(()=>{
@@ -2462,6 +2483,65 @@ window.__cardArt=cardArt;
     return t0+1150}
   window.__genFx=genFx;
 
+  // ===== Class ultimates: 4-second pixel-art cinematics =====
+  function ultDim(dur,col,title){addFx(0,dur,(p,now)=>{const a=p<.08?p/.08:p>.9?(1-p)/.1:1;ctx.save();ctx.globalAlpha=.32*a;ctx.fillStyle='#05070a';ctx.fillRect(0,0,st.W,st.H);
+    const bh=st.H*.07*a;ctx.globalAlpha=1;ctx.fillStyle='#000';ctx.fillRect(0,0,st.W,bh);ctx.fillRect(0,st.H-bh,st.W,bh);
+    if(p>.03&&p<.45){const tp=clamp01((p-.03)/.1),fo=p>.35?1-(p-.35)/.1:1;ctx.globalAlpha=fo;const fs=Math.round(st.H*.075);ctx.font=`900 ${fs}px Georgia,serif`;ctx.textAlign='center';ctx.textBaseline='middle';const x=st.W/2+(1-ease(tp))*st.W*.15,y=st.H*.2;ctx.fillStyle='#000';ctx.fillText(title,x+st.ps*.8,y+st.ps*.8);ctx.fillStyle=col;ctx.fillText(title,x,y);ctx.fillStyle='#ffffff';ctx.globalAlpha=fo*.5;ctx.fillRect(x-st.W*.25*ease(tp),y+fs*.62,st.W*.5*ease(tp),Math.max(1,st.ps*.4))}ctx.restore()})}
+  const uPx=()=>Math.max(2,Math.round(st.ps*.7));
+  Object.assign(SPELLFX,{
+  // Aegis Warden: Citadel Crash
+  'ult_warden':R=>{st.player.anim=null;st.player.act=null;const T=4000;ultDim(T,'#8ff0e6','CITADEL CRASH');
+    setTimeout(()=>{st.player.anim={name:'shield',t0:now_(),dur:2400}},0);
+    groundUnder(PMx,{r:st.H*.2,c1:'#ffd36b',c2:'#59c9c2',delay:0,dur:2600,seed:4,spin:.5,star:6});
+    const walls=[-1.9,-1.05,1.05,1.9];
+    // walls rise around the hero, levitate, then fly onto the enemies
+    walls.forEach((fx,i)=>addFx(250+i*180,T-250-i*180,(p,now)=>{const pm=PMx(),t=p*(T-250-i*180)+250+i*180,s=uPx(),W=st.ps*7,H=pm.h*(1.05-Math.abs(fx)*.12);
+      let x=pm.x+pm.w*fx,y=pm.feet,rise=ease(clamp01((t-250-i*180)/600)),lift=0,rot=0;
+      if(t>1900)lift=ease(clamp01((t-1900)/600))*pm.h*.9;
+      if(t>2550){const fl=ease(clamp01((t-2550-i*120)/700)),foes=st.foes.filter(f=>!f.gone&&f.state!=='die'),f=foes.length?foes[i%foes.length]:null,m=f?enemyMetricsOf(f):EM();const tx=m.x+(i%2?1:-1)*m.w*.2,ty=m.feet;x=x+(tx-x)*fl;y=(pm.feet-lift)+(ty-(pm.feet-lift))*fl-Math.sin(fl*Math.PI)*st.H*.35;lift=0;rot=(1-fl)*.3*(i%2?1:-1);if(fl>=1)return}
+      else y=pm.feet-lift+Math.sin(now/180+i)*st.ps*(t>1900?1:0);
+      const h=H*rise;if(h<2)return;ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.rotate(rot);
+      dfR(-W/2-s,-h-s,W+2*s,h+s,'#2a2620');dfR(-W/2,-h,W,h,'#7f7a70');dfR(-W/2,-h,s*1.5,h,'#a8a296');dfR(W/2-s*1.5,-h,s*1.5,h,'#55504a');
+      for(let r=0;r<h;r+=s*3)dfR(-W/2,-h+r,W,Math.max(1,s*.4),'#5a554e');for(let k=0;k<3;k++)dfR(-W/2+k*W/3,-h-s*2.5,W/4,s*2.5,'#7f7a70');
+      dfR(-s,-h*.75,s*2,h*.4,'#59c9c2');dfR(-W*.25,-h*.6,W*.5,s*1.4,'#59c9c2');ctx.globalCompositeOperation='lighter';ctx.globalAlpha=t>1700&&t<2550?.35+.25*Math.sin(now/70):.12;dfR(-W/2,-h,W,h,'#59c9c2');ctx.restore();
+      if(rise<1&&Math.random()<.5)spawn(x+(Math.random()-.5)*W,pm.feet,{vy:-.04*U(),color:'#c0a878',size:st.ps*.6,life:380})}));
+    [250,430,610,790].forEach(d=>setTimeout(()=>shake(0,st.ps*1.2),d+200));
+    setTimeout(()=>{const pm=PMx();flash('#59c9c2',0,.18);ring(pm.x,pm.feet-pm.h*.5,pm.h*1.3,'#ffd36b',0,600,2.4)},1700);
+    const hits=[3150,3270,3390,3510];hits.forEach(d=>setTimeout(()=>{st.foes.forEach(f=>{if(f.gone||f.state==='die')return;const m=enemyMetricsOf(f);sBurst(m.x,m.feet,['#7f7a70','#c0a878','#59c9c2','#ffd36b'],16,.3,560,.9)});shake(0,st.ps*3.2)},d));
+    setTimeout(()=>{flash('#ffd36b',0,.32);st.foes.forEach(f=>{if(f.gone||f.state==='die')return;const m=enemyMetricsOf(f);ring(m.x,m.feet-st.ps,m.w*2.4,'#ffd36b',0,600,3)})},3520);
+    return 3560},
+  // Arcanist: Prismatic Cataclysm
+  'ult_arcanist':R=>{const T=4000,els=R.els||['fire','ice','lightning'];ultDim(T,'#d8c4ff','PRISMATIC CATACLYSM');
+    const c=chor();c.stay(150,{fr:'raise'});c.go(c.H,-st.H*.08,500,{fr:'raise',e:'out'});c.stay(2600,{fr:['beam',0,1]});c.go(c.H,0,450,{fr:'idle',e:'in'});c.stay(300,{fr:'idle'});
+    const apex=()=>{const pm=PMx();return[pm.x+pm.w*.2,pm.feet-pm.h*2.05]};
+    els.forEach((el,i)=>{const P=GP[el];magicCircle({at:()=>{const[ax,ay]=apex(),t=now_();return[ax+Math.cos(t/500+i*2.09)*st.H*.11*(1-clamp01((t-T0-1200)/700)),ay+Math.sin(t/500+i*2.09)*st.H*.04]},r:st.H*.075,fl:.4,c1:P[0],c2:P[2],delay:200+i*200,dur:1900-i*200,spin:1.4*(i%2?1:-1),seed:i*5+2,star:i===1?5:6})});
+    const T0=now_();
+    // the prism forms, spins and fires one beam per element
+    addFx(1300,2500,(p,now)=>{const[ax,ay]=apex(),s=uPx(),g=ease(clamp01(p*3)),sh=p>.85?1-(p-.85)/.15:1,r=st.H*.06*g;if(r<1)return;ctx.save();ctx.globalAlpha=sh;
+      const sp=now/300;const pts=[[0,-r*1.5],[r,0],[0,r*1.1],[-r,0]].map(([x,y])=>[ax+x*Math.cos(sp)-0*Math.sin(sp),ay+y]);
+      ctx.fillStyle='#ffffff';pxTri(pts[0][0],pts[0][1],pts[1][0],pts[1][1],pts[3][0],pts[3][1],s);ctx.fillStyle='#d8c4ff';pxTri(pts[2][0],pts[2][1],pts[1][0],pts[1][1],pts[3][0],pts[3][1],s);
+      els.forEach((el,i)=>{ctx.fillStyle=GP[el][0];const a=sp+i*2.09;ctx.fillRect(Math.round(ax+Math.cos(a)*r*1.7),Math.round(ay+Math.sin(a)*r*.6),s*1.5,s*1.5)});
+      ctx.globalCompositeOperation='lighter';ctx.globalAlpha=sh*(.4+.3*Math.sin(now/60));ctx.fillStyle='#ffffff';pxDisc(ax,ay,r*.5,s);ctx.restore()});
+    const shots=[2150,2650,3150];R.tickTimes=shots;
+    els.forEach((el,i)=>addFx(shots[i]-120,520,p=>{const[ax,ay]=apex(),P=GP[el],s=uPx();ctx.save();ctx.globalCompositeOperation='lighter';st.foes.forEach(f=>{if(f.gone||f.state==='die')return;const m=enemyMetricsOf(f),tx=m.x,ty=m.feet-m.h*.5,a=Math.sin(Math.min(1,p*1.4)*Math.PI),w=st.ps*(3.2-p*2);
+      const L=Math.hypot(tx-ax,ty-ay),ang=Math.atan2(ty-ay,tx-ax);ctx.save();ctx.translate(ax,ay);ctx.rotate(ang);ctx.globalAlpha=a;ctx.fillStyle=P[0];ctx.fillRect(0,-w,L*Math.min(1,p*4),w*2);ctx.fillStyle=P[2];ctx.fillRect(0,-w*.35,L*Math.min(1,p*4),w*.7);for(let q=0;q<L*Math.min(1,p*4);q+=s*5)ctx.fillRect(q,-w-s*((q/s|0)%3),s,s);ctx.restore()});ctx.restore()}));
+    shots.forEach((t,i)=>setTimeout(()=>{st.foes.forEach(f=>{if(f.gone||f.state==='die')return;const m=enemyMetricsOf(f);gSig(els[i],m,i*7);gSpray(els[i],m.x,m.feet-m.h*.5,14,1.2)});flash(GP[els[i]][1],0,.2);shake(0,st.ps*2)},t));
+    setTimeout(()=>{const[ax,ay]=apex();sBurst(ax,ay,['#ffffff','#d8c4ff',...els.map(e=>GP[e][0])],40,.4,700,.8);flash('#ffffff',0,.4)},3500);
+    runChor(c,R,null);return 3200},
+  // Swordsman: Thousand Petal Cut
+  'ult_swordsman':R=>{const T=4000;ultDim(T,'#ffd0a0','THOUSAND PETAL CUT');const c=chor(),m=c.m,pm=c.pm,n=R.cuts||12;
+    addFx(0,T,(p,now)=>{ctx.save();for(let i=0;i<26;i++){const ph=((now/2600)+i*.137)%1,x=((i*197+now*.12)%(st.W*1.1))-st.W*.05,y=st.H*(.1+ph*.85)+Math.sin(now/300+i)*st.ps*3;ctx.globalAlpha=.75*Math.sin(p*Math.PI);const s=uPx();dfR(x,y,s*1.5,s,i%3?'#ffb7c8':'#ffe0e8');dfR(x+s,y-s*.5,s*.5,s*.5,'#ff8aa8')}ctx.restore()});
+    c.stay(250,{fr:['slash',0,0]});c.ev(()=>{const p2=PMx();ring(p2.x,p2.feet-p2.h*.5,p2.h*.4,'#ffe0b0',0,400,1.6)});c.stay(250,{fr:['slash',0,0]});
+    const foes=()=>st.foes.filter(f=>!f.gone&&f.state!=='die');
+    for(let i=0;i<n;i++){const side=i%2,dx=(side?1:-1)*(m.w*.6+pm.w*.3)*(1+((i*37)%5)*.08),lift=-st.H*(((i*53)%7)/7)*.18;
+      c.blink(m.x+dx,lift,{fl:!!side,col:'#ffd0a0'});c.stay(130,{fr:'slash'});
+      c.hit(()=>{const fs=foes();if(!fs.length)return;const f=fs[i%fs.length],mm=enemyMetricsOf(f),ang=((i*71)%180)/180*2.6-1.3;cutAcross&&cutAcross(mm,ang,'#ffe0b0',mm.h*1.2,1.4);for(let k=0;k<6;k++)spawn(mm.x,mm.feet-mm.h*.5,{vx:(Math.random()-.5)*.25*U(),vy:(Math.random()-.6)*.25*U(),color:k%2?'#ffb7c8':'#ffffff',size:st.ps*.5,life:420})},60)}
+    c.blink(c.H,0,{fl:false,col:'#ffd0a0'});c.stay(450,{fr:['slash',0,0]});c.ev(()=>{const p2=PMx();addFx(0,450,p=>{ctx.save();ctx.globalAlpha=1-p;dfR(p2.x+p2.w*.3,p2.feet-p2.h*.62,st.ps*8*(1-p),uPx(),'#ffffff');ctx.restore()})});
+    c.stay(320,{fr:['slash',0,4]});
+    c.hit(()=>{foes().forEach(f=>{const mm=enemyMetricsOf(f);cutAcross&&cutAcross(mm,.8,'#ffffff',mm.h*2.2,3);cutAcross&&cutAcross(mm,-.8,'#ffffff',mm.h*2.2,3);for(let k=0;k<22;k++){const a=Math.random()*6.283;spawn(mm.x,mm.feet-mm.h*.5,{vx:Math.cos(a)*.35*U(),vy:Math.sin(a)*.35*U(),color:k%3?'#ffb7c8':'#ffffff',size:st.ps*.6,life:620})}});flash('#ffffff',0,.5);shake(0,st.ps*3.5)},100);
+    c.stay(300,{fr:'idle'});R.ticks=n+1;const end=runChor(c,R,'#ffd0a0');R.ticks=0;return end}
+  });
+
   const H0=()=>st.H;
   const ICO=(()=>{const t=(1+Math.sqrt(5))/2,v=[[-1,t,0],[1,t,0],[-1,-t,0],[1,-t,0],[0,-1,t],[0,1,t],[0,-1,-t],[0,1,-t],[t,0,-1],[t,0,1],[-t,0,-1],[-t,0,1]].map(p=>{const l=Math.hypot(...p);return p.map(c=>c/l)});const e=[];for(let a=0;a<12;a++)for(let b=a+1;b<12;b++){const d=Math.hypot(v[a][0]-v[b][0],v[a][1]-v[b][1],v[a][2]-v[b][2]);if(d<1.1)e.push([a,b])}return{v,e}})();
   function drawReflect(cx,cy,r,now,el){const C=el?{g:'#f2d24b',f:'#fff6b0',b:'#c9a530',gl:'#f2d24b'}:{g:'#bfe9ff',f:'#e6f6ff',b:'#8fc8ea',gl:'#bfe9ff'};const ay=now/1400,ax=.45+Math.sin(now/2300)*.25,cy_=Math.cos(ay),sy_=Math.sin(ay),cx_=Math.cos(ax),sx_=Math.sin(ax);
@@ -3349,7 +3429,7 @@ function gearFuse(c1,c2){
   if(R.dmg.length&&g.atk)R.dmg[0].p+=g.atk;
   R.bonus=R.dmg.reduce((a,p)=>a+p.p,0)-R.base;
   gearMods(R,g);
-  if(R.spell&&ESPELL[R.spell].prep&&S.enemy)ESPELL[R.spell].prep(R,S.enemy);return R;
+  if(R.spell&&ESPELL[R.spell].prep&&S.enemy)ESPELL[R.spell].prep(R,S.enemy);clsMods(R,c1,c2);return R;
 }
 
 /* ================= loot ================= */
@@ -3433,7 +3513,7 @@ function startBattle(n){
   S.foes.forEach(F=>{const dd=ENEMIES[F.id];F.abil=(dd.abil||[]).slice();if(F.elite&&L.revive&&F.slot===0)F.abil.push('revive');if(F.abil.includes('ward'))F.ward=true;if(F.abil.includes('revive'))F.undying=true});S.poison=null;S.pbleed=null;
   S.enemy=S.foes[0];S.tgt=S.enemy;
   S.draw=shuffle(battleDeck().map(c=>c.id));S.hand=[];S.disc=[];S.sel=[];
-  clearDefense(true);S.block=stats().def;S.barrier=0;S.barrierT=0;S.manaGuard=0;S.manaGuardT=0;S.iceAge=0;S.stoneSkin=false;Stage.iceFloor(false);S.thorns=null;S.dodge=0;S.parry=null;S.counter=null;S.guarding=false;S.rainNext=0;S.embrace=false;S.reflect=false;S.efield=false;S.busy=false;
+  clearDefense(true);S.block=stats().def+clsBlock();S.barrier=0;S.barrierT=0;S.manaGuard=0;S.manaGuardT=0;S.iceAge=0;S.stoneSkin=false;Stage.iceFloor(false);S.thorns=null;S.dodge=0;S.parry=null;S.counter=null;S.guarding=false;S.rainNext=0;S.embrace=false;S.reflect=false;S.efield=false;S.busy=false;
   {const g=stats();S.struck=false;S.combos=0;if(g.barrierStart){S.barrier=g.barrierStart;S.barrierT=3}if(g.dodge)S.dodge=g.dodge}
   S.log=[n.swarm?`A ${d.swarmName.toLowerCase()} surrounds you: ${ids.length} ${d.name}s, each attacking on its own. Tap one to target it.`:duo?`An elite pair blocks the road: ${ids.map(i=>ENEMIES[i].name).join(' and ')}. Tap a monster to target it.`:`${elite?'An elite ':''}${d.name} blocks the road.`];
   drawHand();S.phase='battle';render();
@@ -3493,6 +3573,7 @@ function skipTurn(){
   render();setTimeout(enemyTurn,700);
 }
 function doFuse(){
+  if(S.sel.length===3){doUltimate();return}
   if(S.busy||S.sel.length<2)return;
   const cost=fuseCost(...S.sel.map(card));if(cost>S.mana){S.toast=`Not enough mana. This needs ${cost}, you have ${S.mana}.`;render();return}
   S.busy=true;S.mana=Math.min(S.maxMana,S.mana-cost);if(cost<0)setTimeout(()=>Stage.float('player',`+${-cost}`,'#6cb2ff','MANA',0),250);
@@ -3545,7 +3626,7 @@ function applyFuse(c1,c2,R){
   if(R.dmg.length&&!R.breaker&&E.block>0){const ab=Math.min(E.block,total);E.block-=ab;total-=ab;if(ab)notes.push(`${ab} absorbed by its shield`)}
   else if(R.breaker&&E.block>0&&R.dmg.length)notes.push('broke through its shield');
   E.hp-=total;if(E.vulnT>0&&--E.vulnT===0)E.vuln=0;
-  splashFx(E,R,total,notes);
+  splashFx(E,R,total,notes);clsAfterHit(E,R,total,notes);
   if(R.dmg.length&&E.hp>0)itemProcs(E,notes);
   if(R.crit)notes.push('<span class="w">critical hit!</span>');
   if(R.stunChance&&E.hp>0&&modOf(E,R.stunType||'earth')!==0&&!E.stun&&Math.random()*100<R.stunChance){E.stun=true;notes.push('<span class="w">stunned it</span>');Stage.float('enemy','STUN','#f2d24b','',300)}
@@ -3697,7 +3778,7 @@ function finishEnemyTurn(){
   if(S.poison&&S.hp>0){const p=S.poison;S.hp-=p.d;Stage.float('player',`-${p.d}`,'#9be05a','POISON',100);Stage.poisonFx&&Stage.poisonFx();log(`Poison deals ${p.d} to you.`);if(--p.t<=0)S.poison=null}
   if(S.hp<=0&&tryRevive()){}
   if(S.hp<=0){S.hp=0;Stage.playerDie();render();setTimeout(()=>{S.phase='over';render()},1100);return}
-  {const carry=S.bulwark?Math.floor((S.block||0)/2):0;S.bulwark=false;S.block=stats().def+carry;if(carry){Stage.float('player',`+${carry}`,'#59c9c2','BULWARK',140);log(`Bulwark keeps ${carry} block for this turn.`)}}S.turns++;drawHand();S.busy=false;
+  {const carry=S.bulwark?Math.floor((S.block||0)/2):0;S.bulwark=false;S.block=stats().def+carry+clsBlock();if(carry){Stage.float('player',`+${carry}`,'#59c9c2','BULWARK',140);log(`Bulwark keeps ${carry} block for this turn.`)}}S.turns++;drawHand();S.busy=false;
   {const g=stats();if(g.dodge)S.dodge=Math.max(S.dodge,g.dodge);if(g.mregen){const m=Math.min(g.mregen,S.maxMana-S.mana);if(m>0){S.mana+=m;Stage.float('player',`+${m}`,'#6cb2ff','MANA',120)}}}
   if(S.regen&&S.regen.t>0){const h=Math.min(S.regen.amt,S.maxHp-S.hp);if(h>0)S.hp+=h;Stage.float('player',`+${h}`,'#ffd36b','SANCTUM',150);if(--S.regen.t<=0)S.regen=null}
   render();
@@ -3907,6 +3988,7 @@ function describe(R){
 }
 function resultHTML(){
   if(S.phase!=='battle'||S.busy)return '';
+  if(S.sel.length===3)return ultHTML();
   if(S.sel.length<2)return `<div class="rhint">${S.sel.length?'Pick one more card':'Pick 2 cards to combine'}</div>`;
   const E=S.enemy;const[c1,c2]=S.sel.map(card);if(!c1||!c2)return '';const R=gearFuse(c1,c2);
   const cost=fuseCost(c1,c2),low=cost>S.mana;
@@ -3922,7 +4004,8 @@ function resultHTML(){
   L('water','#4aa8ff',(cost>0?`Mana −${cost}`:cost<0?`Mana +${-cost}`:'No mana')+(R.fslash?`, +${3*R.segs.length} back`:''));
   if(R.charged&&!R.lstrike)L('arrowshot','var(--phys)',R.charged.float?'Power ×0.8–10':`Power ×${R.charged.ilo||3}–${R.charged.ihi||7}`);
   if(R.charged&&R.charged.crit)L('lightning','var(--lightning)','Crit chance 50%');
-  if(R.gtags)R.gtags.forEach(t=>L('punch','var(--brass)',t));{const g=stats();if(R.dmg.length&&(g.crit||g.supernova))L('lightning','var(--brass)',g.supernova&&((S.combos||0)+1)%3===0?'SUPERNOVA crit':`Crit ${g.crit||0}%`)}
+  if(R.gtags)R.gtags.forEach(t=>L('punch','var(--brass)',t));
+  if(S.cls&&[c1,c2].every(c=>CARDS[c.key].cat===CLASSES[S.cls].cat))L('ult',CLASSES[S.cls].col,`Add a 3rd ${CLASSES[S.cls].ultCat} card: ${CLASSES[S.cls].ult}`);{const g=stats();if(R.dmg.length&&(g.crit||g.supernova))L('lightning','var(--brass)',g.supernova&&((S.combos||0)+1)%3===0?'SUPERNOVA crit':`Crit ${g.crit||0}%`)}
   {const g=stats();if(R.dmg.length&&g.addl)L('lightning','var(--lightning)',`+${g.addl} Lightning (item)`);if(R.dmg.length&&g.souls)L('dark','var(--dark)',`+${g.souls} Dark (souls)`)}
   if(R.dodgeAdd)L('dodge','var(--guard)',`Dodge +${R.dodgeAdd}%`);
   if(R.segs)L('multi','var(--phys)',`Hits ×${R.segs.length}`);
@@ -4196,18 +4279,18 @@ function render(){
   else if(ph==='over')main=endHTML(false);
   else if(ph==='win')main=endHTML(true);
   const toast=S.toast?`<div class="toast" role="status">${S.toast}</div>`:'';
-  $top.innerHTML=`<header class="top"><div class="brand"><h1>SpellCraft</h1><span class="eyebrow">Level ${S.level+1} · ${LEVELS[S.level].name}${ph!=='title'?` · <span class="gold-pill">${coin()}<b class="num">${S.gold||0}</b></span> · <span class="key-pill">${keyIc()}<b class="num">${S.keys||0}</b></span>`:''}</span></div>
+  $top.innerHTML=`<header class="top"><div class="brand"><h1>SpellCraft</h1><span class="eyebrow">Level ${S.level+1} · ${LEVELS[S.level].name}${ph!=='title'?` · ${S.cls?`<span class="cls-pill" style="--oc:${CLASSES[S.cls].col}">${CLASSES[S.cls].name}${S.affinity&&S.cls==='arcanist'?` · ${TYPENAME[S.affinity]}`:''}</span> · `:''}<span class="gold-pill">${coin()}<b class="num">${S.gold||0}</b></span> · <span class="key-pill">${keyIc()}<b class="num">${S.keys||0}</b></span>`:''}</span></div>
     <div class="top-actions">${ph!=='title'?'<button type="button" class="btn" data-act="char">Character</button>':''}<button type="button" class="btn mob-btn ${MOB?'on':''}" data-act="mobile" aria-pressed="${MOB}" title="Show card options and your hand larger, below the battle">Mobile</button><button type="button" class="btn" data-act="codex">Codex <span class="num">${S.codex.length}</span></button>${ph!=='title'?'<button type="button" class="btn" data-act="restart">Restart</button>':''}</div></header>${routeHTML()}${toast}`;
   $main.innerHTML=main;
   $result.innerHTML=resultHTML();
   $fdock.innerHTML='';if(MOB){const sk=$main.querySelector('.skip-btn'),fb=$result.querySelector('[data-act=fuse]');if(sk)$fdock.appendChild(sk);if(fb)$fdock.appendChild(fb)}
   $hud.innerHTML=hudHTML();
-  const dh=dropHTML()||eventLayerHTML()||(ph==='path'?pathHTML():'');document.body.classList.toggle('mob',MOB);const toDock=(MOB&&ph!=='path')||dh.includes('ev-layer shop');$dock.classList.toggle('shopdock',!MOB&&toDock);if(toDock){$drop.innerHTML='';$dock.innerHTML=dh}else{$dock.innerHTML='';$drop.innerHTML=dh}
+  const dh=dropHTML()||eventLayerHTML()||(ph==='path'?pathHTML():ph==='class'?classHTML():'');document.body.classList.toggle('mob',MOB);const toDock=(MOB&&ph!=='path'&&ph!=='class')||dh.includes('ev-layer shop');$dock.classList.toggle('shopdock',!MOB&&toDock);if(toDock){$drop.innerHTML='';$dock.innerHTML=dh}else{$dock.innerHTML='';$drop.innerHTML=dh}
   document.querySelector('.stage-wrap').classList.toggle('in-battle',ph==='battle');
   document.querySelector('.stage-wrap').classList.toggle('in-drop',!!dh&&!toDock);
   $modal.innerHTML=acqHTML()||charHTML()||codexHTML();
   const n=curNode();
-  $label.textContent=ph==='title'?'':ph==='win'?'Adventure complete':(ph==='travel'||ph==='path')?`Level ${S.level+1} · ${LEVELS[S.level].name}`:nodeName(n);
+  $label.textContent=ph==='title'?'':ph==='win'?'Adventure complete':(ph==='travel'||ph==='path'||ph==='class')?`Level ${S.level+1} · ${LEVELS[S.level].name}`:nodeName(n);
   const cur=$top.querySelector('.node.cur');if(cur)cur.scrollIntoView({block:'nearest',inline:'center'});
   if(S.toast){clearTimeout(render.tt);render.tt=setTimeout(()=>{S.toast=null;const t=$top.querySelector('.toast');if(t)t.remove()},3200)}
 }
@@ -4221,12 +4304,13 @@ document.getElementById('app').addEventListener('click',e=>{
   if(act==='mobile'){MOB=!MOB;try{localStorage.setItem('fb_mobile',MOB?'1':'0')}catch(e){}render();if(MOB&&$dock.innerHTML)$dock.scrollIntoView({block:'nearest',behavior:'smooth'});return}
   if(act==='target'){if(S.phase==='battle'&&!S.busy&&S.foes){const F=S.foes[+id];if(F&&F.hp>0){setTarget(F);S.sel=S.sel;render()}}return}
   switch(act){
-    case 'start':S.node=0;S.route=[];choosePath();break;
+    case 'start':S.node=0;S.route=[];S.phase='class';render();break;
+    case 'class':pickClass(b.dataset.k);break;
     case 'path':pickPath(+b.dataset.i);break;
     case 'sel':
       if(S.busy)return;
       if(S.sel.includes(id))S.sel=S.sel.filter(x=>x!==id);
-      else if(S.sel.length<2)S.sel.push(id);
+      else if(S.sel.length<2||canThird(id))S.sel.push(id);
       else S.sel=[S.sel[0],id];
       render();break;
     case 'unsel':if(S.busy)return;S.sel=S.sel.filter(x=>x!==id);render();break;
@@ -4263,6 +4347,7 @@ function start(data){
     S=data.S;S.busy=false;if(S.foes&&S.foes.length){S.enemy=S.foes.find(f=>S.enemy&&f.slot===S.enemy.slot)||S.foes[0];S.tgt=S.enemy}else if(S.enemy){S.enemy.slot=0;S.foes=[S.enemy];S.tgt=S.enemy}Stage.setBg(LEVELS[S.level].bg||'forest');if(S.maxMana==null){S.maxMana=100;S.mana=100}
     if(S.phase==='travel'){travel();return}
     S.seenEv=S.seenEv||[];if(S.keys==null)S.keys=0;
+    if(S.phase==='class'){S.busy=false;render();return}
     if(S.phase==='path'){if(!S.choices)S.choices=genChoices(S.level,S.node);S.busy=false;render();return}
     const n=curNode();
     if(S.phase==='battle'){Stage.place(stageNode(n));if(S.iceAge>0)Stage.iceFloor(true)}
@@ -4274,6 +4359,71 @@ function start(data){
 }
 window.claude?.hot?.snapshot?.(()=>({S}));
 window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
+
+/* ===== Classes: Aegis Warden, Arcanist, Swordsman — passives and 3-card ultimates ===== */
+const CLASSES={
+ warden:{name:'Aegis Warden',cat:'def',item:'warden_shield',col:'#59c9c2',tag:'Defender',
+   lines:['Starts with a Round Shield (Shield Bash card)','Shield attacks deal ×1.25 damage','Each turn: +1 block per card level in your deck'],
+   ult:'Citadel Crash',ultCat:'Defense',ultText:'Combine 3 Defense cards: raise a fortress around you, then bring its walls crashing down on every enemy.'},
+ arcanist:{name:'Arcanist',cat:'elem',item:'apprentice_wand',col:'#b18bff',tag:'Spellcaster',
+   lines:['Starts with an Apprentice Wand (elements cost 1 less mana)','Affinity with your first element: its damage ×1.25','Starts with a random element card'],
+   ult:'Prismatic Cataclysm',ultCat:'Element',ultText:'Combine 3 Element cards: fuse their circles into a prism that rains each element on every enemy.'},
+ swordsman:{name:'Swordsman',cat:'phys',item:'starter_sword',col:'#ffb347',tag:'Duelist',
+   lines:['Starts with a sword (Slash card)','Physical combos heal 1 HP per hit','Slash and Stab combos also cut up to 2 more enemies for 30%'],
+   ult:'Thousand Petal Cut',ultCat:'Physical',ultText:'Combine 3 Physical cards: blink through every enemy in a storm of cuts, ending in a giant X.'}};
+const ULT_COST=30;
+function pickClass(k){const C=CLASSES[k];if(!C)return;S.cls=k;
+  if(k==='warden'){S.gear.shield={key:'warden_shield',rarity:'common',stats:{def:1},cardLvl:1}}
+  if(k==='arcanist'){S.gear.weapon={key:'apprentice_wand',rarity:'common',stats:{mcost:1}};const e=S.deck.find(c=>CARDS[c.key].cat==='elem');S.affinity=e?e.key:rnd(ELEMS)}
+  recalc&&recalc();S.toast=`You set out as ${/^[AEIOU]/.test(C.name)?'an':'a'} ${C.name}.${k==='arcanist'?` Your affinity is ${TYPENAME[S.affinity]}.`:''}`;choosePath()}
+function classHTML(){return `<div class="path-layer class-layer"><div class="path-head"><div class="eyebrow">A new journey</div><h2>Choose your class</h2></div>
+  <div class="path-cards">${Object.entries(CLASSES).map(([k,C],i)=>`<button type="button" class="pcard ccard" data-act="class" data-k="${k}" style="--oc:${C.col};--fd:${i*.6}s">
+    <span class="cc-art"><span class="cc-glow"></span>${itemIcon(C.item,84)}</span>
+    <span class="pc-tag">${C.tag}</span>
+    <span class="pc-body"><b class="pc-title">${C.name}</b><ul class="cc-list">${C.lines.map(l=>`<li>${l}</li>`).join('')}</ul><span class="pc-meta">Ultimate: ${C.ult}</span><span class="cc-ult">${C.ultText}</span></span></button>`).join('')}</div>
+  <p class="path-foot">Your class decides your starting gear, a passive bonus and a 3-card ultimate.</p></div>`}
+const deckLv=()=>S.deck.reduce((a,c)=>a+(c.lvl||1),0);
+function clsBlock(){return S&&S.cls==='warden'?deckLv():0}
+function clsMods(R,c1,c2){if(!S.cls||!R.dmg.length)return;const ks=[c1.key,c2.key];R.gtags=R.gtags||[];
+  if(S.cls==='warden'&&ks.some(k=>k==='shieldbash'||k==='shieldthrow')){R.dmg.forEach(p=>p.p=Math.round(p.p*1.25));R.gtags.push('Warden shield ×1.25')}
+  if(S.cls==='arcanist'&&S.affinity){const a=S.affinity;let hit=false;if(R.tickTypes){const f=R.tickTypes.filter(t=>t===a).length/R.tickTypes.length;if(f>0){R.dmg[0].p=Math.round(R.dmg[0].p*(1+.25*f));hit=true}}else R.dmg.forEach(p=>{if(p.t===a){p.p=Math.round(p.p*1.25);hit=true}});if(hit)R.gtags.push(`${TYPENAME[a]} affinity ×1.25`)}
+  if(S.cls==='swordsman'&&ks.some(k=>CARDS[k].cat==='phys')){R.swordHeal=true;R.gtags.push('Heal 1 per hit')}
+  if(S.cls==='swordsman'&&ks.some(k=>k==='slash'||k==='stab')){R.swordCleave=true;R.gtags.push('Also cuts 2 more for 30%')}}
+function clsAfterHit(E,R,total,notes){if(!S.cls||!R.dmg.length||R.warded)return;
+  if(R.swordHeal){const n=R.ticks||(R.segs?R.segs.length:0)||(R.double?2:1),h=Math.min(n,S.maxHp-S.hp);if(h>0){S.hp+=h;Stage.float('player',`+${h}`,'#7fe08a','BLADE HEAL',360);notes.push(`<span class="w">healed ${h}</span>`)}}
+  if(R.swordCleave&&total>0){const others=(S.foes||[]).filter(F=>F!==E&&F.hp>0).slice(0,2);if(others.length){const d=Math.max(1,Math.round(total*.3));others.forEach((F,i)=>sideHit(F,d,'#ffe0b0','CLEAVE',220+i*90,notes));notes.push(`<span class="w">the blade cuts ${others.length} more for ${d}</span>`)}}}
+function canThird(id){if(!S.cls||S.sel.length!==2)return false;const cat=CLASSES[S.cls].cat,c=card(id);return!!c&&CARDS[c.key].cat===cat&&S.sel.every(x=>{const cc=card(x);return cc&&CARDS[cc.key].cat===cat})}
+function ultBuild(cs){const u=cs.reduce((a,c)=>a+effLv(c),0),k=S.cls,R={ult:true,spell:'ult_'+k,name:CLASSES[k].ult,dmg:[],fx:[],phys:[],kind:'cast',charge:[],u,key:'ult_'+k,block:0,barrier:0};
+  if(k==='warden'){R.barrier=3*u;R.block=2*u;R.crash=3*u}
+  if(k==='arcanist'){R.els=cs.map(c=>c.key);R.per=4*u}
+  if(k==='swordsman'){R.cuts=12;R.total=8*u;R.bleedP=1+Math.ceil(u/3)}
+  return R}
+function ultDesc(R){const k=S.cls;if(k==='warden')return `Raises a fortress of tower shields: a ${R.barrier}-point barrier for 3 turns and ${R.block} block. Then the walls crash down on every enemy for ${R.crash} + half your block and barrier as Blunt damage, with a 50% chance to stun each.`;
+  if(k==='arcanist')return `Stacks your three element circles into a prism that fires ${R.els.map(e=>TYPENAME[e]).join(', ')} beams at every enemy for ${R.per} each${S.affinity&&R.els.includes(S.affinity)?` (${TYPENAME[S.affinity]} ×1.25)`:''}, applying every element's effect.`;
+  return `Blinks through every enemy in ${R.cuts} cuts for ${R.total} Slash damage to your target (60% to the others), then splits them with a giant X. They bleed ${R.bleedP} a turn for 3 turns, and you heal 1 per cut.`}
+function ultHTML(){const cs=S.sel.map(card);if(cs.some(c=>!c))return'';const R=ultBuild(cs),low=ULT_COST>S.mana,C=CLASSES[S.cls];
+  return `<div class="rcard ult-card" style="--oc:${C.col}"><div class="rc-head"><h3>${R.name}<span class="new-tag">ULTIMATE</span></h3></div><p class="rc-desc">${ultDesc(R)}</p>
+    <div class="rc-fx"><span class="rfx" style="--c:#4aa8ff">${icon('water')}Mana −${ULT_COST}</span><span class="rfx" style="--c:${C.col}">${icon('ult')}${cs.map(c=>CARDS[c.key].name).join(' + ')}</span></div>
+    <div class="rc-actions"><button type="button" class="btn btn-primary" data-act="fuse" ${low?'disabled':''}>${low?'Not enough mana':'Unleash'}</button><button type="button" class="btn" data-act="clear">Clear</button></div></div>`}
+function doUltimate(){if(S.busy||S.sel.length!==3)return;if(ULT_COST>S.mana){S.toast=`Not enough mana. The ultimate needs ${ULT_COST}.`;render();return}
+  const cs=S.sel.map(card);if(cs.some(c=>!c))return;S.busy=true;S.mana-=ULT_COST;const R=ultBuild(cs);render();
+  const delay=Stage.perform(R);
+  if(R.tickTimes&&S.cls==='swordsman'){const per=Math.max(1,Math.round(R.total/(R.cuts+1)));R.tickTimes.slice(0,-1).forEach(t=>setTimeout(()=>{if(S.phase!=='battle')return;const E=S.enemy;if(!E)return;const d=partDmg(E,{t:'slash',p:per}).d;Stage.float('enemy',d,'#ffe0b0','',0);Stage.hitEnemy(['slash']);if(S.cls==='swordsman'){const h=Math.min(1,S.maxHp-S.hp);if(h>0)S.hp+=h}render()},t))}
+  setTimeout(()=>applyUltimate(cs,R),delay)}
+function applyUltimate(cs,R){const E=S.enemy,def=ENEMIES[E.id],notes=[];let total=0;const k=S.cls,others=()=>(S.foes||[]).filter(F=>F!==E&&F.hp>0);
+  if(k==='warden'){S.barrier=Math.max(S.barrier,R.barrier);S.barrierT=3;S.block+=R.block;Stage.float('player',`+${R.barrier}`,'#59c9c2','BARRIER',0);
+    const dmg=R.crash+Math.round((S.block+S.barrier)/2);const d=partDmg(E,{t:'blunt',p:dmg}).d;E.hp-=d;total=d;Stage.float('enemy',d,'#e0c08a','CITADEL CRASH',0);Stage.hitEnemy(['blunt']);
+    if(E.hp>0&&!E.stun&&Math.random()<.5){E.stun=true;notes.push('<span class="w">stunned it</span>')}
+    others().forEach((F,i)=>{const dd=partDmg(F,{t:'blunt',p:dmg}).d;sideHit(F,dd,'#e0c08a','CRASH',120+i*90,notes);if(F.hp>0&&Math.random()<.5)F.stun=true})}
+  if(k==='arcanist'){R.els.forEach((el,i)=>{const p=Math.round(R.per*(S.affinity===el?1.25:1));const d=partDmg(E,{t:el,p}).d;if(!E.known.includes(el))E.known.push(el);E.hp-=d;total+=d;if(E.hp>0)applyElem(el,E,def);others().forEach((F,j)=>{const dd=partDmg(F,{t:el,p}).d;sideHit(F,dd,hexOf(el),TYPENAME[el].toUpperCase(),i*120+j*60,notes);if(F.hp>0)applyElem(el,F,ENEMIES[F.id])})});Stage.float('enemy',total,'#ffffff','PRISMATIC',0);Stage.hitEnemy(R.els)}
+  if(k==='swordsman'){const per=Math.max(1,Math.round(R.total/(R.cuts+1)));const fin=Math.max(1,R.total-per*R.cuts);let d=0;for(let i=0;i<R.cuts;i++)d+=partDmg(E,{t:'slash',p:per}).d;const df=partDmg(E,{t:'slash',p:fin*3}).d;E.hp-=d+df;total=d+df;Stage.float('enemy',df,'#ffffff','FINAL CUT',0);Stage.hitEnemy(['slash']);if(!E.known.includes('slash'))E.known.push('slash');
+    if(E.hp>0)bleed(E,notes,3,R.bleedP);others().forEach((F,i)=>{const dd=Math.round(partDmg(F,{t:'slash',p:R.total}).d*.6);sideHit(F,dd,'#ffe0b0','CUT',100+i*90,notes);if(F.hp>0){F.bleed=Math.max(F.bleed||0,3);F.bleedP=Math.max(F.bleedP||0,R.bleedP)}})}
+  if(E.hp<=0)foeRevive(E,notes);
+  log(`<b>${R.name}</b>! ${cs.map(c=>CARDS[c.key].name).join(' + ')}${total?` for ${total}`:''}${notes.length?'. '+notes.join(', '):''}.`);
+  S.hand=S.hand.filter(id=>!S.sel.includes(id));S.disc.push(...S.sel);S.sel=[];
+  if(def.boss&&!E.enraged&&E.hp>0&&E.hp<=E.max/2){E.enraged=true;E.str+=3;log(`<span class="r">${def.name} enrages! Its attacks grow stronger.</span>`)}
+  render();
+  if(E.hp<=0){Stage.enemyDie();const nx=aliveFoes();if(nx.length)setTimeout(()=>{setTarget(nx[0]);render();setTimeout(enemyTurn,350)},900);else setTimeout(winBattle,1100)}else setTimeout(enemyTurn,750)}
 
 })();
 </script>
