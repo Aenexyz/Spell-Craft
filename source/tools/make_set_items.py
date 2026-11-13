@@ -321,12 +321,43 @@ def _(I):
     for x, y in ((3, 25), (23, 24), (27, 27)): I.ell(x, y, x + 5, y + 4, '#e8b840'); I.gpx(x + 2, y + 1, '#fff0a0')
     I.ell(13, 17, 19, 23, '#e8b840'); I.rect(15, 18, 16, 22, '#a87a20'); sparkle(I, 7, 6, '#fff0a0')
 
+# ===== ELEMENTAL SWORDS =====
+def esword(I, bl, bd, core, glow, hilt, gem, extra):
+    I.poly([(26, 1), (30, 2), (29, 5), (12, 22), (9, 19)], bl); I.poly([(30, 2), (29, 5), (12, 22), (11, 21)], bd)
+    I.line([(28, 3), (11, 20)], core)
+    extra(I)
+    I.poly([(5, 17), (8, 15), (16, 23), (14, 26)], hilt); I.gpx(10, 20, gem); I.gpx(11, 21, gem)
+    I.line([(10, 22), (4, 28)], '#3a2a1a', 3); I.line([(9, 22), (4, 27)], '#6a4a2a', 1)
+    I.ell(1, 27, 6, 32, hilt); I.gpx(3, 29, gem)
+@icon('emberbrand')
+def _(I):
+    def ex(I):
+        for i, (x, y) in enumerate(((27, 6), (24, 9), (21, 12), (18, 15), (15, 18))):
+            I.poly([(x, y), (x + 3, y - 4 - i % 2), (x + 2, y + 1)], '#ff6a1a' if i % 2 else '#ffb347'); I.gpx(x + 1, y - 2, '#fff3b0')
+        sparkle(I, 29, 9, '#ffe08a')
+    esword(I, '#ffd0a0', '#c8402f', '#ff6a1a', '#ffb347', '#a8301a', '#ffe08a', ex)
+@icon('tidecaller')
+def _(I):
+    def ex(I):
+        for t in range(6):
+            x = 26 - t * 3; y = 4 + t * 3; I.gpx(x - 2, y + 3, '#8fd3ff' if t % 2 else '#3aa0ff'); I.gpx(x - 3, y + 4, '#ffffff' if t % 3 == 0 else '#bfe9ff')
+        for x, y in ((6, 9), (9, 6), (4, 13)): I.ell(x - 1, y - 1, x + 1, y + 1, '#8fd3ff'); I.gpx(x, y - 1, '#ffffff')
+    esword(I, '#d8f4ff', '#1f62b0', '#3aa0ff', '#8fd3ff', '#2a5a8a', '#bfe9ff', ex)
+@icon('stormfang')
+def _(I):
+    def ex(I):
+        pts = [(30, 1), (27, 5), (29, 7), (24, 11), (26, 13), (20, 17), (22, 19), (16, 23)]
+        I.line(pts, '#fff6b0'); 
+        for x, y in pts[1:-1]: I.gpx(x, y, '#ffffff')
+        sparkle(I, 6, 8, '#ffe866'); I.gpx(9, 4, '#ffe866'); I.gpx(3, 12, '#fff6b0')
+    esword(I, '#e8eef6', '#5a6070', '#f2d24b', '#ffe866', '#3a3a5a', '#ffe866', ex)
+
 if __name__ == '__main__':
     ORDER = ['knight_helm', 'knight_plate', 'knight_gauntlets', 'knight_sabatons', 'knight_shield',
              'reaper_cowl', 'reaper_shroud', 'bone_bracers', 'soul_chain', 'reaper_scythe',
              'dragon_helm', 'dragon_mail', 'wyrm_boots', 'dragon_heart', 'dragonfang',
              'astral_kabuto', 'starweave_haori', 'comet_sandals', 'nebula_obi', 'starfall_katana',
-             'berserker_band', 'iron_knuckles', 'serrated_pendant', 'assassin_sash', 'lucky_purse']
+             'berserker_band', 'iron_knuckles', 'serrated_pendant', 'assassin_sash', 'lucky_purse', 'emberbrand', 'tidecaller', 'stormfang']
     base = Image.open('items.png').convert('RGBA'); cols, rows = 8, 9
     atlas = Image.new('RGBA', (cols * 64, rows * 64), (0, 0, 0, 0)); atlas.alpha_composite(base, (0, 0))
     idx = {}; tops = {}
@@ -336,7 +367,7 @@ if __name__ == '__main__':
         bb = im.getbbox(); tops[k] = (bb[1] if bb else 0) * 2
         atlas.alpha_composite(im.resize((64, 64), Image.NEAREST), ((i % cols) * 64, (i // cols) * 64))
     atlas.save('items.png'); json.dump({'idx': idx, 'tops': tops}, open('set_items.json', 'w'))
-    pv = Image.new('RGBA', (5 * 136, 5 * 136), (30, 40, 46, 255))
+    pv = Image.new('RGBA', (5 * 136, 6 * 136), (30, 40, 46, 255))
     for n, k in enumerate(ORDER):
         i = idx[k]; cell = atlas.crop(((i % cols) * 64, (i // cols) * 64, (i % cols) * 64 + 64, (i // cols) * 64 + 64)).resize((128, 128), Image.NEAREST)
         pv.alpha_composite(cell, ((n % 5) * 136 + 4, (n // 5) * 136 + 4))
