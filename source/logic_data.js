@@ -125,15 +125,24 @@ const ENEMIES={
   magmafiend:{name:'Magma Fiend',fam:'blood',hp:34,tint:{h:24,s:1.15,l:.07},lore:'Molten and restless. It cools only when soaked.',mods:{water:2,ice:2,fire:0,earth:.5},pattern:[['atk',6],['multi',3,3],['heavy',12]]},
   ashdemon:{name:'Ash Demon',fam:'demon',hp:40,tint:{h:8,s:.25,l:-.04},lore:'A demon wrapped in cinders and old soot. Light burns it.',mods:{light:2,water:1.5,dark:0,fire:.5},pattern:[['stab',8],['def',8],['atk',7],['heavy',13]]},
   emberdemon:{name:'Ember Demon',fam:'demon',hp:44,tint:{h:30,s:1.2,l:.06},lore:'Its blade glows like a forge. Frost makes it falter.',mods:{ice:2,water:1.5,fire:0,slash:.5},pattern:[['multi',3,3],['buff',2],['stab',9],['heavy',14]]},
-  infernolord:{name:'Inferno Lord',fam:'demon',hp:120,boss:true,scale:1.5,tint:{h:352,s:1.25,l:-.06},lore:'Master of the burning rift. Enrages below half health.',mods:{water:2,ice:1.5,fire:0,dark:.5,earth:.5},pattern:[['atk',10],['multi',4,3],['def',12],['heavy',18]]},
-  elder:{name:'Elder Toadstool',hp:72,boss:true,scale:1.7,tint:{h:350,s:1,l:-.06},lore:'The first mushroom of the woods, grown huge and mean. Enrages below half health.',mods:{fire:2,slash:1.5,earth:.5,blunt:.5},pattern:[['atk',7],['def',8],['multi',3,3],['heavy',14]]},
+  infernolord:{abil:['ward'],name:'Inferno Lord',fam:'demon',hp:120,boss:true,scale:1.5,tint:{h:352,s:1.25,l:-.06},lore:'Master of the burning rift. Enrages below half health.',mods:{water:2,ice:1.5,fire:0,dark:.5,earth:.5},pattern:[['atk',10],['multi',4,3],['def',12],['heavy',18]]},
+  elder:{abil:['regen'],name:'Elder Toadstool',hp:72,boss:true,scale:1.7,tint:{h:350,s:1,l:-.06},lore:'The first mushroom of the woods, grown huge and mean. Enrages below half health.',mods:{fire:2,slash:1.5,earth:.5,blunt:.5},pattern:[['atk',7],['def',8],['multi',3,3],['heavy',14]]},
   stormking:{name:'Storm Sovereign',hp:110,boss:true,scale:1.75,tint:{h:48,s:1.1,l:.02},stem:{h:220,s:.3,l:-.1},lore:'Lightning gathers in its gills. Enrages below half health.',mods:{earth:2,pierce:2,lightning:0,wind:.5,ice:.5},pattern:[['multi',4,3],['stab',11],['buff',3],['heavy',17]]},
-  wyrm:{name:'Ember Monarch',hp:150,boss:true,scale:1.8,tint:{h:356,s:1.1,l:-.16},stem:{h:28,s:.7,l:-.12},lore:'The oldest cap in the forest, burning from within. Enrages below half health.',mods:{ice:2,water:2,pierce:1.5,fire:0,slash:.5,earth:.5},pattern:[['atk',11],['multi',5,3],['def',14],['heavy',21]]}
+  toxicap:{name:'Toxicap',hp:44,tint:{h:92,s:1.2,l:-.04},stem:{h:285,s:.45,l:-.1},lore:'Its gills drip a sticky green venom. Burns well.',mods:{fire:2,slash:1.5,dark:.5,water:.5},pattern:[['poison',6,3],['atk',9],['def',9]]},
+  sporeling:{name:'Sporeling',hp:36,scale:.9,tint:{h:280,s:.9,l:-.02},stem:{h:95,s:.5,l:-.08},lore:'A young cap that spits clouds of rot. Fragile against light.',mods:{light:2,wind:2,dark:0},pattern:[['poison',5,4],['multi',4,2],['heal',8]]},
+  bogfloater:{name:'Bog Floater',fam:'flyer',hp:42,hue:{a:0,b:40,h:100,s:.95,l:-.05},lore:'A bloated pod that drifts over the marsh dropping venom.',mods:{pierce:2,wind:2,earth:0,blunt:.5},pattern:[['poison',7,3],['stab',12],['atk',10]]},
+  plaguebrute:{name:'Plague Brute',fam:'orc',hp:64,scale:1.25,hue:{a:55,b:150,h:285,s:.85,l:-.08},lore:'A rot-swollen orc. Its axe weeps poison.',mods:{fire:1.5,light:1.5,blunt:.5,dark:.5},pattern:[['atk',13],['poison',8,3],['heavy',20],['def',12]]},
+  marshstalker:{name:'Marsh Stalker',fam:'seeker',hp:50,scale:1.1,lore:'A hooded hunter who coats its blade in bog venom.',mods:{light:2,blunt:1.5,dark:0},pattern:[['stab',14],['poison',7,3],['multi',5,3]]},
+  mireheart:{name:'Mireheart Golem',fam:'golemo',hp:84,scale:1.25,lore:'Moss and rot packed around a poisoned core.',mods:{fire:2,lightning:1.5,water:0,earth:.5,slash:.5},pattern:[['def',14],['poison',9,3],['heavy',22]]},
+  plaguemother:{name:'Plague Mother',hp:210,boss:true,scale:1.95,tint:{h:96,s:1.15,l:-.1},stem:{h:285,s:.6,l:-.16},abil:['physHalf','regen'],lore:'The rotting heart of the marsh. Physical blows sink into its spongy flesh, and it knits itself back together.',mods:{fire:2,light:1.5,dark:0,water:.5},pattern:[['poison',9,3],['multi',5,3],['def',16],['poison',12,4],['heavy',24]]},
+  wyrm:{abil:['ward','elemHalf'],name:'Ember Monarch',hp:150,boss:true,scale:1.8,tint:{h:356,s:1.1,l:-.16},stem:{h:28,s:.7,l:-.12},lore:'The oldest cap in the forest, burning from within. Enrages below half health. Wrapped in a spell ward and an elemental guard.',mods:{ice:2,water:2,pierce:1.5,fire:0,slash:.5,earth:.5},pattern:[['atk',11],['multi',5,3],['def',14],['heavy',21]]}
 };
 const LEVELS=[
   {name:'Mushroom Woods',pool:['thornling','orc','slime','floatcap','wolf','deserter','knight','orcbrute'],boss:'elder',hp:1,dmg:0},
   {name:'Volcanic Rift',pool:['bloodfiend','seeker','magmafiend','ashdemon','magmagolem','emberdemon'],boss:'infernolord',hp:1.25,dmg:2,bg:'lava'},
-  {name:'Ember Hollow',pool:['golem','harpy','nightseeker','priest','gloomcap','wraith','runegolem'],boss:'wyrm',hp:1.85,dmg:4,bg:'night'}];
+  {name:'Ember Hollow',pool:['golem','harpy','nightseeker','priest','gloomcap','wraith','runegolem'],boss:'wyrm',hp:1.85,dmg:4,bg:'night',aura:'fire',revive:true},
+  {name:'Venom Marsh',pool:['toxicap','bogfloater','plaguebrute','marshstalker','sporeling','mireheart'],boss:'plaguemother',hp:2.5,dmg:6,bg:'swamp',aura:'poison'}];
+const BOSS_ABIL={ward:{name:'Spell Ward',text:'The first hit is completely absorbed. The ward re-forms every 3 turns.'},elemHalf:{name:'Elemental Guard',text:'Takes 50% less damage from all elemental attacks.'},physHalf:{name:'Spongy Flesh',text:'Takes 50% less damage from all physical attacks.'},regen:{name:'Regeneration',text:'Heals 5% of its max HP at the end of each of its turns.'},revive:{name:'Undying',text:'Rises again once with 40% HP when slain.'}};
 const LAYOUT=['m','m','ev','m','chest','m','camp','m','ev','elite','m','chest','ev','camp','boss'];
 const EVENTS={
   shrine:{name:'Wayside Shrine',prop:'altar',text:'A moss-covered altar hums faintly beside a campfire. Old offerings sit in its bowl.'},
@@ -142,7 +151,7 @@ const EVENTS={
   mimic:{name:'Strange Chest',prop:'chest',text:'An iron-bound chest sits alone by a dying fire. The lock is already broken, and it seems to breathe.'}
 };
 const EVENT_KEYS=Object.keys(EVENTS);
-const INTENTS={atk:{label:'Attack',icon:'atk'},stab:{label:'Stab',icon:'stab',note:'ignores block'},heavy:{label:'Ultimate',icon:'ult',cls:'heavy'},multi:{label:'Flurry',icon:'multi'},
+const INTENTS={poison:{label:'Venom',icon:'stab',cls:'poison',note:'poisons you'},atk:{label:'Attack',icon:'atk'},stab:{label:'Stab',icon:'stab',note:'ignores block'},heavy:{label:'Ultimate',icon:'ult',cls:'heavy'},multi:{label:'Flurry',icon:'multi'},
   drain:{label:'Drain',icon:'drain'},def:{label:'Shield',icon:'shield'},buff:{label:'Empower',icon:'buff'},heal:{label:'Heal',icon:'heal'}};
 
 /* ================= items ================= */

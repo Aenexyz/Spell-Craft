@@ -3,7 +3,7 @@ const sumP=R=>R.dmg.reduce((a,p)=>a+p.p,0);
 function spellHitOthers(R,E,notes,after){(S.foes||[]).filter(F=>F!==E&&F.hp>0).forEach(F=>{let d=0;
   if(R.ticks){for(let q=0;q<R.ticks;q++)d+=tickDmg(F,R,q)}else R.dmg.forEach(p=>{d+=partDmg(F,p).d});
   R.dmg.forEach(p=>{if(!F.known.includes(p.t))F.known.push(p.t)});if(!R.breaker&&F.block>0){const ab=Math.min(F.block,d);F.block-=ab;d-=ab}
-  F.hp-=d;const fn=ENEMIES[F.id].name;notes.push(`${R.name} hits ${fn} for ${d}`);
+  F.hp-=d;const fn=ENEMIES[F.id].name;notes.push(`${R.name} hits ${fn} for ${d}`);if(F.hp<=0)foeRevive(F,notes);
   Stage.withFoe(F.slot,()=>{Stage.float('enemy',d,hexOf(R.dmg[0].t),'',0);Stage.hitEnemy([R.dmg[0].t]);if(F.hp<=0){Stage.enemyDie();notes.push(`<span class="w">${fn} falls</span>`)}});
   if(F.hp>0&&after)after(F)})}
 const allAlive=E=>[E,...(S.foes||[]).filter(F=>F!==E&&F.hp>0)].filter(F=>F.hp>0);
