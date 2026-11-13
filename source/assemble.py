@@ -610,7 +610,9 @@ R("      if(wpn&&wmode==='back'&&!(hf.n==='jump'&&wpn.key==='hunter_bow')&&","  
 R("      const shd=S&&S.gear&&S.gear.shield;\n      if(hf.n==='shield'","      const shd=S&&S.gear&&(S.gear.shield||(shW?wpn:null));\n      if(hf.n==='shield'")
 R("        if(wpn.key==='hunter_bow'){const bsz=62*.8*k*64/58,aim=","        if(shW){const ssz=sz*.78;ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(x0+hf.f.hx*k+3*k,y0+hf.f.hy*k);ctx.drawImage(itemsImg,(wi%wc)*64,Math.floor(wi/wc)*64,64,64,-ssz/2,-ssz*.55,ssz,ssz);ctx.restore()}\n        else if(wpn.key==='hunter_bow'){const bsz=62*.8*k*64/58,aim=")
 
-R("      const shd=S&&S.gear&&(S.gear.shield||(shW?wpn:null));\n      if(hf.n==='shield'","      const shd=S&&S.gear&&(S.gear.shield||(shW?wpn:null));\n      if(shW&&S.gear.shield&&hf.f.rig&&hf.n!=='die'&&!P.dead&&itemsImg.complete&&itemsImg.naturalWidth){const bi=ITEM_ATLAS.idx[(hf.n==='shield'?wpn:S.gear.shield).key],bc=ITEM_ATLAS.cols,bsz=44*k*64/58*.72;ctx.save();ctx.imageSmoothingEnabled=false;if(hf.n==='shield'&&hf.f.sh){ctx.globalAlpha=.95;ctx.drawImage(itemsImg,(bi%bc)*64,Math.floor(bi/bc)*64,64,64,x0+hf.f.sh[0]*k-bsz*.85,y0+hf.f.sh[1]*k-bsz*.55,bsz,bsz)}else{ctx.translate(x0+(hf.f.nk[0]-6)*k,y0+(hf.f.nk[1]+6)*k);ctx.rotate(-.15);ctx.drawImage(itemsImg,(bi%bc)*64,Math.floor(bi/bc)*64,64,64,-bsz/2,-bsz/2,bsz,bsz)}ctx.restore()}\n      if(hf.n==='shield'")
+R("      const shd=S&&S.gear&&(S.gear.shield||(shW?wpn:null));\n      if(hf.n==='shield'","      const shd=S&&S.gear&&(S.gear.shield||(shW?wpn:null));\n      if(shW&&S.gear.shield&&hf.f.rig&&hf.n!=='die'&&!P.dead&&itemsImg.complete&&itemsImg.naturalWidth){const bi=ITEM_ATLAS.idx[(hf.n==='shield'?wpn:S.gear.shield).key],bc=ITEM_ATLAS.cols,bsz=44*k*64/58*.72;ctx.save();ctx.imageSmoothingEnabled=false;if(hf.n==='shield'&&hf.f.sh){ctx.globalAlpha=.95;ctx.drawImage(itemsImg,(bi%bc)*64,Math.floor(bi/bc)*64,64,64,x0+hf.f.sh[0]*k-bsz*.85,y0+hf.f.sh[1]*k-bsz*.55,bsz,bsz)}ctx.restore()}\n      if(hf.n==='shield'")
+
+R("      ctx.drawImage(hf.c,x0,y0,fw,fh);","      ctx.drawImage(hf.c,x0,y0,fw,fh);\n      {const offS=S&&S.gear&&S.gear.shield;if(offS&&hf.f.rig&&hf.f.bx!=null&&hf.n!=='shield'&&hf.n!=='die'&&!P.dead&&itemsImg.complete&&itemsImg.naturalWidth){const oi=ITEM_ATLAS.idx[offS.key],oc=ITEM_ATLAS.cols,osz=44*k*64/58*.82;ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(itemsImg,(oi%oc)*64,Math.floor(oi/oc)*64,64,64,x0+hf.f.bx*k-osz*.3,y0+hf.f.by*k-osz*.62,osz,osz);ctx.restore()}}")
 
 css_add="""
 .item-ic{image-rendering:pixelated}
@@ -942,6 +944,13 @@ body.mob .cc-ult{display:none}
 @keyframes sshine{0%,55%{left:-60%}100%{left:130%}}
 body.mob .start-btn{font-size:24px;padding:16px 30px}
 @media (prefers-reduced-motion:reduce){.start-btn,.start-btn::after{animation:none}}
+
+.hud-row{display:flex;align-items:center;gap:6px}
+.hud-blk{display:inline-flex;align-items:center;gap:3px;filter:drop-shadow(0 2px 2px #000c);font-weight:800;color:#e8fffc;font-size:calc(15px*var(--s,1));line-height:1}
+.hud-blk svg{width:calc(22px*var(--s,1));height:calc(25px*var(--s,1));image-rendering:pixelated}
+.hud-blk b{text-shadow:0 1px 0 #000,0 0 6px #59c9c2aa;min-width:1ch}
+.hud-blk i{font-style:normal;font-size:.75em;color:#9fe2ff;text-shadow:0 1px 0 #000}
+.hud-blk.zero{opacity:.55}
 """
 head2='<meta charset="utf-8">\n'+head.replace('</style>',css_add+'</style>').replace('<title>Fusebound</title>','<title>SpellCraft</title>')
 body_skel=body_skel.replace('<div class="stage-label" id="stageLabel"></div>','<div class="stage-label" id="stageLabel"></div><div id="hudLayer"></div><div id="resultLayer"></div><div id="dropLayer"></div>')
