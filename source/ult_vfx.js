@@ -4,27 +4,21 @@
     if(p>.03&&p<.45){const tp=clamp01((p-.03)/.1),fo=p>.35?1-(p-.35)/.1:1;ctx.globalAlpha=fo;const fs=Math.round(st.H*.075);ctx.font=`900 ${fs}px Georgia,serif`;ctx.textAlign='center';ctx.textBaseline='middle';const x=st.W/2+(1-ease(tp))*st.W*.15,y=st.H*.2;ctx.fillStyle='#000';ctx.fillText(title,x+st.ps*.8,y+st.ps*.8);ctx.fillStyle=col;ctx.fillText(title,x,y);ctx.fillStyle='#ffffff';ctx.globalAlpha=fo*.5;ctx.fillRect(x-st.W*.25*ease(tp),y+fs*.62,st.W*.5*ease(tp),Math.max(1,st.ps*.4))}ctx.restore()})}
   const uPx=()=>Math.max(2,Math.round(st.ps*.7));
   Object.assign(SPELLFX,{
-  // Aegis Warden: Citadel Crash
-  'ult_warden':R=>{st.player.anim=null;st.player.act=null;const T=4000;ultDim(T,'#8ff0e6','CITADEL CRASH');
-    setTimeout(()=>{st.player.anim={name:'shield',t0:now_(),dur:2400}},0);
-    groundUnder(PMx,{r:st.H*.2,c1:'#ffd36b',c2:'#59c9c2',delay:0,dur:2600,seed:4,spin:.5,star:6});
-    const walls=[-1.9,-1.05,1.05,1.9];
-    // walls rise around the hero, levitate, then fly onto the enemies
-    walls.forEach((fx,i)=>addFx(250+i*180,T-250-i*180,(p,now)=>{const pm=PMx(),t=p*(T-250-i*180)+250+i*180,s=uPx(),W=st.ps*7,H=pm.h*(1.05-Math.abs(fx)*.12);
-      let x=pm.x+pm.w*fx,y=pm.feet,rise=ease(clamp01((t-250-i*180)/600)),lift=0,rot=0;
-      if(t>1900)lift=ease(clamp01((t-1900)/600))*pm.h*.9;
-      if(t>2550){const fl=ease(clamp01((t-2550-i*120)/700)),foes=st.foes.filter(f=>!f.gone&&f.state!=='die'),f=foes.length?foes[i%foes.length]:null,m=f?enemyMetricsOf(f):EM();const tx=m.x+(i%2?1:-1)*m.w*.2,ty=m.feet;x=x+(tx-x)*fl;y=(pm.feet-lift)+(ty-(pm.feet-lift))*fl-Math.sin(fl*Math.PI)*st.H*.35;lift=0;rot=(1-fl)*.3*(i%2?1:-1);if(fl>=1)return}
-      else y=pm.feet-lift+Math.sin(now/180+i)*st.ps*(t>1900?1:0);
-      const h=H*rise;if(h<2)return;ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.rotate(rot);
-      dfR(-W/2-s,-h-s,W+2*s,h+s,'#2a2620');dfR(-W/2,-h,W,h,'#7f7a70');dfR(-W/2,-h,s*1.5,h,'#a8a296');dfR(W/2-s*1.5,-h,s*1.5,h,'#55504a');
-      for(let r=0;r<h;r+=s*3)dfR(-W/2,-h+r,W,Math.max(1,s*.4),'#5a554e');for(let k=0;k<3;k++)dfR(-W/2+k*W/3,-h-s*2.5,W/4,s*2.5,'#7f7a70');
-      dfR(-s,-h*.75,s*2,h*.4,'#59c9c2');dfR(-W*.25,-h*.6,W*.5,s*1.4,'#59c9c2');ctx.globalCompositeOperation='lighter';ctx.globalAlpha=t>1700&&t<2550?.35+.25*Math.sin(now/70):.12;dfR(-W/2,-h,W,h,'#59c9c2');ctx.restore();
-      if(rise<1&&Math.random()<.5)spawn(x+(Math.random()-.5)*W,pm.feet,{vy:-.04*U(),color:'#c0a878',size:st.ps*.6,life:380})}));
-    [250,430,610,790].forEach(d=>setTimeout(()=>shake(0,st.ps*1.2),d+200));
-    setTimeout(()=>{const pm=PMx();flash('#59c9c2',0,.18);ring(pm.x,pm.feet-pm.h*.5,pm.h*1.3,'#ffd36b',0,600,2.4)},1700);
-    const hits=[3150,3270,3390,3510];hits.forEach(d=>setTimeout(()=>{st.foes.forEach(f=>{if(f.gone||f.state==='die')return;const m=enemyMetricsOf(f);sBurst(m.x,m.feet,['#7f7a70','#c0a878','#59c9c2','#ffd36b'],16,.3,560,.9)});shake(0,st.ps*3.2)},d));
-    setTimeout(()=>{flash('#ffd36b',0,.32);st.foes.forEach(f=>{if(f.gone||f.state==='die')return;const m=enemyMetricsOf(f);ring(m.x,m.feet-st.ps,m.w*2.4,'#ffd36b',0,600,3)})},3520);
-    return 3560},
+  // Aegis Warden: Argent Bastion — transformation into the Argent Knight
+  'ult_warden':R=>{st.player.anim=null;st.player.act=null;const T=4000;ultDim(T,'#e8eef6','ARGENT BASTION');knEnsure();
+    setTimeout(()=>{st.player.anim={name:'raise',t0:now_(),dur:2300}},0);
+    groundUnder(PMx,{r:st.H*.17,c1:'#c8d0dc',c2:'#7fc0ff',delay:100,dur:3400,seed:7,spin:.6,star:6});
+    addFx(150,1700,(p,now)=>{const pm=PMx(),a=Math.sin(Math.min(1,p*1.3)*Math.PI),w=pm.w*(.9+.25*Math.sin(now/60))*a,s=uPx();ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.55*a;
+      const g=ctx.createLinearGradient(pm.x-w,0,pm.x+w,0);g.addColorStop(0,'#7fc0ff00');g.addColorStop(.5,'#e8f4ff');g.addColorStop(1,'#7fc0ff00');ctx.fillStyle=g;ctx.fillRect(Math.round(pm.x-w),0,Math.round(w*2),Math.round(pm.feet));
+      ctx.globalAlpha=a;ctx.fillStyle='#ffffff';for(let i=0;i<10;i++){const y=((now*.4+i*67)%pm.feet),x=pm.x+Math.sin(i*2.1+now/200)*w*.7;ctx.fillRect(Math.round(x),Math.round(y),s,s*3)}ctx.restore()});
+    addFx(1000,1700,p=>{st.player.knightP=ease(p)});
+    [1150,1450,1750,2050,2350].forEach((t,i)=>setTimeout(()=>{const pm=PMx(),pts=[[0,.86],[0,.62],[.25,.72],[-.2,.72],[0,.1]];const[ox,oy]=pts[i];sBurst(pm.x+ox*pm.w,pm.feet-oy*pm.h,['#ffffff','#e8eef6','#7fc0ff'],12,.22,380,.6);ring(pm.x+ox*pm.w,pm.feet-oy*pm.h,pm.h*.18,'#ffffff',0,260,1.4);shake(0,st.ps*.9)},t));
+    // two identical shields spiral in from afar
+    addFx(2500,700,(p,now)=>{const pm=PMx(),cx=pm.x,cy=pm.feet-pm.h*.55,e=ease(p);for(let i=0;i<2;i++){const a=now/700+i*Math.PI+(1-e)*6,rx=pm.w*1.6+(1-e)*st.W*.35,ry=pm.h*.28+(1-e)*st.H*.2;knShield(cx+Math.cos(a)*rx,cy+Math.sin(a)*ry,e,.6+.4*e)}});
+    setTimeout(()=>{st.player.knightOrb=true;const pm=PMx();flash('#e8f4ff',0,.4);ring(pm.x,pm.feet-pm.h*.55,pm.h*1.1,'#ffffff',0,600,3);sBurst(pm.x,pm.feet-pm.h*.55,['#ffffff','#c8d0dc','#7fc0ff'],36,.35,700,.7);shake(0,st.ps*2)},3200);
+    setTimeout(()=>{st.player.anim={name:'shield',t0:now_(),dur:900}},3250);
+    setTimeout(()=>{st.player.knightP=0;st.player.knightOrb=false},4100);
+    return 3700},
   // Arcanist: Prismatic Cataclysm
   'ult_arcanist':R=>{const T=4000,els=R.els||['fire','ice','lightning'];ultDim(T,'#d8c4ff','PRISMATIC CATACLYSM');
     const c=chor();c.stay(150,{fr:'raise'});c.go(c.H,-st.H*.08,500,{fr:'raise',e:'out'});c.stay(2600,{fr:['beam',0,1]});c.go(c.H,0,450,{fr:'idle',e:'in'});c.stay(300,{fr:'idle'});
@@ -56,3 +50,42 @@
     c.hit(()=>{foes().forEach(f=>{const mm=enemyMetricsOf(f);cutAcross&&cutAcross(mm,.8,'#ffffff',mm.h*2.2,3);cutAcross&&cutAcross(mm,-.8,'#ffffff',mm.h*2.2,3);for(let k=0;k<22;k++){const a=Math.random()*6.283;spawn(mm.x,mm.feet-mm.h*.5,{vx:Math.cos(a)*.35*U(),vy:Math.sin(a)*.35*U(),color:k%3?'#ffb7c8':'#ffffff',size:st.ps*.6,life:620})}});flash('#ffffff',0,.5);shake(0,st.ps*3.5)},100);
     c.stay(300,{fr:'idle'});R.ticks=n+1;const end=runChor(c,R,'#ffd0a0');R.ticks=0;return end}
   });
+
+  // ---- Argent Knight: armor painted onto the stickman rig, a flowing cape, and two orbiting shields
+  const KN={dk:'#2a303c',st:'#7f8aa0',mid:'#b4bdcc',lt:'#e8eef6',wh:'#ffffff',gd:'#e8b840',gl:'#fff0a0',pl:'#4a9cff',pl2:'#9fd0ff',cp:'#2a5cc0',cp2:'#173a80'};
+  function knShield(x,y,sc,a){const w=S&&S.gear&&S.gear.weapon,key=w&&ITEMS[w.key]&&ITEMS[w.key].slot==='shield'?w.key:'warden_shield',ii=ITEM_ATLAS.idx[key];if(ii==null||!itemsImg.complete)return;const c=ITEM_ATLAS.cols,sz=st.ps*7*sc;ctx.save();ctx.globalAlpha=a;ctx.imageSmoothingEnabled=false;ctx.shadowColor='#e8f4ff';ctx.shadowBlur=st.ps*3;ctx.drawImage(itemsImg,(ii%c)*64,Math.floor(ii/c)*64,64,64,Math.round(x-sz/2),Math.round(y-sz/2),Math.round(sz),Math.round(sz));ctx.restore()}
+  function knEnsure(){if(st._knOv)return;st._knOv=true;DOV.push({on:()=>(S.knightT>0)||st.player.knightOrb,draw:now=>{const pm=PMx(),cx=pm.x,cy=pm.feet-pm.h*.55;for(let i=0;i<2;i++){const a=now/700+i*Math.PI,x=cx+Math.cos(a)*pm.w*1.6,y=cy+Math.sin(a)*pm.h*.28+Math.sin(now/300+i)*st.ps,front=Math.sin(a)>0;
+      for(let t=1;t<6;t++){const b=a-t*.12;ctx.globalAlpha=(.35-t*.05);ctx.fillStyle=KN.lt;ctx.fillRect(Math.round(cx+Math.cos(b)*pm.w*1.6),Math.round(cy+Math.sin(b)*pm.h*.28),uPx(),uPx())}
+      knShield(x,y,front?1:.85,front?1:.7)}
+    if(Math.random()<.3)spawn(cx+(Math.random()-.5)*pm.w*2,cy+(Math.random()-.5)*pm.h,{vy:-.02*U(),color:Math.random()<.5?'#ffffff':'#9fd0ff',size:st.ps*.4,life:500})}});dfEnsure()}
+  function knightCape(hf,x0,y0,k,now,kp){const f=hf.f;if(!f.rig||!f.nk||!f.hp)return;const X=v=>x0+v*k,Y=v=>y0+v*k,nk=f.nk,hp=f.hp,r=(f.hd&&f.hd[2])||7;ctx.save();ctx.globalAlpha=kp;
+    const g=ctx.createRadialGradient(X(hp[0]),Y((nk[1]+hp[1])/2),0,X(hp[0]),Y((nk[1]+hp[1])/2),r*k*5);g.addColorStop(0,'#bfe0ff55');g.addColorStop(1,'#bfe0ff00');ctx.fillStyle=g;ctx.fillRect(X(hp[0]-r*5),Y(nk[1]-r*5),r*10*k,r*12*k);
+    const L=Math.hypot(hp[0]-nk[0],hp[1]-nk[1])*1.9,wv=Math.sin(now/180)*r*.5,pts=[[nk[0]-r*.5,nk[1]],[nk[0]+r*.4,nk[1]],[nk[0]-r*1.4+wv*.4,nk[1]+L*.55],[nk[0]-r*2.6+wv,nk[1]+L],[nk[0]-r*.6+wv*.6,nk[1]+L*.98]];
+    ctx.fillStyle=KN.cp2;ctx.beginPath();ctx.moveTo(X(pts[0][0]),Y(pts[0][1]));ctx.lineTo(X(pts[1][0]),Y(pts[1][1]));ctx.lineTo(X(pts[4][0]),Y(pts[4][1]));ctx.lineTo(X(pts[3][0]),Y(pts[3][1]));ctx.lineTo(X(pts[2][0]),Y(pts[2][1]));ctx.closePath();ctx.fill();
+    ctx.fillStyle=KN.cp;ctx.beginPath();ctx.moveTo(X(pts[0][0]),Y(pts[0][1]));ctx.lineTo(X(pts[1][0]-r*.3),Y(pts[1][1]));ctx.lineTo(X(pts[4][0]-r*.5),Y(pts[4][1]-r*.6));ctx.lineTo(X(pts[3][0]+r*.6),Y(pts[3][1]-r*.4));ctx.closePath();ctx.fill();
+    ctx.fillStyle=KN.gd;for(let t=0;t<=1;t+=.1)ctx.fillRect(Math.round(X(pts[3][0]+(pts[4][0]-pts[3][0])*t)),Math.round(Y(pts[3][1]+(pts[4][1]-pts[3][1])*t)),Math.max(1,k*1.2),Math.max(1,k*1.2));ctx.restore()}
+  function knightArmor(hf,x0,y0,k,now,kp){const f=hf.f;if(!f.rig||!f.hd||!f.nk||!f.hp)return;const X=v=>x0+v*k,Y=v=>y0+v*k,q=Math.max(1,Math.round(k*1.1)),r=f.hd[2],off=(1-kp)*r*6;ctx.save();ctx.imageSmoothingEnabled=false;
+    const disc=(cx,cy,rr,c)=>{ctx.fillStyle=c;pxDisc(X(cx),Y(cy),rr*k,q)};
+    const nk=f.nk,hp=f.hp,tx=hp[0]-nk[0],ty=hp[1]-nk[1],tl=Math.hypot(tx,ty)||1,px=-ty/tl,py=tx/tl;
+    // chest plate
+    ctx.globalAlpha=kp;{const o=off*.6,w1=r*1.05,w2=r*.75,P=[[nk[0]+px*w1,nk[1]+py*w1+o],[nk[0]-px*w1,nk[1]-py*w1+o],[hp[0]-px*w2,hp[1]-py*w2+o],[hp[0]+px*w2,hp[1]+py*w2+o]];
+      const poly=(pts,c)=>{ctx.fillStyle=c;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1])));ctx.closePath();ctx.fill()};
+      poly(P.map(([a,b])=>[a+(a-(nk[0]+hp[0])/2)*.12,b+(b-(nk[1]+hp[1])/2)*.08]),KN.dk);poly(P,KN.mid);poly([P[0],[(P[0][0]+P[1][0])/2,(P[0][1]+P[1][1])/2],[(P[3][0]+P[2][0])/2,(P[3][1]+P[2][1])/2],P[3]],KN.lt);
+      ctx.fillStyle=KN.wh;for(let t=.1;t<.9;t+=.08)ctx.fillRect(Math.round(X(nk[0]+tx*t)),Math.round(Y(nk[1]+ty*t+o)),q,q);
+      ctx.fillStyle=KN.gd;for(let t=0;t<=1;t+=.12)ctx.fillRect(Math.round(X(P[0][0]+(P[1][0]-P[0][0])*t)),Math.round(Y(P[0][1]+(P[1][1]-P[0][1])*t)),q,q);
+      ctx.fillStyle=KN.dk;ctx.fillRect(Math.round(X(hp[0]-r*.85)),Math.round(Y(hp[1]-r*.15+o)),Math.round(r*1.7*k),Math.round(r*.35*k));disc(hp[0],hp[1]+o/k*0,r*.22,KN.gd)}
+    // pauldrons
+    ctx.globalAlpha=kp;[[1,-off],[-1,off]].forEach(([sd,o])=>{const cx=nk[0]+px*r*.95*sd+o*.3,cy=nk[1]+py*r*.95*sd+r*.15;disc(cx,cy,r*.62,KN.dk);disc(cx,cy-r*.05,r*.52,KN.mid);disc(cx-r*.12,cy-r*.18,r*.28,KN.lt);ctx.fillStyle=KN.gd;ctx.fillRect(Math.round(X(cx-r*.5)),Math.round(Y(cy+r*.3)),Math.round(r*k),q)});
+    // gauntlets and greaves
+    if(f.hx!=null){disc(f.hx,f.hy,r*.42,KN.dk);disc(f.hx,f.hy,r*.33,KN.mid);disc(f.hx-r*.1,f.hy-r*.1,r*.15,KN.wh)}
+    if(f.bx!=null){disc(f.bx,f.by,r*.4,KN.dk);disc(f.bx,f.by,r*.31,KN.st)}
+    (f.ft||[]).forEach((ft,i)=>{const o=off*(i?1:-1)*.4;ctx.fillStyle=KN.dk;ctx.fillRect(Math.round(X(ft[0]-r*.45+o)),Math.round(Y(ft[1]-r*1.2)),Math.round(r*.95*k),Math.round(r*1.3*k));ctx.fillStyle=i?KN.mid:KN.st;ctx.fillRect(Math.round(X(ft[0]-r*.35+o)),Math.round(Y(ft[1]-r*1.1)),Math.round(r*.75*k),Math.round(r*1.05*k));ctx.fillStyle=KN.lt;ctx.fillRect(Math.round(X(ft[0]-r*.35+o)),Math.round(Y(ft[1]-r*1.1)),q,Math.round(r*.9*k))});
+    // great helm with visor and plume
+    {const hx=f.hd[0],hy=f.hd[1]-off*1.2;ctx.globalAlpha=kp;
+      for(let i=0;i<7;i++){const t=i/6;disc(hx-r*(.2+t*1.5),hy-r*(1.25-t*.15)+Math.sin(now/160+t*3)*r*.12*t,r*(.38-t*.03),i%2?KN.pl:KN.pl2)}
+      disc(hx,hy,r*1.18,KN.dk);disc(hx,hy,r*1.06,KN.mid);disc(hx-r*.25,hy-r*.3,r*.55,KN.lt);disc(hx-r*.35,hy-r*.45,r*.2,KN.wh);
+      ctx.fillStyle=KN.dk;ctx.fillRect(Math.round(X(hx-r*.1)),Math.round(Y(hy-r*.1)),Math.round(r*1.15*k),Math.round(r*.28*k));
+      ctx.fillStyle=Math.sin(now/220)>-.3?'#9fd0ff':'#ffffff';ctx.fillRect(Math.round(X(hx+r*.55)),Math.round(Y(hy-r*.06)),Math.max(q,Math.round(r*.3*k)),Math.max(1,Math.round(r*.18*k)));
+      ctx.fillStyle=KN.gd;ctx.fillRect(Math.round(X(hx-r*.08)),Math.round(Y(hy-r*1.15)),q*2,Math.round(r*.9*k));ctx.fillRect(Math.round(X(hx-r*1.0)),Math.round(Y(hy+r*.55)),Math.round(r*2*k),q)}
+    ctx.restore();
+    if(kp>=1&&Math.random()<.08){const p=PMx();spawn(p.x+(Math.random()-.5)*p.w,p.feet-Math.random()*p.h,{vy:-.02*U(),color:'#ffffff',size:st.ps*.35,life:300,shape:'plus'})}}

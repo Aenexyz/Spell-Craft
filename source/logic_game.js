@@ -294,9 +294,10 @@ function intentText(E){
   return{label:I.label,val,icon:I.icon,cls:I.cls||'',note:I.note||'',type:t};
 }
 const modOf=(E,t)=>ENEMIES[E.id].mods[t]??1;
+const DEF_LBL=new Set(['PARRY','COUNTER','DEFLECT','SPIKES','IRON RIPOSTE','VENGEANCE','BLADE','WIND CUT','RIPOSTE','THORNS']);
 function dealToEnemy(p,t,label,delay){
   const E=S.enemy;const m=modOf(E,t);if(!E.known.includes(t))E.known.push(t);
-  let d=p*m*abilMul(E,t);if(E.curse>0)d*=1.3;if(E.shocked)d*=1.1;if(E.vuln)d*=1+E.vuln/100;if(E.mud>0&&t==='lightning')d*=2;d=Math.round(d);E.hp-=d;
+  let d=p*m*abilMul(E,t);if(S.knightT>0&&DEF_LBL.has(label))d*=2;if(E.curse>0)d*=1.3;if(E.shocked)d*=1.1;if(E.vuln)d*=1+E.vuln/100;if(E.mud>0&&t==='lightning')d*=2;d=Math.round(d);E.hp-=d;
   Stage.float('enemy',d,hexOf(t),label,delay);setTimeout(()=>Stage.hitEnemy([t]),delay||0);
   return d;
 }
@@ -435,6 +436,7 @@ function hurtPlayer(raw,delay,pierce){
   if(S.embrace){Stage.float('player','IMMUNE','#9fe2ff','FROZEN',delay);return 0}
   if(S.stoneSkin){Stage.float('player','IMMUNE','#e0c08a','STONE SKIN',delay);setTimeout(()=>Stage.stoneFx&&Stage.stoneFx(),delay||0);return 0}let x=raw;if(E.chill)x=Math.round(x*.6);if(E.weak>0)x=Math.round(x*.7);if(iceAgeHits(E))x=Math.round(x*.5);
   if(E.blind&&Math.random()*100<E.blind){Stage.float('player','MISS','#cfd6dd','BLINDED',delay);return 0}
+  if(S.argent&&x>0){const phys=!['poison','drain'].includes(S._curAtk);trueHit(E,x,'REFLECTED','#e8eef6',(delay||0)+240);Stage.defFx&&Stage.defFx('argentHit',delay);if(phys){Stage.float('player','IMMUNE','#e8eef6','ARGENT KNIGHT',delay);return 0}}
   if(S.rider)applyRider(E,delay);
   if(S.mirage>0){S.mirage--;Stage.float('player','MIRAGE','#9fe2ff','AN IMAGE TAKES IT',delay);Stage.defFx&&Stage.defFx('mirageHit',delay);return 0}
   if(S.mirror&&x>0){const mx=Math.round(x*S.mirror);S.mirror=0;Stage.float('player','MIRRORED','#e8f6ff','',delay);Stage.defFx&&Stage.defFx('mirrorHit',delay);trueHit(E,mx,'MIRROR','#e8f6ff',(delay||0)+260);return 0}
@@ -462,7 +464,7 @@ function hurtPlayer(raw,delay,pierce){
   counterStrike(delay);
   return x;
 }
-function clearDefense(full){S.rider=null;S.mirage=0;S.mirror=0;S.deflect=0;S.venge=null;S.shadowStep=null;S.windDance=null;S.tumble=null;S.spikes=0;if(full){S.bulwark=false;S.aegis=false;S.retri=null;S.veilT=0}}
+function clearDefense(full){S.rider=null;if(full){S.argent=false;S.knightT=0}S.mirage=0;S.mirror=0;S.deflect=0;S.venge=null;S.shadowStep=null;S.windDance=null;S.tumble=null;S.spikes=0;if(full){S.bulwark=false;S.aegis=false;S.retri=null;S.veilT=0}}
 function trueHit(E,d,label,col,delay){if(!E||E.hp<=0||d<=0)return;E.hp-=d;Stage.withFoe(E.slot||0,()=>{Stage.float('enemy',d,col,label,delay);setTimeout(()=>Stage.hitEnemy(['light']),delay||0)})}
 function retriBlast(delay){const r=S.retri;S.retri=null;if(!r)return;const E=S.enemy;Stage.defFx&&Stage.defFx('retriBlast',delay);log(`Your Retribution Aegis shatters and detonates for ${r.p}!`);
   aliveFoes().forEach((F,i)=>{if(F===E)trueHit(E,r.p,'RETRIBUTION','#ffd36b',(delay||0)+260);else sideHit(F,r.p,'#ffd36b','RETRIBUTION',(delay||0)+300+i*60,[])})}
@@ -498,6 +500,7 @@ function enemyAct(){
   if(E.frozen){E.frozen=false;log(`${def.name} is frozen solid and loses its turn.`);E.step++;Stage.float('enemy','FROZEN','#82d4ff','');Stage.shatter();render();setTimeout(foeEnd,800);return}
   if(E.stun){E.stun=false;log(`${def.name} is stunned and loses its turn.`);E.step++;Stage.float('enemy','STUNNED','#f2d24b','');render();setTimeout(foeEnd,700);return}
   const[t,v,n]=intentOf(E);E.step++;const s=E.str+E.bonus;
+  S._curAtk=t;
   if(['atk','heavy','drain','multi','stab','poison','bleed'].includes(t)){
     Stage.enemyAttack(t==='heavy'?720:t==='multi'?520+n*90:560,t);
     setTimeout(()=>{
@@ -524,7 +527,7 @@ function finishEnemyTurn(){
   const tg=S.tgt&&S.tgt.hp>0?S.tgt:aliveFoes()[0];if(tg)setTarget(tg);
   S.lava=null;
   S.dodge=0;S.parry=null;S.counter=null;S.guarding=false;S.guardEls=[];if(S.embrace){S.embrace=false;Stage.unembrace()}S.reflect=false;S.efield=false;
-  clearDefense(false);
+  clearDefense(false);S.argent=false;if(S.knightT>0&&--S.knightT===0){log('The Argent Knight armor fades.');Stage.playerBurst('#e8eef6')}
   if(S.veilT>0&&--S.veilT>0)S.dodge=Math.max(S.dodge||0,S.veil||25);
   if(S.manaGuardT>0&&--S.manaGuardT===0)S.manaGuard=0;if(S.iceAge>0&&--S.iceAge===0)Stage.iceFloor(false);S.stoneSkin=false;if(S.barrier>0){S.barrierT--;if(S.barrierT<=0){S.barrier=0;S.thorns=null;S.aegis=false;S.retri=null}}
   if(S.aegis&&S.barrier>0&&(S.pbleed||S.poison)){Stage.float('player','WARDED','#9fe2ff','AEGIS DOME',100);if(S.pbleed&&--S.pbleed.t<=0)S.pbleed=null;if(S.poison&&--S.poison.t<=0)S.poison=null}
@@ -687,7 +690,7 @@ function playerStatusHTML(){
   const s=[];
   if(S.poison)s.push(`<span class="chip st" style="--tc:#9be05a">Poison ${S.poison.d} · ${S.poison.t}t</span>`);
   if(S.pbleed)s.push(`<span class="chip st" style="--tc:#ff5a64">Bleeding ${S.pbleed.d} · ${S.pbleed.t}t</span>`);
-  {const D=(c,t)=>s.push(`<span class="chip st" style="--tc:${c}">${t}</span>`);if(S.bulwark)D('#59c9c2','Bulwark');if(S.aegis&&S.barrier>0)D('#9fe2ff','Aegis Dome');if(S.retri&&S.barrier>0)D('#ffd36b',`Retribution ${S.retri.p}`);if(S.veilT>0)D('#b18bff',`Phase Veil ${S.veilT}t`);if(S.mirage>0)D('#9fe2ff',`Mirage ×${S.mirage}`);if(S.mirror)D('#e8f6ff','Mirror Guard');if(S.deflect>0)D('#fff6c0',`Deflect ×${S.deflect}`);if(S.venge)D('#ff5a64','Vengeance');if(S.shadowStep)D('#b18bff','Shadow Step');if(S.windDance)D('#bff5d8','Wind Dancer');if(S.tumble)D('#bff5d8',`Tumble ${S.tumble.ch}%`);if(S.spikes)D('#c8ccd6','Spike Wall')}
+  {const D=(c,t)=>s.push(`<span class="chip st" style="--tc:${c}">${t}</span>`);if(S.knightT>0)D('#e8eef6',`Argent Knight ${S.knightT}t${S.argent?' · reflect':''}`);if(S.bulwark)D('#59c9c2','Bulwark');if(S.aegis&&S.barrier>0)D('#9fe2ff','Aegis Dome');if(S.retri&&S.barrier>0)D('#ffd36b',`Retribution ${S.retri.p}`);if(S.veilT>0)D('#b18bff',`Phase Veil ${S.veilT}t`);if(S.mirage>0)D('#9fe2ff',`Mirage ×${S.mirage}`);if(S.mirror)D('#e8f6ff','Mirror Guard');if(S.deflect>0)D('#fff6c0',`Deflect ×${S.deflect}`);if(S.venge)D('#ff5a64','Vengeance');if(S.shadowStep)D('#b18bff','Shadow Step');if(S.windDance)D('#bff5d8','Wind Dancer');if(S.tumble)D('#bff5d8',`Tumble ${S.tumble.ch}%`);if(S.spikes)D('#c8ccd6','Spike Wall')}
   if(S.barrier)s.push(`<span class="chip st" style="--tc:${S.thorns?typeColor(S.thorns):'var(--guard)'}">${icon('shield')}Barrier ${S.barrier} · ${S.barrierT}t</span>`);
   if(S.dodge)s.push(`<span class="chip st" style="--tc:var(--wind)">${icon('dodge')}Dodge ${S.dodge}%</span>`);
   if(S.stoneSkin)s.push(`<span class="chip st" style="--tc:var(--earth)">${icon('earth')}Stone skin: immune</span>`);

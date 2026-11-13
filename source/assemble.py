@@ -614,6 +614,8 @@ R("      const shd=S&&S.gear&&(S.gear.shield||(shW?wpn:null));\n      if(hf.n===
 
 R("      ctx.drawImage(hf.c,x0,y0,fw,fh);","      ctx.drawImage(hf.c,x0,y0,fw,fh);\n      {const offS=S&&S.gear&&S.gear.shield;if(offS&&hf.f.rig&&hf.f.bx!=null&&hf.n!=='shield'&&hf.n!=='die'&&!P.dead&&itemsImg.complete&&itemsImg.naturalWidth){const oi=ITEM_ATLAS.idx[offS.key],oc=ITEM_ATLAS.cols,osz=44*k*64/58*.82;ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(itemsImg,(oi%oc)*64,Math.floor(oi/oc)*64,64,64,x0+hf.f.bx*k-osz*.3,y0+hf.f.by*k-osz*.62,osz,osz);ctx.restore()}}")
 
+R("      ctx.drawImage(hf.c,x0,y0,fw,fh);\n      {const offS=","      const knP=(S&&S.knightT>0)?1:(P.knightP||0);if(knP>0&&hf.n!=='die'&&!P.dead)knightCape(hf,x0,y0,k,now,knP);\n      ctx.drawImage(hf.c,x0,y0,fw,fh);\n      if(knP>0&&hf.n!=='die'&&!P.dead)knightArmor(hf,x0,y0,k,now,knP);\n      {const offS=")
+
 css_add="""
 .item-ic{image-rendering:pixelated}
 .card-mana{font-family:var(--f-num);font-weight:700;font-size:14px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:#e8f3ff;background:radial-gradient(circle at 35% 30%,#6cb2ff,#2a5fc0 70%);border:1px solid #9fcaff;box-shadow:0 0 6px #4aa8ff88}
