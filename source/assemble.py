@@ -139,6 +139,7 @@ R("      ctx.restore();return true});\n    requestAnimationFrame(frame);\n",
   "      ctx.restore();return true});\n    ctx.restore();\n    if(st.flash){const fp=(now-st.flash.t0)/160;if(fp>=1)st.flash=null;else{ctx.globalAlpha=st.flash.a*(1-fp);ctx.fillStyle=st.flash.color;ctx.fillRect(0,0,W,H);ctx.globalAlpha=1}}\n    requestAnimationFrame(frame);\n")
 R("  let last=performance.now();",open('stage_vfx.js').read()+"\n  let last=performance.now();")
 R("  let last=performance.now();",open('spells_vfx.js').read()+"\n  let last=performance.now();")
+R("  let last=performance.now();",open('phys_vfx.js').read()+"\n  let last=performance.now();")
 R("    enemyAttack(dur){if(st.enemy)st.enemy.act={t0:performance.now(),dur:dur||560}},",
 """    enemyAttack(dur,type){if(!st.enemy)return;st.enemy.act={t0:now_(),dur:dur||560,type};if(type==='heavy'){const m=enemyMetrics();ring(m.x,m.feet-m.h*.5,m.h,'#e8574d',0,500,2.4);flash('#ff3a2a',260,.18);shake(280,st.ps*2.2)}},
     perform(R){const d=this._perform(R);
@@ -530,6 +531,10 @@ R("      if(R.lstrike){","      if(R.pebbles){const ch=700;st.player.aura={els:R
 
 R("      if(R.pebbles){","      if(R.spell&&SPELLFX[R.spell]){if(R.spell.startsWith('arrowshot+')||R.spell.startsWith('spearthrow+')){st.player.anim=null;st.player.act=null;st.player.aura={els:R.charge||[],t0:now_(),dur:900};return SPELLFX[R.spell](R)}const ch=700;st.player.anim=null;st.player.act=null;st.player.aura={els:R.charge||[],t0:now_(),dur:ch+250};return SPELLFX[R.spell](R,ch);}\n      if(R.pebbles){")
 R("    // enemy\n    st.foes.filter(f=>!f.gone)","    if(st.gfx&&st.gfx.length)st.gfx=st.gfx.filter(f=>{const p=(now-f.t0)/f.dur;if(p<0)return true;if(p>=1)return false;ctx.save();f.draw(p,now);ctx.restore();return true});\n    // enemy\n    st.foes.filter(f=>!f.gone)")
+
+R("    P.dx=pdx;const px=homeP()+pdx;let ptop;","    if(P.mv){const t=now-P.mv.t0;if(t>P.mv.dur){P.mv=null}else{const X=P.mv.x(t);if(X!=null)pdx=X-homeP();if(P.mv.hide(t))pdx=-1e5;P.teleFlip=P.mv.flip(t)}}\n    P.dx=pdx;const px=homeP()+pdx;let ptop;")
+R("const pick=(n,i,pose,p)=>({c:heroCanv[n][i],f:HERO[n][i],key:n+i,pose,p,n});","const pick=(n,i,pose,p)=>({c:heroCanv[n][i],f:HERO[n][i],key:n+i,pose,p,n});\n    if(P.mv&&now-P.mv.t0<=P.mv.dur&&!P.dead){const fr=P.mv.frame(now-P.mv.t0);if(fr&&HERO[fr[0]])return pick(fr[0],Math.max(0,Math.min(HERO[fr[0]].length-1,fr[1])))}")
+R("      if(P.seq&&P.seq.lift&&now<P.seq.until)oy+=P.seq.lift(now-P.seq.t0)+(hf.f.jy||0)*k*.45;","      if(P.seq&&P.seq.lift&&now<P.seq.until)oy+=P.seq.lift(now-P.seq.t0)+(hf.f.jy||0)*k*.45;\n      if(P.mv&&now-P.mv.t0<=P.mv.dur){const t=now-P.mv.t0;oy+=P.mv.y(t);rot+=P.mv.rot(t);if(P.mv.ghost&&!P.mv.hide(t)){P.gh=P.gh||[];if(!P.ghT||now-P.ghT>30){P.ghT=now;P.gh.push({x:px+ox,y:feet+oy,c:hf.c,key:hf.key,ax:hf.f.ax,fy:hf.f.fy||hf.c.height,fl:P.teleFlip,t:now,col:P.mv.ghost,rot})}}}\n      if(P.gh&&P.gh.length){P.gh=P.gh.filter(g=>now-g.t<260);P.gh.forEach(g=>{const a=1-(now-g.t)/260;ctx.save();ctx.globalAlpha=.5*a;ctx.translate(g.x,g.y);ctx.rotate(g.rot);ctx.scale(g.fl?-1:1,1);ctx.drawImage(tintC('gh'+g.key,g.c,g.col),-g.ax*k,-g.fy*k,g.c.width*k,g.c.height*k);ctx.restore()})}")
 
 css_add="""
 .item-ic{image-rendering:pixelated}

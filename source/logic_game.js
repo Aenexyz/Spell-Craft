@@ -61,6 +61,7 @@ function fuse(c1,c2){
     else if(r.key==='arrowshot+kick'){r.name='Air Volley';r.charged={sum:effLv(a)+effLv(b),lo:.8,hi:10,float:true};r.dmg=[{t:'pierce',p:Math.round(r.charged.sum*5.4),k:'arrowshot'}];r.phys=['arrowshot'];r.kind='ranged';r.ranged='volley';r.block=0;r.breaker=false;r.dodgeAdd=40}
     else if(['arrowshot+punch','arrowshot+stab','arrowshot+shieldthrow','arrowshot+shieldbash'].includes(r.key)){r.name='Charged Shot';r.charged={sum:effLv(a)+effLv(b)};r.dmg=[{t:'pierce',p:r.charged.sum*5,k:'arrowshot'}];r.phys=['arrowshot'];r.kind='ranged';r.ranged='charged';r.block=0;r.breaker=false}
     else{addPhys(a,pa);addPhys(b,pb);r.name=PAIRN[r.key]||`${NOUN[a.key]}-${NOUN[b.key]} Combo`;const BASIC=['slash','stab','punch','kick'];if(BASIC.includes(a.key)&&BASIC.includes(b.key)){r.combo=true;r.gap=0}}
+    if(ESPELL[r.key]&&ESPELL[r.key].phys&&!(r.key==='punch+punch')){const sp=ESPELL[r.key],u=effLv(a)+effLv(b);r.name=sp.name;r.spell=r.key;r.charged=null;r.ranged=null;r.double=false;r.combo=false;r.segs=null;r.fx=[];sp.build(r,u);r.charge=[]}
     r.anim=(a.key==='shieldbash'||b.key==='shieldbash')?'shield':(a.key==='slash'||b.key==='slash')?'slash':(a.key==='kick'||b.key==='kick')?'kick':'punch';
   }else if(cat==='phys+elem'){
     addPhys(a,pa);r.dmg.push({t:b.key,p:pb+2});r.fx=[b.key];r.name=`${ADJ[b.key]} ${NOUN[a.key]}`;r.anim=animOf(a.key);r.trail=b.key;
@@ -136,7 +137,7 @@ function gearFuse(c1,c2){
   R.dmg=R.dmg.map(p=>({t:p.t,p:p.p+(g[p.t]||0),k:p.k}));
   if(R.combo)R.seq=[c1.key,c2.key];
   const BASIC=['slash','stab','punch','kick'],pc=[c1,c2].filter(c=>CARDS[c.key].cat==='phys');
-  if(R.kind==='melee'&&!R.lstrike&&!R.gatling&&pc.length&&pc.every(c=>BASIC.includes(c.key))){const sg=[];pc.forEach(c=>{const n=c.key==='slash'?effLv(c):1;for(let i=0;i<n;i++)sg.push({k:c.key})});if(sg.length>1){R.segs=sg;R.double=false;R.combo=false}}
+  if(R.kind==='melee'&&!R.lstrike&&!R.gatling&&!R.spell&&pc.length&&pc.every(c=>BASIC.includes(c.key))){const sg=[];pc.forEach(c=>{const n=c.key==='slash'?effLv(c):1;for(let i=0;i<n;i++)sg.push({k:c.key})});if(sg.length>1){R.segs=sg;R.double=false;R.combo=false}}
   if(c1.key==='slash'&&c2.key==='slash'&&effLv(c1)+effLv(c2)>=3)R.name='Omnislash';
   const sc=[c1,c2].find(c=>c.key==='slash'),ic=[c1,c2].find(c=>ESLASH[c.key]);
   if(sc&&ic&&c1.key!==c2.key){const n=effLv(sc),el=ic.key,sk=ESLASH[el];R.name={ice:'Freezing Slash',fire:'Burning Slash',water:'Aqua Slash',dark:'Abyssal Slash'}[el];R.fslash=true;R.eslash=el;R.segs=Array.from({length:n},()=>({k:sk}));R.double=false;R.combo=false;R.fx=[];R.trail=el;if(el==='ice')R.freezeChance=10+(S.iceAge>0?30:0)+(S.enemy&&S.enemy.mud>0?50:0);if(el==='fire')R.burnHit=2;if(el==='water')R.healHit=3;if(el==='dark')R.vulnHit=10;
@@ -404,6 +405,7 @@ function nextFoe(){
   E.block=0;E.shocked=false;let wait=0;
   if(E.burn>0){const d=Math.round(3*(E.hell?3:1)*modOf(E,'fire'));E.hp-=d;E.burn--;if(!E.burn)E.hell=false;log(`${E.hell?'Hellfire':'Burn'} deals ${d} to ${def.name}.`);Stage.float('enemy',d,E.hell?'#c060ff':'#ff7b3a',E.hell?'HELLFIRE':'BURN');Stage.enemyBurst('#ff7b3a',14);
     render();if(E.hp<=0){Stage.enemyDie();setTimeout(nextFoe,1100);return}wait=550}
+  if(E.bleed>0){const d=E.bleedP||3;E.hp-=d;E.bleed--;if(!E.bleed)E.bleedP=0;log(`Bleeding deals ${d} to ${def.name}.`);Stage.float('enemy',d,'#e0404a','BLEED',wait);setTimeout(()=>Stage.enemyBurst('#c0303a',12),wait);render();if(E.hp<=0){Stage.enemyDie();setTimeout(nextFoe,1100+wait);return}wait+=500}
   render();setTimeout(enemyAct,wait);
   },gap);
 }
@@ -552,7 +554,7 @@ function affHTML(E){
 function statusHTML(E){
   const s=[];
   if(E.block)s.push(`<span class="chip st" style="--tc:var(--guard)">Shield ${E.block}</span>`);
-  if(E.burn)s.push(`<span class="chip st" style="--tc:var(--fire)">Burn ${E.burn}</span>`);
+  if(E.burn)s.push(`<span class="chip st" style="--tc:var(--fire)">${E.hell?'Hellfire':'Burn'} ${E.burn}</span>`);if(E.bleed)s.push(`<span class="chip st" style="--tc:var(--danger)">Bleed ${E.bleed}</span>`);if(E.root)s.push(`<span class="chip st" style="--tc:var(--dark)">Rooted ${E.root}</span>`);if(E.weak)s.push(`<span class="chip st" style="--tc:var(--ice)">Weak ${E.weak}</span>`);if(E.vuln&&E.vulnT)s.push(`<span class="chip st" style="--tc:var(--danger)">+${E.vuln}% dmg ${E.vulnT}</span>`);
   if(E.soak)s.push(`<span class="chip st" style="--tc:var(--water)">Soaked</span>`);
   if(E.chill)s.push(`<span class="chip st" style="--tc:var(--ice)">Chill</span>`);
   if(E.stun)s.push(`<span class="chip st" style="--tc:var(--lightning)">Stunned</span>`);

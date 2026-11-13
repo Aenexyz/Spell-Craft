@@ -110,3 +110,47 @@ Object.assign(ESPELL,{
  'spearthrow+light':{name:"Heaven's Lance",build:(r,u)=>{r.dmg=[{t:'light',p:8*u}];r.heal=2*u;r.blind=30},
   desc:R=>`Rises crowned by a halo and calls a lance of light down from the heavens for ${sumP(R)} Light damage. It heals you ${R.heal} HP and blinds the enemy (30% miss on its next attack).`},
 });
+// ===== Physical + Physical: martial-arts techniques =====
+const PT=k=>CARDS[k].type;
+const PHK=(a,b)=>[a,b].sort().join('+');
+function physSpell(a,b,name,hits,mult,o){o=o||{};ESPELL[PHK(a,b)]={name,phys:true,
+  build:(r,u)=>{const ts=hits.map(PT);r.ticks=hits.length;r.tickTypes=hits.length>1?ts:null;r.dmg=[{t:ts[ts.length-1],p:Math.round(mult*u)}];if(o.w)r.tickW=o.w;r.breaker=!!o.breaker;r.kind='melee';r.phys=[a,b];r.block=o.block?Math.round(o.block*u):0;if(o.dodge)r.dodgeAdd=o.dodge;if(o.stun){r.stunChance=o.stun;r.stunType=ts[ts.length-1]}if(o.ls)r.lifesteal=o.ls;if(o.build)o.build(r,u);if(r.ticks===1){r.ticks=0;r.tickTypes=null}},
+  desc:R=>{const n=hits.length,tot=sumP(R);return o.d(R,n>1?`${n} hits for ${tot} total damage`:`${tot} damage`,tot)},
+  apply:o.apply}}
+const bleed=(E,n,t,p)=>{if(E.hp<=0)return;E.bleed=Math.max(E.bleed||0,t);E.bleedP=Math.max(E.bleedP||0,p);n.push(`<span class="w">it bleeds for ${p} a turn for ${t} turns</span>`)};
+const mark=(E,n,v)=>{if(E.hp<=0)return;E.vuln=Math.min(100,(E.vuln||0)+v);E.vulnT=Math.max(E.vulnT||0,2);n.push(`<span class="w">armor broken: +${v}% damage taken</span>`)};
+const RP=(k,n)=>Array(n).fill(k);
+physSpell('slash','slash','Omnislash',RP('slash',7),7,{w:[1,1,1,1,1,1,3],d:(R,h)=>`Blinks around the enemy in a storm of afterimages, slashing from every angle, then ends with a giant X-cut: ${h}. It bleeds for 2 turns.`,apply:(R,E,n)=>bleed(E,n,2,3),build:(r,u)=>{if(u<3)r.name='Twin Fang'}});
+physSpell('stab','stab','Thousand Needles',RP('stab',10),6,{w:[1,1,1,1,1,1,1,1,1,3],d:(R,h)=>`Stabs at blinding speed, leaving a wall of afterimage blades: ${h}. Its armor is punctured: +20% damage taken for 2 turns.`,apply:(R,E,n)=>mark(E,n,20)});
+physSpell('kick','kick','Hurricane Kick',RP('kick',7),7,{w:[1,1,1,1,1,1,3],dodge:25,d:(R,h)=>`Leaps into a spinning whirlwind of kicks and finishes with a crashing axe kick: ${h}. You gain +25% dodge chance.`});
+physSpell('shieldbash','shieldbash','Bulwark Charge',RP('shieldbash',3),6,{w:[1,1,2],stun:50,block:3,breaker:true,d:(R,h)=>`Charges like a battering ram behind your shield, slamming three times: ${h}, smashing its guard with a 50% chance to stun. You keep ${R.block} block.`});
+physSpell('shieldthrow','shieldthrow','Ricochet Storm',RP('shieldthrow',5),6,{breaker:true,d:(R,h)=>`Hurls your shield so it ricochets off the ground, sky and enemy 5 times: ${h}, ignoring shields.`});
+physSpell('arrowshot','arrowshot','Arrow Storm',RP('arrowshot',12),7,{d:(R,h)=>`Backflips into the air and looses a rain of 12 arrows: ${h}.`});
+physSpell('spearthrow','spearthrow','Skyfall Spears',RP('spearthrow',4),8,{w:[1,1,1,3],breaker:true,d:(R,h)=>`Leaps high, throws two spears down and dives with the last one: ${h}, ignoring shields.`});
+physSpell('slash','stab','Iaido Flash',['stab','slash'],9,{w:[1,3],d:(R,h)=>`Stands perfectly still, then blinks through the enemy in a single drawn strike. A heartbeat later the cuts appear: ${h}. It bleeds for 3 turns.`,apply:(R,E,n)=>bleed(E,n,3,4)});
+physSpell('kick','slash','Crescent Moon',['kick','slash','kick','slash'],7,{w:[1,1,1,2],d:(R,h)=>`Flip-kicks into a spinning crescent-moon slash: ${h}. It bleeds for 2 turns.`,apply:(R,E,n)=>bleed(E,n,2,2)});
+physSpell('punch','slash','Blade Fist',['punch','slash','punch','slash','punch','slash'],7,{w:[1,1,1,1,1,2],d:(R,h)=>`Alternates lightning-fast punches and blade cuts: ${h}.`});
+physSpell('kick','stab','Viper Lunge',['kick','stab'],7,{w:[1,2],stun:30,d:(R,h)=>`Sweeps low with a kick, then lunges up like a striking viper: ${h} with a 30% chance to stun.`});
+physSpell('punch','stab','Pressure Point',RP('stab',5).concat(['punch']),7,{w:[1,1,1,1,1,3],stun:45,d:(R,h)=>`Strikes 5 glowing pressure points, then detonates them with a palm strike: ${h}, a 45% chance to stun and +20% damage taken for 2 turns.`,apply:(R,E,n)=>mark(E,n,20)});
+physSpell('kick','punch','Dragon Rush',['punch','punch','kick','punch','kick'],8,{w:[1,1,1,1,3],d:(R,h)=>`Blinks between a punch-punch-kick combo, an uppercut and a flying dragon kick: ${h}. The rush restores 10 mana.`,apply:(R,E,n)=>{const g=Math.min(10,S.maxMana-S.mana);if(g>0){S.mana+=g;Stage.float('player',`+${g}`,'#6cb2ff','MANA',300)}}});
+physSpell('shieldbash','slash','Shield Breaker',['shieldbash','slash'],7,{w:[1,2],breaker:true,d:(R,h)=>`Bashes its guard aside, then follows with a rising slash: ${h}. Its shield shatters and it takes +25% damage for 2 turns.`,apply:(R,E,n)=>{E.block=0;mark(E,n,25)}});
+physSpell('shieldbash','stab','Phalanx Thrust',['stab','stab','stab','shieldbash'],6,{w:[1,1,1,2],block:4,d:(R,h)=>`Advances behind your shield, stabbing out from cover: ${h}. You keep ${R.block} block.`});
+physSpell('kick','shieldbash','Shield Surf',['shieldbash','kick','kick'],7,{w:[2,1,1],dodge:20,d:(R,h)=>`Rides your shield across the ground into the enemy and kicks off it twice: ${h}. You gain +20% dodge chance.`});
+physSpell('punch','shieldbash','Titan Smash',['shieldbash'],9,{stun:30,d:(R,h)=>`Leaps and slams your shield down with both fists, sending a shockwave through every enemy: ${h} each with a 30% chance to stun.`,apply:(R,E,n)=>spellHitOthers(R,E,n)});
+physSpell('shieldthrow','slash','Boomerang Edge',['shieldthrow','slash','slash','shieldthrow'],7,{w:[1,1,1,1],d:(R,h)=>`Throws your shield, dashes in with two slashes and catches it on the way back: ${h}.`});
+physSpell('shieldthrow','stab','Pin Down',['shieldthrow','stab'],7,{w:[1,2],d:(R,h)=>`Staggers it with a thrown shield and pins it with a stab: ${h}. It is rooted for 2 turns: it can't raise shields or heal.`,apply:(R,E,n)=>{if(E.hp>0){E.root=2;n.push('<span class="w">pinned it in place for 2 turns</span>')}}});
+physSpell('kick','shieldthrow','Volley Kick',RP('shieldthrow',4),7,{d:(R,h)=>`Kicks your shield like a ball, bouncing it off the enemy 4 times: ${h}.`});
+physSpell('punch','shieldthrow','Comet Disc',['punch','shieldthrow','shieldthrow','shieldthrow'],7,{breaker:true,d:(R,h)=>`Punches your shield into a sparking comet that grinds through it: ${h}, ignoring shields.`});
+physSpell('shieldbash','shieldthrow','Aegis Rebound',['shieldthrow','shieldbash'],6,{block:5,d:(R,h)=>`Throws your shield, catches the rebound and slams it home: ${h}. You keep ${R.block} block and counter the next hit.`,build:(r,u)=>{r.counter={p:3*u,t:'blunt'}}});
+physSpell('arrowshot','slash','Arrow Dance',['slash','arrowshot','arrowshot','arrowshot'],7,{d:(R,h)=>`Slashes, backflips away and fires three arrows mid-flip: ${h}. You gain +20% dodge chance.`,dodge:20});
+physSpell('arrowshot','punch','Point-Blank Burst',['punch','arrowshot'],8,{w:[1,2],stun:30,d:(R,h)=>`Staggers it with a punch and fires an arrow at point-blank range: ${h} with a 30% chance to stun.`});
+physSpell('arrowshot','stab','Piercing Volley',['stab','arrowshot','arrowshot','arrowshot'],7,{d:(R,h)=>`Dashes through it with a stab, spins and fires three piercing arrows into its back: ${h}. +15% damage taken for 2 turns.`,apply:(R,E,n)=>mark(E,n,15)});
+physSpell('arrowshot','shieldbash','Fortress Archer',RP('arrowshot',6),6,{block:4,d:(R,h)=>`Plants your shield as a wall and fires from behind it: ${h}. You keep ${R.block} block.`});
+physSpell('arrowshot','shieldthrow','Ricochet Shot',['shieldthrow','arrowshot','arrowshot','arrowshot','arrowshot'],7,{d:(R,h)=>`Throws your shield into the air and shoots it, splitting the arrow into a spray of ricochets: ${h}.`});
+physSpell('arrowshot','spearthrow','Ballista',['spearthrow'],10,{breaker:true,d:(R,h)=>`Braces your spear on your bow and fires it like a ballista bolt: ${h}, ignoring shields.`});
+physSpell('slash','spearthrow','Dragoon Dive',['spearthrow','slash'],8,{w:[2,1],dodge:30,d:(R,h)=>`Leaps out of sight and dives down spear-first, then finishes with a slash: ${h}. While airborne you are hard to hit: +30% dodge chance.`});
+physSpell('spearthrow','stab','Lance Barrage',RP('stab',6).concat(['spearthrow']),7,{w:[1,1,1,1,1,1,3],d:(R,h)=>`Spins your spear into a barrage of thrusts and throws it to finish: ${h}. +15% damage taken for 2 turns.`,apply:(R,E,n)=>mark(E,n,15)});
+physSpell('kick','spearthrow','Pole Vault Strike',['kick','spearthrow'],8,{w:[2,1],stun:30,d:(R,h)=>`Vaults high on your spear and comes down with a flying kick: ${h} with a 30% chance to stun.`});
+physSpell('punch','spearthrow','Spear Rush',['punch','spearthrow','spearthrow','spearthrow'],7,{d:(R,h)=>`Drives the spear butt into it with a punch and rushes forward with three thrusts: ${h}.`});
+physSpell('shieldbash','spearthrow','Hoplite Charge',['spearthrow','shieldbash','spearthrow'],7,{block:3,d:(R,h)=>`Charges with spear and shield together: ${h}. You keep ${R.block} block.`});
+physSpell('shieldthrow','spearthrow','Twin Projectiles',['shieldthrow','spearthrow'],8,{breaker:true,d:(R,h)=>`Throws your shield and spear at once so they cross on the enemy: ${h}, ignoring shields.`});
