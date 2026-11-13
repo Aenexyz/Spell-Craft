@@ -6,7 +6,7 @@ lines=src.split('\n')
 def grab(start,end):
   i=src.index(start);j=src.index(end,i);return src[i:j]
 sprites=grab('const PLAYER_TOP=[','const ITEM_ATLAS=')
-atlas=re.search(r'const ITEM_ATLAS=.*?;\n',src).group(0).replace('"rows": 5','"rows": 6').replace('"purple_potion": 35}}','"purple_potion": 35, "starter_sword": 36, "ember_staff": 37, "frost_wand": 38, "archmage_staff": 39, "phoenix_amulet": 40, "storm_rod": 41, "soul_lantern": 42, "knight_helm": 43, "knight_plate": 44, "knight_gauntlets": 45, "knight_sabatons": 46, "knight_shield": 47, "reaper_cowl": 48, "reaper_shroud": 49, "bone_bracers": 50, "soul_chain": 51, "reaper_scythe": 52, "dragon_helm": 53, "dragon_mail": 54, "wyrm_boots": 55, "dragon_heart": 56, "dragonfang": 57, "astral_kabuto": 58, "starweave_haori": 59, "comet_sandals": 60, "nebula_obi": 61, "starfall_katana": 62, "berserker_band": 63, "iron_knuckles": 64, "serrated_pendant": 65, "assassin_sash": 66, "lucky_purse": 67, "emberbrand": 68, "tidecaller": 69, "stormfang": 70, "butcher_cleaver": 71, "explosion_orb": 72, "warden_shield": 23, "apprentice_wand": 38}}').replace('"rows": 6','"rows": 10')
+atlas=re.search(r'const ITEM_ATLAS=.*?;\n',src).group(0).replace('"rows": 5','"rows": 6').replace('"purple_potion": 35}}','"purple_potion": 35, "starter_sword": 36, "ember_staff": 37, "frost_wand": 38, "archmage_staff": 39, "phoenix_amulet": 40, "storm_rod": 41, "soul_lantern": 42, "knight_helm": 43, "knight_plate": 44, "knight_gauntlets": 45, "knight_sabatons": 46, "knight_shield": 47, "reaper_cowl": 48, "reaper_shroud": 49, "bone_bracers": 50, "soul_chain": 51, "reaper_scythe": 52, "dragon_helm": 53, "dragon_mail": 54, "wyrm_boots": 55, "dragon_heart": 56, "dragonfang": 57, "astral_kabuto": 58, "starweave_haori": 59, "comet_sandals": 60, "nebula_obi": 61, "starfall_katana": 62, "berserker_band": 63, "iron_knuckles": 64, "serrated_pendant": 65, "assassin_sash": 66, "lucky_purse": 67, "emberbrand": 68, "tidecaller": 69, "stormfang": 70, "butcher_cleaver": 71, "explosion_orb": 72, "warden_shield": 23, "apprentice_wand": 38, "tower_shield": 73, "thorn_buckler": 74, "mirror_aegis": 75, "ember_heater": 76}}').replace('"rows": 6','"rows": 10')
 hero=re.search(r'const HERO=\{.*?\};\n',src,re.S).group(0)
 sprites=sprites.replace(hero,'const HERO='+open('hero2.json').read()+';\n');assert 'fslash' in sprites
 stage=grab('const Stage=(()=>{','/* ================= fusion')
@@ -953,6 +953,10 @@ body.mob .start-btn{font-size:24px;padding:16px 30px}
 .hud-blk b{text-shadow:0 1px 0 #000,0 0 6px #59c9c2aa;min-width:1ch}
 .hud-blk i{font-style:normal;font-size:.75em;color:#9fe2ff;text-shadow:0 1px 0 #000}
 .hud-blk.zero{opacity:.55}
+.drop-row .icard-face{height:auto;min-height:174px;width:128px}
+.icard-face .card-icon{flex:0 0 auto}
+.icard-face .card-name{flex:0 0 auto}
+.icard-face .card-desc{flex:0 0 auto}
 """
 head2='<meta charset="utf-8">\n'+head.replace('</style>',css_add+'</style>').replace('<title>Fusebound</title>','<title>SpellCraft</title>')
 body_skel=body_skel.replace('<div class="stage-label" id="stageLabel"></div>','<div class="stage-label" id="stageLabel"></div><div id="hudLayer"></div><div id="resultLayer"></div><div id="dropLayer"></div>')

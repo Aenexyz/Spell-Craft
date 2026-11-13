@@ -161,6 +161,7 @@ function fuse(c1,c2){
 }
 const PHYS_T=['slash','pierce','blunt'];
 function gearMods(R,g){if(!R.dmg.length)return;const E=S.enemy;R.gtags=[];
+  if(g.shieldDmg&&/shieldbash|shieldthrow/.test(R.key||'')){R.dmg[0].p+=g.shieldDmg;R.gtags.push(`Shield +${g.shieldDmg}`)}
   if(g.phys){const p=R.dmg.find(p=>PHYS_T.includes(p.t));if(p)p.p+=g.phys}
   if(g.physPct)R.dmg.forEach(p=>{if(PHYS_T.includes(p.t))p.p=Math.round(p.p*(1+g.physPct/100))});
   if(E&&g.dragonbane&&E.burn>0&&R.dmg.some(p=>PHYS_T.includes(p.t))){R.dmg.forEach(p=>{if(PHYS_T.includes(p.t))p.p=Math.round(p.p*1.3)});R.gtags.push('Dragonsbane +30%')}
@@ -189,7 +190,8 @@ function gearFuse(c1,c2){
 /* ================= loot ================= */
 function rollLoot(boost,minR){
   if(!minR&&Math.random()<.22){const k=rnd(POTION_KEYS);return{key:k,rarity:'common',stats:{...ITEMS[k].stats}}}
-  let k=rnd(GEAR_KEYS);if(ITEMS[k].set&&Math.random()<.45)k=rnd(GEAR_KEYS);const r=Math.random(),n=S.level*5+S.node*.35+(boost||0);
+  let k=rnd(GEAR_KEYS);if(ITEMS[k].set&&Math.random()<.45)k=rnd(GEAR_KEYS);
+  if(S.cls==='warden'){const SH=GEAR_KEYS.filter(x=>ITEMS[x].slot==='shield'),pS=SH.length/GEAR_KEYS.length,q=.2*pS/(1-pS);if(ITEMS[k].slot!=='shield'&&Math.random()<q)k=rnd(SH)}const r=Math.random(),n=S.level*5+S.node*.35+(boost||0);
   let rarity=r<.04+n*.012?'epic':r<.2+n*.025?'rare':'common';
   if(ITEMS[k].grant&&RANK[rarity]<1)rarity='rare';
   if(ITEMS[k].fixed)rarity=ITEMS[k].fixed;
@@ -198,7 +200,7 @@ function rollLoot(boost,minR){
   for(const s in ITEMS[k].stats){if(s==='revive'){st.revive=1}else if(s==='elv'){st.elv=rarity==='epic'?2:1}else if(s==='cleave'||s==='boom'||s==='boomCh'){st[s]=ITEMS[k].stats[s]+(s==='boomCh'?{common:0,rare:5,epic:10}[rarity]:0)}else if(s==='lv'){st.lv={};for(const e in ITEMS[k].stats.lv)st.lv[e]=rarity==='epic'?2:1}else st[s]=Math.max(1,Math.round(ITEMS[k].stats[s]*mult))}
   return{key:k,rarity,stats:st};
 }
-const STAT_TEXT={cleave:v=>`Splashes ${v}% of every hit's damage to all other enemies`,boomCh:v=>`Elemental spells have a ${v}% chance to explode`,boom:v=>`Explosions hit every enemy for ${v}% of the spell's damage`,igniteHit:v=>`Physical hits add ${v} turn${v>1?'s':''} of burning`,burnDmg:v=>`Burning deals +${v} damage per turn`,soakHit:()=>'Physical hits soak the enemy for 2 turns',tideHeal:v=>`Heal ${v} HP each time you hit a soaked enemy`,zap:v=>`Physical hits have a ${v}% chance to call a 8-damage lightning bolt that stuns 50% of the time`,phys:v=>`+${v} damage on physical attacks`,dodge:v=>`+${v}% dodge chance every turn`,mregen:v=>`Restore ${v} mana each turn`,crit:v=>`${v}% critical hit chance (×1.5 damage)`,ls:v=>`Heal ${v}% of all damage you deal`,bleedHit:v=>`Physical hits make it bleed ${v} a turn for 2 turns`,stunBlunt:v=>`Blunt hits have a ${v}% chance to stun`,berserk:v=>`+${v}% damage while below half HP`,firstStrike:v=>`Your first combo each battle deals +${v}% damage`,gold:v=>`+${v}% gold from battles`,addl:v=>`+${v} Lightning damage added to every attack`,soul:v=>`Each kill adds +${v} Dark damage to every attack`,souls:v=>v?`Souls gathered: +${v} Dark damage now`:null,revive:()=>'If you fall, revive once with 50% HP and 30% mana (the amulet then shatters)',elv:v=>`+${v} level to all Element cards`,mcost:v=>`Element cards cost ${v} less mana`,atk:v=>`+${v} damage on every attack`,def:v=>`+${v} block at the start of each turn`,hp:v=>`+${v} max HP`,regen:v=>`Heal ${v} more after each fight`,
+const STAT_TEXT={shieldDmg:v=>`+${v} damage on Shield Bash and Shield Throw combos`,barrierStart:v=>`Start every battle with a ${v}-point barrier`,cleave:v=>`Splashes ${v}% of every hit's damage to all other enemies`,boomCh:v=>`Elemental spells have a ${v}% chance to explode`,boom:v=>`Explosions hit every enemy for ${v}% of the spell's damage`,igniteHit:v=>`Physical hits add ${v} turn${v>1?'s':''} of burning`,burnDmg:v=>`Burning deals +${v} damage per turn`,soakHit:()=>'Physical hits soak the enemy for 2 turns',tideHeal:v=>`Heal ${v} HP each time you hit a soaked enemy`,zap:v=>`Physical hits have a ${v}% chance to call a 8-damage lightning bolt that stuns 50% of the time`,phys:v=>`+${v} damage on physical attacks`,dodge:v=>`+${v}% dodge chance every turn`,mregen:v=>`Restore ${v} mana each turn`,crit:v=>`${v}% critical hit chance (×1.5 damage)`,ls:v=>`Heal ${v}% of all damage you deal`,bleedHit:v=>`Physical hits make it bleed ${v} a turn for 2 turns`,stunBlunt:v=>`Blunt hits have a ${v}% chance to stun`,berserk:v=>`+${v}% damage while below half HP`,firstStrike:v=>`Your first combo each battle deals +${v}% damage`,gold:v=>`+${v}% gold from battles`,addl:v=>`+${v} Lightning damage added to every attack`,soul:v=>`Each kill adds +${v} Dark damage to every attack`,souls:v=>v?`Souls gathered: +${v} Dark damage now`:null,revive:()=>'If you fall, revive once with 50% HP and 30% mana (the amulet then shatters)',elv:v=>`+${v} level to all Element cards`,mcost:v=>`Element cards cost ${v} less mana`,atk:v=>`+${v} damage on every attack`,def:v=>`+${v} block at the start of each turn`,hp:v=>`+${v} max HP`,regen:v=>`Heal ${v} more after each fight`,
   heal:v=>`Restores ${v} HP now`,pdef:v=>`+${v} block each turn, permanently`,php:v=>`+${v} max HP, permanently`,patk:v=>`+${v} damage on every attack, permanently`};
 function statLines(st,key){
   const out=[];

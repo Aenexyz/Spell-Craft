@@ -381,12 +381,46 @@ def _(I):
     I.gpx(10, 7, '#ffffff'); I.gpx(11, 6, '#ffffff'); I.gpx(9, 8, '#ffffff')
     sparkle(I, 28, 5, '#ffd36b'); sparkle(I, 3, 12, '#ff9a3a'); I.gpx(27, 16, '#ffb347')
 
+# ===== NEW SHIELDS =====
+@icon('tower_shield')
+def _(I):
+    I.rect(5, 1, 27, 30, '#3a3e48'); I.rect(6, 2, 26, 29, '#7f8aa0'); I.rect(16, 2, 26, 29, '#5a6274'); I.rect(6, 2, 8, 29, '#c8d0dc')
+    for y in (8, 16, 24): I.rect(6, y, 26, y, '#3a3e48')
+    for x, y in ((8, 4), (24, 4), (8, 27), (24, 27), (8, 12), (24, 12), (8, 20), (24, 20)): I.gpx(x, y, '#e8eef6')
+    I.rect(13, 9, 19, 22, '#e8b840'); I.rect(14, 10, 18, 21, '#a83a2a'); I.rect(15, 11, 17, 20, '#e8b840'); I.rect(12, 14, 20, 16, '#e8b840')
+    I.poly([(5, 1), (27, 1), (25, 0), (7, 0)], '#c8d0dc')
+@icon('thorn_buckler')
+def _(I):
+    I.ell(5, 5, 27, 27, '#4a2a1a'); I.ell(7, 7, 25, 25, '#7a4a2a'); I.ell(9, 9, 23, 23, '#5a3a20')
+    for k in range(12):
+        a = k / 12 * 6.283; x = 16 + math.cos(a) * 11; y = 16 + math.sin(a) * 11; tx = 16 + math.cos(a) * 16; ty = 16 + math.sin(a) * 16
+        I.poly([(x + math.sin(a) * 1.6, y - math.cos(a) * 1.6), (tx, ty), (x - math.sin(a) * 1.6, y + math.cos(a) * 1.6)], '#c8d0dc'); I.gpx(round(tx), round(ty), '#ffffff')
+    I.ell(12, 12, 20, 20, '#8a92a2'); I.ell(13, 13, 19, 19, '#c8d0dc'); I.gpx(14, 14, '#ffffff'); I.gpx(19, 21, '#c0303a'); I.gpx(20, 20, '#e0404a')
+@icon('mirror_aegis')
+def _(I):
+    I.poly([(4, 3), (28, 3), (28, 15), (24, 24), (16, 31), (8, 24), (4, 15)], '#8a8f9c')
+    I.poly([(6, 5), (26, 5), (26, 15), (22, 23), (16, 29), (10, 23), (6, 15)], '#d8dde6')
+    I.poly([(8, 7), (24, 7), (24, 15), (21, 21), (16, 26), (11, 21), (8, 15)], '#7fb8d8')
+    I.poly([(8, 7), (16, 7), (16, 26), (11, 21), (8, 15)], '#a8dcf4')
+    for k in range(4): I.line([(10 + k * 3, 8), (8 + k * 3, 13)], '#ffffff')
+    I.line([(18, 17), (22, 11)], '#e8f8ff'); sparkle(I, 21, 19, '#ffffff'); sparkle(I, 27, 2, '#e8f8ff')
+    I.rect(14, 2, 18, 4, '#e8b840'); I.gpx(16, 3, '#fff0a0')
+@icon('ember_heater')
+def _(I):
+    I.poly([(4, 4), (28, 4), (28, 12), (25, 21), (16, 30), (7, 21), (4, 12)], '#3a1a0a')
+    I.poly([(6, 6), (26, 6), (26, 12), (23, 20), (16, 27), (9, 20), (6, 12)], '#a8301a')
+    I.poly([(16, 6), (26, 6), (26, 12), (23, 20), (16, 27)], '#7a2010')
+    I.rect(6, 6, 26, 7, '#e8b840')
+    for i, (x, y) in enumerate(((16, 21), (12, 16), (20, 16), (16, 12))):
+        I.poly([(x - 3, y + 3), (x, y - 4 - i % 2), (x + 3, y + 3)], '#ff8a2a'); I.poly([(x - 1, y + 3), (x, y - 1), (x + 1, y + 3)], '#ffe08a')
+    I.gpx(16, 9, '#fff3b0'); sparkle(I, 28, 2, '#ffb347'); I.gpx(3, 27, '#ff8a2a')
+
 if __name__ == '__main__':
     ORDER = ['knight_helm', 'knight_plate', 'knight_gauntlets', 'knight_sabatons', 'knight_shield',
              'reaper_cowl', 'reaper_shroud', 'bone_bracers', 'soul_chain', 'reaper_scythe',
              'dragon_helm', 'dragon_mail', 'wyrm_boots', 'dragon_heart', 'dragonfang',
              'astral_kabuto', 'starweave_haori', 'comet_sandals', 'nebula_obi', 'starfall_katana',
-             'berserker_band', 'iron_knuckles', 'serrated_pendant', 'assassin_sash', 'lucky_purse', 'emberbrand', 'tidecaller', 'stormfang', 'butcher_cleaver', 'explosion_orb']
+             'berserker_band', 'iron_knuckles', 'serrated_pendant', 'assassin_sash', 'lucky_purse', 'emberbrand', 'tidecaller', 'stormfang', 'butcher_cleaver', 'explosion_orb', 'tower_shield', 'thorn_buckler', 'mirror_aegis', 'ember_heater']
     base = Image.open('items.png').convert('RGBA'); cols, rows = 8, 10
     atlas = Image.new('RGBA', (cols * 64, rows * 64), (0, 0, 0, 0)); atlas.alpha_composite(base, (0, 0))
     idx = {}; tops = {}
