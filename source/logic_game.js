@@ -810,18 +810,24 @@ function titleHTML(){
     <div><button type="button" class="btn btn-primary" data-act="start">Begin the adventure</button></div>
   </section>`;
 }
+const EV_BRIEF={shrine:'Pray at a humming altar. The old gods may bless a card, or your health.',smith:'A travelling smith tempers one of your cards for free.',merchant:'Spend your gold on new cards and gleaming gear.',mimic:'A lone chest by a dying fire. Is it… breathing?'};
 function pathInfo(n){const L=LEVELS[S.level];
-  if(n.k==='m'){const d=ENEMIES[n.id];return[NODE_ICON.m,'Monster',d.name,'var(--fire)']}
-  if(n.k==='elite')return[NODE_ICON.elite,'Elite',`${ENEMIES[n.id].name} pack. Tough, but always drops a key.${L.revive?' Some rise again once.':''}`,'#ff8a3a'];
-  if(n.k==='ev'){const E=EVENTS[n.id];return[NODE_ICON.ev,E.name,n.id==='merchant'?'Spend gold on cards and gear.':'A chance encounter on the road.','var(--light)']}
-  if(n.k==='camp')return[NODE_ICON.camp,'Camp','Rest to heal, or train a card.','#7fe08a'];
-  if(n.k==='chest')return[NODE_ICON.chest,'Chest','Gold and a card. May hold a key.','var(--brass)'];
-  if(n.k==='vault')return[NODE_ICON.vault,'Locked Vault',S.keys>0?'Spend a key for rare or epic gear and gold.':'Locked. You need a key.','#ffd36b'];
-  return['event','?','','var(--muted)']}
+  if(n.k==='m'){const d=ENEMIES[n.id],hp=Math.round(d.hp*L.hp);return{tag:'Monster',title:d.name,desc:d.lore||'A lone creature blocks the trail.',meta:`${hp} HP · gold & a card`,col:'#ff7a4a',ic:NODE_ICON.m}}
+  if(n.k==='elite'){const ids=n.ids||[n.id],nm=[...new Set(ids.map(i=>ENEMIES[i].name))].join(' & ');return{tag:'Elite',title:nm,desc:`A hardened pack, tougher and hungrier than anything else on this road.${L.revive?' The leader refuses to stay dead.':''}`,meta:'Always drops a key',col:'#c49bff',ic:NODE_ICON.elite}}
+  if(n.k==='boss'){const d=ENEMIES[n.id];return{tag:'Boss',title:d.name,desc:d.lore||'The master of this land.',meta:(d.abil||[]).map(a=>BOSS_ABIL[a].name).join(' · '),col:'#ff4a3a',ic:NODE_ICON.boss}}
+  if(n.k==='ev'){const E=EVENTS[n.id];return{tag:'Event',title:E.name,desc:EV_BRIEF[n.id]||E.text,meta:n.id==='merchant'?`You have ${S.gold||0} gold`:'A chance encounter',col:n.id==='merchant'?'#7fd0ff':'#bfe9ff',ic:NODE_ICON.ev}}
+  if(n.k==='camp')return{tag:'Rest',title:'Campfire',desc:'A quiet clearing and a warm fire. Rest to heal, or train a card to make it stronger.',meta:`HP ${S.hp}/${S.maxHp}`,col:'#7fe08a',ic:NODE_ICON.camp};
+  if(n.k==='chest')return{tag:'Treasure',title:'Treasure Chest',desc:'A chest left on the roadside. Gold and a card inside, and maybe an old brass key.',meta:'No fight',col:'#ffd36b',ic:NODE_ICON.chest};
+  if(n.k==='vault'){const has=S.keys>0;return{tag:'Locked',title:'Sealed Vault',desc:'An iron-bound door set into the rock. Hoarded gold and rare or epic gear wait behind it.',meta:has?`Uses 1 key · you have ${S.keys}`:'Key needed',col:'#ffd36b',ic:NODE_ICON.vault}}
+  return{tag:'?',title:'?',desc:'',meta:'',col:'#9aa',ic:'event'}}
+function pathArt(n){try{return Stage.cardArt(n.k,n.k==='elite'?(n.ids||[n.id]).join(','):n.id||'',S.level)}catch(e){return''}}
 function pathHTML(){const ch=S.choices||[];
-  return `<div class="ev-layer path-screen"><div class="eyebrow" style="color:var(--muted)">Level ${S.level+1} · node ${S.node+1} of ${ROUTE_LEN}${S.node===ROUTE_LEN-2?' · the boss lies ahead':''}</div><h2>Choose your path</h2>
-  <div class="ev-opts paths">${ch.map((n,i)=>{const[ic,t,d,c]=pathInfo(n),lock=n.k==='vault'&&!(S.keys>0);return `<button type="button" class="ev-opt path-opt ${lock?'locked':''}" data-act="path" data-i="${i}" style="--oc:${c}"><span class="ev-ic">${icon(ic)}</span><b>${t}</b><span>${d}</span>${n.k==='vault'?`<em class="keyneed">${keyIc()} ${lock?'Key needed':'Uses 1 key'}</em>`:''}</button>`}).join('')}</div>
-  <p class="lore" style="margin:0">Keys: <b class="num">${S.keys||0}</b>. Elites and bosses always drop one; chests and monsters sometimes do.</p></div>`}
+  return `<div class="path-layer"><div class="path-head"><div class="eyebrow">Level ${S.level+1} · ${LEVELS[S.level].name} · node ${S.node+1} of ${ROUTE_LEN}${S.node===ROUTE_LEN-2?' · the boss lies ahead':''}</div><h2>Choose your path</h2></div>
+  <div class="path-cards">${ch.map((n,i)=>{const P=pathInfo(n),lock=n.k==='vault'&&!(S.keys>0),art=pathArt(n);return `<button type="button" class="pcard k-${n.k} ${lock?'locked':''}" data-act="path" data-i="${i}" style="--oc:${P.col}">
+    <span class="pc-art" style="background-image:url(${art})"></span><span class="pc-shade"></span>
+    <span class="pc-tag">${icon(P.ic)}${P.tag}</span>
+    <span class="pc-body"><b class="pc-title">${P.title}</b><span class="pc-desc">${P.desc}</span>${P.meta?`<span class="pc-meta">${n.k==='vault'?keyIc()+' ':''}${P.meta}</span>`:''}</span></button>`}).join('')}</div>
+  <p class="path-foot"><span class="key-pill">${keyIc()}<b class="num">${S.keys||0}</b></span> Elites and bosses always drop a key. Chests and monsters sometimes do.</p></div>`}
 function travelHTML(){return `<section class="screen"><div class="travel"><span class="eyebrow">On the road</span><span>Heading to <b>${NODE_LABEL[curNode().k].toLowerCase()}</b>, node ${S.node+1} of ${ROUTE_LEN}…</span></div><p class="lore" style="margin:0">Your deck and equipment are under the Character button.</p></section>`}
 function cardOffersHTML(keys,act){return `<div class="card-row">${keys.map(k=>cardHTML({key:k,lvl:1},{act})).join('')}</div>`}
 function rewardHTML(){
@@ -983,7 +989,7 @@ function render(){
   $result.innerHTML=resultHTML();
   $fdock.innerHTML='';if(MOB){const sk=$main.querySelector('.skip-btn'),fb=$result.querySelector('[data-act=fuse]');if(sk)$fdock.appendChild(sk);if(fb)$fdock.appendChild(fb)}
   $hud.innerHTML=hudHTML();
-  const dh=dropHTML()||eventLayerHTML()||(ph==='path'?pathHTML():'');document.body.classList.toggle('mob',MOB);const toDock=MOB||dh.includes('ev-layer shop');$dock.classList.toggle('shopdock',!MOB&&toDock);if(toDock){$drop.innerHTML='';$dock.innerHTML=dh}else{$dock.innerHTML='';$drop.innerHTML=dh}
+  const dh=dropHTML()||eventLayerHTML()||(ph==='path'?pathHTML():'');document.body.classList.toggle('mob',MOB);const toDock=(MOB&&ph!=='path')||dh.includes('ev-layer shop');$dock.classList.toggle('shopdock',!MOB&&toDock);if(toDock){$drop.innerHTML='';$dock.innerHTML=dh}else{$dock.innerHTML='';$drop.innerHTML=dh}
   document.querySelector('.stage-wrap').classList.toggle('in-battle',ph==='battle');
   document.querySelector('.stage-wrap').classList.toggle('in-drop',!!dh&&!toDock);
   $modal.innerHTML=acqHTML()||charHTML()||codexHTML();
