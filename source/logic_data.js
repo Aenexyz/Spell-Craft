@@ -129,6 +129,8 @@ const ENEMIES={
   elder:{abil:['regen'],name:'Elder Toadstool',hp:72,boss:true,scale:1.7,tint:{h:350,s:1,l:-.06},lore:'The first mushroom of the woods, grown huge and mean. Enrages below half health.',mods:{fire:2,slash:1.5,earth:.5,blunt:.5},pattern:[['atk',7],['def',8],['multi',3,3],['heavy',14]]},
   stormking:{name:'Storm Sovereign',hp:110,boss:true,scale:1.75,tint:{h:48,s:1.1,l:.02},stem:{h:220,s:.3,l:-.1},lore:'Lightning gathers in its gills. Enrages below half health.',mods:{earth:2,pierce:2,lightning:0,wind:.5,ice:.5},pattern:[['multi',4,3],['stab',11],['buff',3],['heavy',17]]},
   toxicap:{name:'Toxicap',hp:44,tint:{h:92,s:1.2,l:-.04},stem:{h:285,s:.45,l:-.1},lore:'Its gills drip a sticky green venom. Burns well.',mods:{fire:2,slash:1.5,dark:.5,water:.5},pattern:[['poison',6,3],['atk',9],['def',9]]},
+  poisonslime:{name:'Venom Slime',fam:'slime',hp:95,scale:.82,split:'minislime',lore:'A quivering mass of marsh venom. Cut it apart and the pieces keep fighting.',mods:{fire:2,lightning:1.5,slash:.5,pierce:.5,blunt:1.5,water:0},pattern:[['poison',9,4],['atk',14],['poison',6,3],['heavy',22]]},
+  minislime:{name:'Slimelet',fam:'slime',hp:34,scale:.55,spawned:true,lore:'A small blob split from a Venom Slime. Still angry, still toxic.',mods:{fire:2,lightning:1.5,slash:.5,pierce:.5,water:0},pattern:[['poison',4,2],['atk',8],['stab',7]]},
   sporeling:{name:'Sporeling',hp:36,scale:.9,tint:{h:280,s:.9,l:-.02},stem:{h:95,s:.5,l:-.08},lore:'A young cap that spits clouds of rot. Fragile against light.',mods:{light:2,wind:2,dark:0},pattern:[['poison',5,4],['multi',4,2],['heal',8]]},
   bogfloater:{name:'Bog Floater',fam:'flyer',hp:42,hue:{a:0,b:40,h:100,s:.95,l:-.05},lore:'A bloated pod that drifts over the marsh dropping venom.',mods:{pierce:2,wind:2,earth:0,blunt:.5},pattern:[['poison',7,3],['stab',12],['atk',10]]},
   plaguebrute:{name:'Plague Brute',fam:'orc',hp:64,scale:1.25,hue:{a:55,b:150,h:285,s:.85,l:-.08},lore:'A rot-swollen orc. Its axe weeps poison.',mods:{fire:1.5,light:1.5,blunt:.5,dark:.5},pattern:[['atk',13],['poison',8,3],['heavy',20],['def',12]]},
@@ -139,8 +141,8 @@ const ENEMIES={
 };
 const LEVELS=[
   {name:'Mushroom Woods',pool:['thornling','orc','slime','floatcap','wolf','deserter','knight','orcbrute'],boss:'elder',hp:1,dmg:0},
-  {name:'Volcanic Rift',pool:['bloodfiend','seeker','magmafiend','ashdemon','magmagolem','emberdemon'],boss:'infernolord',hp:1.25,dmg:2,bg:'lava'},
-  {name:'Ember Hollow',pool:['golem','harpy','nightseeker','priest','gloomcap','wraith','runegolem'],boss:'wyrm',hp:1.85,dmg:4,bg:'night',aura:'fire',revive:true},
+  {name:'Volcanic Rift',pool:['bloodfiend','seeker','magmafiend','ashdemon','magmagolem','emberdemon'],boss:'infernolord',hp:1.25,dmg:2,bg:'lava',aura:'fire'},
+  {name:'Ember Hollow',pool:['golem','harpy','nightseeker','priest','gloomcap','wraith','runegolem'],boss:'wyrm',hp:1.85,dmg:4,bg:'night',aura:'shadow',revive:true},
   {name:'Venom Marsh',pool:['toxicap','bogfloater','plaguebrute','marshstalker','sporeling','mireheart'],boss:'plaguemother',hp:2.5,dmg:6,bg:'swamp',aura:'poison'}];
 const BOSS_ABIL={ward:{name:'Spell Ward',text:'The first hit is completely absorbed. The ward re-forms every 3 turns.'},elemHalf:{name:'Elemental Guard',text:'Takes 50% less damage from all elemental attacks.'},physHalf:{name:'Spongy Flesh',text:'Takes 50% less damage from all physical attacks.'},regen:{name:'Regeneration',text:'Heals 5% of its max HP at the end of each of its turns.'},revive:{name:'Undying',text:'Rises again once with 40% HP when slain.'}};
 const LAYOUT=['m','m','ev','m','chest','m','camp','m','ev','elite','m','chest','ev','camp','boss'];

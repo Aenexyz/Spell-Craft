@@ -16,7 +16,7 @@ function genChoices(li,step){const L=LEVELS[li];
   if(step===ROUTE_LEN-1)return[{k:'boss',id:L.boss}];
   const seen=S.seenEv||(S.seenEv=[]);
   const mon=()=>{const P=L.pool.length,idx=Math.min(P-1,Math.floor(step/ROUTE_LEN*P+Math.random()*P*.35));return{k:'m',id:L.pool[idx]}};
-  const elite=()=>{const top=shuffle(L.pool.slice(Math.floor(L.pool.length/2)));return{k:'elite',id:top[0],ids:[top[0],top[1]||top[0]]}};
+  const elite=()=>{if(L.aura==='poison'&&Math.random()<.5)return{k:'elite',id:'poisonslime',ids:['poisonslime']};const top=shuffle(L.pool.slice(Math.floor(L.pool.length/2)));return{k:'elite',id:top[0],ids:[top[0],top[1]||top[0]]}};
   const ev=()=>{const o=EVENT_KEYS.filter(k=>!seen.includes(k)&&k!=='merchant');return{k:'ev',id:o.length?rnd(o):rnd(EVENT_KEYS)}};
   const W=[['m',5],['elite',step>=4?2:0],['ev',2],['chest',1.1],['camp',step>=5?1.1:0],['vault',step>=3?1.2:0]];
   const out=[];let g=0;while(out.length<3&&g++<60){const r=wpick(W),n=r==='m'?mon():r==='elite'?elite():r==='ev'?ev():{k:r};if(out.some(o=>o.k===n.k&&(n.k!=='m'||o.id===n.id)))continue;out.push(n)}
@@ -48,7 +48,7 @@ function stageNode(n){
 }
 function nodeName(n){
   if(!n)return'';
-  if(n.k==='m')return ENEMIES[n.id].name;if(n.k==='elite')return'Elite '+(n.ids||[n.id]).map(i=>ENEMIES[i].name).join(' & ');if(n.k==='boss')return ENEMIES[n.id].name;
+  if(n.k==='m')return ENEMIES[n.id].name;if(n.k==='elite')return'Elite '+[...new Set((n.ids||[n.id]).filter(i=>!ENEMIES[i].spawned).map(i=>ENEMIES[i].name))].join(' & ');if(n.k==='boss')return ENEMIES[n.id].name;
   if(n.k==='ev')return EVENTS[n.id].name;if(n.k==='camp')return'Camp';if(n.k==='chest')return'Treasure Chest';if(n.k==='vault')return'Locked Vault';return'';
 }
 function stats(){
@@ -378,7 +378,7 @@ function applyFuse(c1,c2,R){
   if(R.crit)notes.push('<span class="w">critical hit!</span>');
   if(R.stunChance&&E.hp>0&&modOf(E,R.stunType||'earth')!==0&&!E.stun&&Math.random()*100<R.stunChance){E.stun=true;notes.push('<span class="w">stunned it</span>');Stage.float('enemy','STUN','#f2d24b','',300)}
   if(R.quake)(S.foes||[]).filter(F=>F!==E&&F.hp>0).forEach(F=>{let d=0;for(let q=0;q<R.ticks;q++)d+=tickDmg(F,R,q);if(!F.known.includes('earth'))F.known.push('earth');F.hp-=d;const fn=ENEMIES[F.id].name;notes.push(`the quake hits ${fn} for ${d}`);
-    Stage.withFoe(F.slot,()=>{Stage.float('enemy',tickDmg(F,R,R.ticks-1),hexOf('earth'),'',0);Stage.hitEnemy(['earth']);if(F.hp<=0){Stage.enemyDie();notes.push(`<span class="w">${fn} falls</span>`)}else if(modOf(F,'earth')!==0&&!F.stun&&Math.random()*100<R.stunChance){F.stun=true;Stage.float('enemy','STUN','#f2d24b','',300);notes.push(`<span class="w">stunned ${fn}</span>`)}})});if(E.mud>0)E.mud--;if(R.mud&&E.hp>0){E.mud=R.mud;notes.push('<span class="w">the ground under it turns to mud</span>')}
+    Stage.withFoe(F.slot,()=>{Stage.float('enemy',tickDmg(F,R,R.ticks-1),hexOf('earth'),'',0);Stage.hitEnemy(['earth']);if(F.hp<=0&&!foeRevive(F,notes)){Stage.enemyDie();notes.push(`<span class="w">${fn} falls</span>`)}else if(modOf(F,'earth')!==0&&!F.stun&&Math.random()*100<R.stunChance){F.stun=true;Stage.float('enemy','STUN','#f2d24b','',300);notes.push(`<span class="w">stunned ${fn}</span>`)}})});if(E.mud>0)E.mud--;if(R.mud&&E.hp>0){E.mud=R.mud;notes.push('<span class="w">the ground under it turns to mud</span>')}
   const healP=h=>{h=Math.min(h,S.maxHp-S.hp);if(h>0){S.hp+=h;Stage.float('player',`+${h}`,'#7fe08a','HEAL',200)}};
   {const g=stats(),ph=R.dmg.some(p=>PHYS_T.includes(p.t));if(ph&&E.hp>0){
     if(g.igniteHit&&modOf(E,'fire')!==0){E.burn=Math.min(6,(E.burn||0)+g.igniteHit);notes.push('<span class="w">the blade sears it</span>')}
@@ -462,7 +462,13 @@ function nextFoe(){
   },gap);
 }
 function tryRevive(){const n=S.gear.neck;if(S.hp>0||!n||!(n.stats&&n.stats.revive))return false;delete S.gear.neck;recalc();S.hp=Math.max(1,Math.ceil(S.maxHp*.5));S.mana=Math.round(S.maxMana*.3);log(`<span class="w">The ${ITEMS[n.key].name} shatters in a burst of flame and you rise again with ${S.hp} HP and ${S.mana} mana!</span>`);Stage.reviveFx();Stage.float('player','REVIVED','#ffb04a',`+${S.hp} HP`,300);render();return true}
-function foeRevive(E,notes){if(!(E.hp<=0&&E.undying&&!E.revived))return false;E.revived=true;E.hp=Math.round(E.max*.4);E.burn=0;E.bleed=0;E.hell=false;const nm=ENEMIES[E.id].name;log(`<span class="r">${nm} refuses to die and rises again with ${E.hp} HP!</span>`);if(notes)notes.push(`<span class="r">${nm} rises again!</span>`);Stage.withFoe(E.slot||0,()=>{Stage.float('enemy','RISES AGAIN','#ff6a3a',`+${E.hp} HP`,450);Stage.enemyBurst('#ff6a3a',40);Stage.enemyRing('#ffb347')});return true}
+function foeSplit(E,notes){const d=ENEMIES[E.id];if(!d.split||E.splitDone)return;E.splitDone=true;const L=LEVELS[S.level],cd=ENEMIES[d.split],hp=Math.round(cd.hp*L.hp);
+  const n=S.route[S.node],fromOx=(n&&n.ox?n.ox[E.slot]:0)||0,OX=[fromOx-.085,fromOx+.1],add=[];
+  for(let k=0;k<2;k++){const slot=S.foes.length;S.foes.push({id:d.split,slot,elite:false,boss:false,hp,max:hp,block:0,str:0,bonus:L.dmg,burn:0,chill:0,curse:0,soak:0,stun:false,step:k+1,known:E.known.slice(),enraged:false,abil:[]});add.push({id:d.split,slot,ox:OX[k],fromOx})}
+  if(n){const ids=n.ids||[n.id];n.ox=ids.map((_,i)=>(n.ox&&n.ox[i]!=null)?n.ox[i]:(ids.length>1?[-.075,.095][i]:0)).concat(OX);n.ids=ids.concat([d.split,d.split])}
+  const nm=d.name;log(`<span class="r">${nm} bursts apart into two ${cd.name}s!</span>`);if(notes)notes.push(`<span class="r">${nm} splits in two!</span>`);
+  setTimeout(()=>{Stage.addFoes(add);Stage.withFoe(E.slot,()=>Stage.float('enemy','SPLIT!','#9be05a','',0))},650)}
+function foeRevive(E,notes){if(E.hp<=0)foeSplit(E,notes);if(!(E.hp<=0&&E.undying&&!E.revived))return false;E.revived=true;E.hp=Math.round(E.max*.4);E.burn=0;E.bleed=0;E.hell=false;const nm=ENEMIES[E.id].name;log(`<span class="r">${nm} refuses to die and rises again with ${E.hp} HP!</span>`);if(notes)notes.push(`<span class="r">${nm} rises again!</span>`);Stage.withFoe(E.slot||0,()=>{Stage.float('enemy','RISES AGAIN','#ff6a3a',`+${E.hp} HP`,450);Stage.enemyBurst('#ff6a3a',40);Stage.enemyRing('#ffb347')});return true}
 function foeEnd(){const E=S.enemy;if(E.hp>0&&E.abil){if(E.abil.includes('regen')){const h=Math.min(Math.round(E.max*.05),E.max-E.hp);if(h>0){E.hp+=h;Stage.float('enemy',`+${h}`,'#7fe08a','REGEN');log(`${ENEMIES[E.id].name} regenerates ${h} HP.`)}}if(E.abil.includes('ward')&&!E.ward&&++E.wardT>=3){E.ward=true;E.wardT=0;Stage.enemyRing('#b18bff');Stage.float('enemy','WARD','#b18bff','RE-FORMED');log(`${ENEMIES[E.id].name}'s Spell Ward re-forms.`)}}if(E.root>0)E.root--;if(E.weak>0)E.weak--;E.chill=Math.max(0,E.chill-1);E.soak=Math.max(0,E.soak-1);E.blind=0;if(S.hp<=0&&tryRevive()){setTimeout(nextFoe,1800);return}if(S.hp<=0){finishEnemyTurn();return}nextFoe()}
 function enemyAct(){
   const E=S.enemy,def=ENEMIES[E.id];
