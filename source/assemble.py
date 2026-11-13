@@ -538,6 +538,28 @@ R("      if(P.seq&&P.seq.lift&&now<P.seq.until)oy+=P.seq.lift(now-P.seq.t0)+(hf.
 
 R("    reviveFx(){","    nova(){setTimeout(()=>{const m=enemyMetrics();if(!m)return;const x=m.x,y=m.feet-m.h*.5;flash('#fff3c0',0,.45);shake(0,st.ps*3);ring(x,y,m.h*1.1,'#ffd36b',0,520,3);ring(x,y,m.h*.7,'#4fd8ff',80,480,2.2);for(let i=0;i<10;i++){const a=i/10*6.283;addFx(0,520,p=>{const r=m.h*(.2+1.1*p),px=x+Math.cos(a)*r,py=y+Math.sin(a)*r,sz=st.ps*(1.6-1.2*p);ctx.save();ctx.globalAlpha=1-p;ctx.fillStyle=i%2?'#ffd36b':'#ffffff';ctx.fillRect(px-sz*1.5,py-sz*.3,sz*3,sz*.6);ctx.fillRect(px-sz*.3,py-sz*1.5,sz*.6,sz*3);ctx.restore()})}for(let i=0;i<30;i++){const a=Math.random()*6.283,v=(.1+Math.random()*.3)*U();spawn(x,y,{vx:Math.cos(a)*v,vy:Math.sin(a)*v,color:['#ffffff','#ffd36b','#4fd8ff','#ff6fd8'][i%4],size:st.ps*.6,life:520})}},0)},\n    reviveFx(){")
 
+import re as _re
+_i=stage.index("  function heroFrame(now,walking){");_j=stage.index("\n  const SL=",_i)
+stage=stage[:_i]+open('hero_frame.js').read()+stage[_j:]
+R("  heroImg.onload=()=>{for(const n in HERO){heroCanv[n]=HERO[n].map(f=>{const c=document.createElement('canvas');c.width=f.w;c.height=f.h;c.getContext('2d').drawImage(heroImg,f.x,f.y,f.w,f.h,0,0,f.w,f.h);return c})}heroReady=true};","")
+R("  let last=performance.now();",open('hero_rig.js').read()+"\n  rigInstall();heroReady=true;\n  let last=performance.now();")
+R("      const k=H*.25/90,fw=hf.c.width*k,fh=hf.c.height*k;","      const k=H*.25/90,fw=(hf.f.w||hf.c.width)*k,fh=(hf.f.h||hf.c.height)*k;")
+R("P.gh.push({x:px+ox,y:feet+oy,c:hf.c,","P.gh.push({w:hf.f.w||hf.c.width,h:hf.f.h||hf.c.height,x:px+ox,y:feet+oy,c:hf.c,")
+R("ctx.drawImage(tintC('gh'+g.key,g.c,g.col),-g.ax*k,-g.fy*k,g.c.width*k,g.c.height*k)","ctx.drawImage(tintC('gh'+g.key,g.c,g.col),-g.ax*k,-g.fy*k,g.w*k,g.h*k)")
+R("&&hf.f.hx!=null&&(hf.n==='idle'||hf.n==='walk'||hf.n==='punch')&&!P.dead){","&&hf.f.hx!=null&&hf.n!=='die'&&!P.dead){")
+R("th=(hf.n==='punch'?Math.PI/2:hf.n==='walk'?2.3:0)+(WC[wpn.key]??0);","th=(hf.n==='idle'||hf.n==='aim'||hf.n==='beam'||hf.n==='laser'?0:hf.f.sr!=null?hf.f.sr+Math.PI/2:0)+(WC[wpn.key]??0);")
+
+R("    dodgeFx(delay){setTimeout(()=>{st.player.dodgeT=now_()},delay||0)},","    dodgeFx(delay){setTimeout(()=>{st.player.dodgeT=now_();if(!st.player.mv&&!st.player.seq)st.player.anim={name:'flip',t0:now_(),dur:460}},delay||0)},")
+
+R("      const rim=tintC(hf.key,hf.c,'#fff4d6'),o=Math.max(1,H*.0035);\n      ctx.globalAlpha=.5;[[-o,0],[o,0],[0,-o],[0,o]].forEach(([a,b])=>ctx.drawImage(rim,x0+a,y0+b,fw,fh));ctx.globalAlpha=1;","      if(!hf.f.rig){const rim=tintC(hf.key,hf.c,'#fff4d6'),o=Math.max(1,H*.0035);ctx.globalAlpha=.5;[[-o,0],[o,0],[0,-o],[0,o]].forEach(([a,b])=>ctx.drawImage(rim,x0+a,y0+b,fw,fh));ctx.globalAlpha=1}")
+R("P.gh.push({w:hf.f.w||hf.c.width,","P.gh.push({tc:tint(hf.c,P.mv.ghost),w:hf.f.w||hf.c.width,")
+R("ctx.drawImage(tintC('gh'+g.key,g.c,g.col),-g.ax*k,-g.fy*k,g.w*k,g.h*k)","ctx.drawImage(g.tc,-g.ax*k,-g.fy*k,g.w*k,g.h*k)")
+R("ctx.translate(x0+(hf.f.ax-7)*k,y0+(hf.f.fy||hf.c.height)*k*.4);ctx.rotate(-.25);","if(hf.f.rig)ctx.translate(x0+(hf.f.nk[0]-7)*k,y0+(hf.f.nk[1]+12)*k);else ctx.translate(x0+(hf.f.ax-7)*k,y0+(hf.f.fy||hf.c.height)*k*.4);ctx.rotate(-.25);")
+R("ctx.translate(x0+(hf.f.ax-3)*k,y0+(hf.f.fy||hf.c.height)*k*.17);ctx.rotate(3.95);","if(hf.f.rig)ctx.translate(x0+(hf.f.nk[0]-4)*k,y0+(hf.f.nk[1]+2)*k);else ctx.translate(x0+(hf.f.ax-3)*k,y0+(hf.f.fy||hf.c.height)*k*.17);ctx.rotate(3.95);")
+
+R("ctx.drawImage(tintC(hf.key,hf.c,'#a8814f'),x0,y0,fw,fh)","ctx.drawImage(hf.f.rig?tint(hf.c,'#a8814f'):tintC(hf.key,hf.c,'#a8814f'),x0,y0,fw,fh)")
+R("ctx.drawImage(tintC(hf.key,hf.c,P.flashColor),x0,y0,fw,fh)","ctx.drawImage(hf.f.rig?tint(hf.c,P.flashColor):tintC(hf.key,hf.c,P.flashColor),x0,y0,fw,fh)")
+
 css_add="""
 .item-ic{image-rendering:pixelated}
 .card-mana{font-family:var(--f-num);font-weight:700;font-size:14px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:#e8f3ff;background:radial-gradient(circle at 35% 30%,#6cb2ff,#2a5fc0 70%);border:1px solid #9fcaff;box-shadow:0 0 6px #4aa8ff88}

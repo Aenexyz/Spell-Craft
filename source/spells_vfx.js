@@ -182,7 +182,7 @@
   // ===== Bow spells: floating pose, procedural pixel bow, charged arrow, elemental arrows =====
   const EC={fire:['#ff5a1a','#ffb347','#fff3b0'],water:['#1f62b0','#3aa0ff','#bfe9ff'],ice:['#2f8fd0','#8fd3ff','#ffffff'],earth:['#6b4a2a','#a8763e','#e0c08a'],wind:['#2f9a6a','#7fe8b0','#e6fff2'],lightning:['#c9a020','#ffe866','#ffffff'],dark:['#2a0a3a','#9a4dff','#e0c8ff'],light:['#c9a040','#ffe9a8','#ffffff']};
   function bowPose(dur,o){const P=st.player,T0=now_();P.anim=null;P.act=null;P.holdFrame=null;
-    P.seq={n:'beam',t0:T0,times:[0,90,180,270],idx:[0,1,2,3],until:T0+dur,lift:t=>o.lift?o.lift(t):0};
+    P.seq={n:'aim',t0:T0,times:[0,90,180,270],idx:[0,1,2,3],until:T0+dur,lift:t=>o.lift?o.lift(t):0};
     const C=EC[o.el];
     addFx(0,dur,(p,now)=>{const t=p*dur,pm=PMx(),hp=P.handPt||{x:pm.x+pm.w*.45,y:pm.feet-pm.h*.55},ang=o.ang?o.ang(t):0,dr=o.draw?o.draw(t):0,shown=o.shown?o.shown(t):(t<dur-120),fo=Math.min(1,t/120,(dur-t)/120);
       if(fo<=0)return;drawBow(hp.x+st.ps*.5,hp.y,ang,dr,C,shown,fo,now,pm.h)})}
@@ -295,10 +295,10 @@
     if(o.trident){ctx.fillStyle=o.head||'#d8dee6';[-1,1].forEach(sd=>{pxTri(...P(hb-s*2,sd*hw*1.8),...P(hb-s*2,sd*hw*1.1),...P(hb+hl*.75,sd*hw*1.6),s)})}
     ctx.restore()}
   function spearPose(dur,o){const P=st.player,T0=now_(),rel=o.rel;P.anim=null;P.act=null;P.holdFrame=null;
-    P.seq={n:'beam',t0:T0,times:[0,90,180,270],idx:[0,1,2,3],until:T0+rel,lift:t=>o.lift?o.lift(t):0};
-    setTimeout(()=>{P.seq={n:'punch',t0:now_(),times:[0,70,140,210,300],idx:[0,1,2,3,4],until:now_()+Math.max(200,dur-rel),lift:t=>o.lift?o.lift(t+rel):0}},rel);
+    P.seq={n:'raise',t0:T0,times:[0,120,240,360],idx:[0,1,2,3],until:T0+rel,lift:t=>o.lift?o.lift(t):0};
+    setTimeout(()=>{P.seq={n:'throw',t0:now_(),times:[0,70,140,210,320],idx:[0,1,2,3,4],until:now_()+Math.max(200,dur-rel),lift:t=>o.lift?o.lift(t+rel):0}},rel);
     const C=EC[o.el];
-    addFx(0,rel,(p,now)=>{const t=p*rel,pm=PMx(),lf=o.lift?o.lift(t):0,wind=ease(clamp01(t/350)),ang=o.ang?o.ang(t):(-.35-.25*wind),x=pm.x-pm.w*.15+wind*pm.w*-.1,y=pm.feet-pm.h*1.02+lf-Math.sin(now/180)*st.ps*.4,gl=o.glow?o.glow(t):ease(clamp01(t/rel));drawSpear(x,y,ang,pm.h*1.15,C,gl,Math.min(1,t/120),o.look)})}
+    addFx(0,rel,(p,now)=>{const t=p*rel,pm=PMx(),lf=o.lift?o.lift(t):0,wind=ease(clamp01(t/350)),ang=o.ang?o.ang(t):(-.35-.25*wind),hp=st.player.handPt,x=hp?hp.x:pm.x-pm.w*.15+wind*pm.w*-.1,y=hp?hp.y:pm.feet-pm.h*1.02+lf,gl=o.glow?o.glow(t):ease(clamp01(t/rel));drawSpear(x,y,ang,pm.h*1.15,C,gl,Math.min(1,t/120),o.look)})}
   function spearFly(x0,y0,x1,y1,delay,dur,o){const C=EC[o.el],arc=o.arc||0;const at=p=>[x0+(x1-x0)*p,y0+(y1-y0)*p-Math.sin(p*Math.PI)*arc];
     addFx(delay,dur,(p,now)=>{const pm=PMx(),[x,y]=at(p),[xa,ya]=at(Math.max(0,p-.03)),ang=p>0?Math.atan2(y-ya,x-xa):Math.atan2(y1-y0,x1-x0),L=pm.h*1.15*(o.scale||1);
       if(o.spin){ctx.save();ctx.globalAlpha=.75;ctx.fillStyle=C[2];for(let i=0;i<5;i++){const k=-L*.4+i*L*.15,ph=now/40+i;ctx.fillRect(Math.round(x+Math.cos(ang)*k-Math.sin(ang)*Math.sin(ph)*st.ps*3),Math.round(y+Math.sin(ang)*k+Math.cos(ang)*Math.sin(ph)*st.ps*3),PX(),PX())}ctx.restore()}

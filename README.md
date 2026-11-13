@@ -13,7 +13,7 @@ Open `index.html` in any modern browser. It is a single self-contained file (all
 - Gear that shows on the hero, with four 5-piece sets (Knight of the Oath, Reaper's Harvest, Dragon Slayer, Astral Ronin) and set bonuses
 - Gold from battles and chests, spent at the Wandering Merchant on skill cards, gear and potions
 - Three floors: Mushroom Woods, Volcanic Rift and Ember Hollow, with elite two-monster fights
-- Animated hero sprites, monster sprite sheets and particle effects
+- A skeletal stickman hero drawn in real time with smooth, interpolated 25 fps animation (run, punch, kick, slash, roll, flip, spin kick, uppercut, aim, throw, death), monster sprite sheets and particle effects
 
 ## Building from source
 
