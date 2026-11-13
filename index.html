@@ -2883,7 +2883,8 @@ window.__cardArt=cardArt;
       const x0=-hf.f.ax*k,y0=-(hf.f.fy||hf.c.height)*k;
       if(hf.n!=='die')drawGear(true,hf.f,x0,y0,k,now,walking||!!P.act);
       const wpn=S&&S.gear&&S.gear.weapon,wmode=((P.holdFrame&&now<P.holdFrame.until)||(P.seq&&now<P.seq.until)||(P.backUntil&&now<P.backUntil)||hf.n==='beam'||hf.n==='laser')?'back':P.act?(P.act.segs?(()=>{const t=now-P.act.t0;let w=P.act.segs[0].weapon;P.act.segs.forEach(o=>{if(t>=o.s-40)w=o.weapon});return w})():(P.act.weapon||'hand')):(hf.n==='shield'?'back':'hand');
-      if(wpn&&wmode==='back'&&!(hf.n==='jump'&&wpn.key==='hunter_bow')&&itemsImg.complete&&itemsImg.naturalWidth&&!P.dead){
+      const shW=wpn&&ITEMS[wpn.key]&&ITEMS[wpn.key].slot==='shield';
+      if(wpn&&wmode==='back'&&!(shW&&hf.n==='shield')&&!(hf.n==='jump'&&wpn.key==='hunter_bow')&&itemsImg.complete&&itemsImg.naturalWidth&&!P.dead){
         const wi=ITEM_ATLAS.idx[wpn.key],wc=ITEM_ATLAS.cols,L=44*k,sz=L*64/58;
         if(wpn.key==='hunter_bow'){const bsz=58*.8*k*64/58;ctx.save();ctx.imageSmoothingEnabled=false;if(hf.f.rig)ctx.translate(x0+(hf.f.nk[0]-7)*k,y0+(hf.f.nk[1]+12)*k);else ctx.translate(x0+(hf.f.ax-7)*k,y0+(hf.f.fy||hf.c.height)*k*.4);ctx.rotate(-.25);ctx.drawImage(itemsImg,(wi%wc)*64,Math.floor(wi/wc)*64,64,64,-bsz/2,-bsz/2,bsz,bsz);ctx.restore()}else{ctx.save();ctx.imageSmoothingEnabled=false;if(hf.f.rig)ctx.translate(x0+(hf.f.nk[0]-4)*k,y0+(hf.f.nk[1]+2)*k);else ctx.translate(x0+(hf.f.ax-3)*k,y0+(hf.f.fy||hf.c.height)*k*.17);ctx.rotate(3.95);ctx.drawImage(itemsImg,(wi%wc)*64,Math.floor(wi/wc)*64,64,64,-sz/2,-sz*.8,sz,sz);ctx.restore();}
       }
@@ -2892,12 +2893,13 @@ window.__cardArt=cardArt;
       if(hf.n!=='die')drawGear(false,hf.f,x0,y0,k,now,walking||!!P.act);
       P.topY=feet+oy+((hf.f.hd?hf.f.hd[1]-hf.f.hd[2]:0)-(hf.f.fy||hf.c.height))*k;
       if(hf.f.hx!=null)P.handPt={x:px+ox+(hf.f.hx-hf.f.ax)*k,y:feet+oy+(hf.f.hy-(hf.f.fy||hf.c.height))*k};
-      const shd=S&&S.gear&&S.gear.shield;
+      const shd=S&&S.gear&&(S.gear.shield||(shW?wpn:null));
       if(hf.n==='shield'&&hf.f.sh&&shd&&itemsImg.complete&&itemsImg.naturalWidth){const si=ITEM_ATLAS.idx[shd.key],sc2=ITEM_ATLAS.cols,ssz=hf.f.sh[2]*1.25*k*64/58;ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(itemsImg,(si%sc2)*64,Math.floor(si/sc2)*64,64,64,x0+hf.f.sh[0]*k-ssz/2,y0+hf.f.sh[1]*k-ssz/2,ssz,ssz);ctx.restore()}
       if(hf.n==='jump'&&hf.f.hx!=null&&itemsImg.complete&&itemsImg.naturalWidth&&ITEM_ATLAS.idx.hunter_bow!=null){const wi=ITEM_ATLAS.idx.hunter_bow,wc=ITEM_ATLAS.cols,bsz=62*.8*k*64/58;ctx.save();ctx.imageSmoothingEnabled=true;ctx.translate(x0+hf.f.hx*k+2*k,y0+hf.f.hy*k);ctx.scale(-1,1);ctx.drawImage(itemsImg,(wi%wc)*64,Math.floor(wi/wc)*64,64,64,-bsz/2,-bsz/2,bsz,bsz);ctx.restore()}
       if(wpn&&wmode==='hand'&&itemsImg.complete&&itemsImg.naturalWidth&&hf.f.hx!=null&&hf.n!=='die'&&!P.dead){
         const wi=ITEM_ATLAS.idx[wpn.key],wc=ITEM_ATLAS.cols,L=44*k,sz=L*64/58;
-        if(wpn.key==='hunter_bow'){const bsz=62*.8*k*64/58,aim=P.aimUntil&&now<P.aimUntil;ctx.save();ctx.imageSmoothingEnabled=false;if(aim)ctx.translate(H*.045,-H*.1375);else ctx.translate(x0+hf.f.hx*k+3*k,y0+hf.f.hy*k-2*k);ctx.scale(-1,1);ctx.drawImage(itemsImg,(wi%wc)*64,Math.floor(wi/wc)*64,64,64,-bsz/2,-bsz/2,bsz,bsz);ctx.restore()}
+        if(shW){const ssz=sz*.78;ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(x0+hf.f.hx*k+3*k,y0+hf.f.hy*k);ctx.drawImage(itemsImg,(wi%wc)*64,Math.floor(wi/wc)*64,64,64,-ssz/2,-ssz*.55,ssz,ssz);ctx.restore()}
+        else if(wpn.key==='hunter_bow'){const bsz=62*.8*k*64/58,aim=P.aimUntil&&now<P.aimUntil;ctx.save();ctx.imageSmoothingEnabled=false;if(aim)ctx.translate(H*.045,-H*.1375);else ctx.translate(x0+hf.f.hx*k+3*k,y0+hf.f.hy*k-2*k);ctx.scale(-1,1);ctx.drawImage(itemsImg,(wi%wc)*64,Math.floor(wi/wc)*64,64,64,-bsz/2,-bsz/2,bsz,bsz);ctx.restore()}
         else{const WC={},th=(hf.n==='idle'||hf.n==='aim'||hf.n==='beam'||hf.n==='laser'?0:hf.f.sr!=null?hf.f.sr+Math.PI/2:0)+(WC[wpn.key]??0);
         const stf=['ember_staff','frost_wand','archmage_staff','storm_rod'].includes(wpn.key),dpS=Math.min(2,window.devicePixelRatio||1),up=stf&&hf.n==='idle',sh=stf?sz+20*dpS:sz;ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(x0+hf.f.hx*k+(up?7*dpS:0),y0+hf.f.hy*k);ctx.rotate(th);ctx.drawImage(itemsImg,(wi%wc)*64,Math.floor(wi/wc)*64,64,64,-sz/2,stf?-sh*.5:-sz*.8,sz,sh);ctx.restore()}
       }
@@ -3462,7 +3464,7 @@ function itemIcon(key,size){
 function curLoot(){return (S.phase==='event'||S.phase==='chest')?S.ev&&S.ev.loot:null}
 function useLoot(given){
   const L=given||curLoot();if(!L||L.done)return;const it=ITEMS[L.key];
-  if(it.slot){const old=S.gear[it.slot];S.gear[it.slot]={key:L.key,rarity:L.rarity,stats:L.stats,cardLvl:1};recalc();
+  if(it.slot){let sl=it.slot;if(S.cls==='warden'&&sl==='shield'){const w=S.gear.weapon;if(!w||w.key==='warden_shield'||(ITEMS[w.key].slot==='shield'&&S.gear.shield))sl='weapon'}const old=S.gear[sl];S.gear[sl]={key:L.key,rarity:L.rarity,stats:L.stats,cardLvl:1};recalc();
     L.msg=`You equip the ${it.name}${old?` and stow the ${ITEMS[old.key].name}`:''}.${it.grant?` The ${CARDS[it.grant].name} card joins your deck.`:''}`;Stage.playerBurst(RARITY_GLOW[L.rarity])}
   else{const st=L.stats;
     if(st.heal){const h=Math.min(st.heal,S.maxHp-S.hp);S.hp+=h;L.msg=`You drink the ${it.name} and recover ${h} HP.`;Stage.float('player',`+${h}`,'#7fe08a','HEAL')}
@@ -4363,7 +4365,7 @@ window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.ho
 /* ===== Classes: Aegis Warden, Arcanist, Swordsman — passives and 3-card ultimates ===== */
 const CLASSES={
  warden:{name:'Aegis Warden',cat:'def',item:'warden_shield',col:'#59c9c2',tag:'Defender',
-   lines:['Starts with a Round Shield (Shield Bash card)','Shield attacks deal ×1.25 damage','Each turn: +1 block per card level in your deck'],
+   lines:['Fights with a shield as a weapon: starts with a Round Shield (Shield Bash), no sword','Shield attacks deal ×1.25 damage','Each turn: +1 block per card level in your deck'],
    ult:'Citadel Crash',ultCat:'Defense',ultText:'Combine 3 Defense cards: raise a fortress around you, then bring its walls crashing down on every enemy.'},
  arcanist:{name:'Arcanist',cat:'elem',item:'apprentice_wand',col:'#b18bff',tag:'Spellcaster',
    lines:['Starts with an Apprentice Wand (elements cost 1 less mana)','Affinity with your first element: its damage ×1.25','Starts with a random element card'],
@@ -4373,7 +4375,7 @@ const CLASSES={
    ult:'Thousand Petal Cut',ultCat:'Physical',ultText:'Combine 3 Physical cards: blink through every enemy in a storm of cuts, ending in a giant X.'}};
 const ULT_COST=30;
 function pickClass(k){const C=CLASSES[k];if(!C)return;S.cls=k;
-  if(k==='warden'){S.gear.shield={key:'warden_shield',rarity:'common',stats:{def:1},cardLvl:1}}
+  if(k==='warden'){S.gear.weapon={key:'warden_shield',rarity:'common',stats:{def:1},cardLvl:1};delete S.gear.shield}
   if(k==='arcanist'){S.gear.weapon={key:'apprentice_wand',rarity:'common',stats:{mcost:1}};const e=S.deck.find(c=>CARDS[c.key].cat==='elem');S.affinity=e?e.key:rnd(ELEMS)}
   recalc&&recalc();S.toast=`You set out as ${/^[AEIOU]/.test(C.name)?'an':'a'} ${C.name}.${k==='arcanist'?` Your affinity is ${TYPENAME[S.affinity]}.`:''}`;choosePath()}
 function classHTML(){return `<div class="path-layer class-layer"><div class="path-head"><div class="eyebrow">A new journey</div><h2>Choose your class</h2></div>

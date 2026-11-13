@@ -2,7 +2,7 @@
 /* ===== Classes: Aegis Warden, Arcanist, Swordsman — passives and 3-card ultimates ===== */
 const CLASSES={
  warden:{name:'Aegis Warden',cat:'def',item:'warden_shield',col:'#59c9c2',tag:'Defender',
-   lines:['Starts with a Round Shield (Shield Bash card)','Shield attacks deal ×1.25 damage','Each turn: +1 block per card level in your deck'],
+   lines:['Fights with a shield as a weapon: starts with a Round Shield (Shield Bash), no sword','Shield attacks deal ×1.25 damage','Each turn: +1 block per card level in your deck'],
    ult:'Citadel Crash',ultCat:'Defense',ultText:'Combine 3 Defense cards: raise a fortress around you, then bring its walls crashing down on every enemy.'},
  arcanist:{name:'Arcanist',cat:'elem',item:'apprentice_wand',col:'#b18bff',tag:'Spellcaster',
    lines:['Starts with an Apprentice Wand (elements cost 1 less mana)','Affinity with your first element: its damage ×1.25','Starts with a random element card'],
@@ -12,7 +12,7 @@ const CLASSES={
    ult:'Thousand Petal Cut',ultCat:'Physical',ultText:'Combine 3 Physical cards: blink through every enemy in a storm of cuts, ending in a giant X.'}};
 const ULT_COST=30;
 function pickClass(k){const C=CLASSES[k];if(!C)return;S.cls=k;
-  if(k==='warden'){S.gear.shield={key:'warden_shield',rarity:'common',stats:{def:1},cardLvl:1}}
+  if(k==='warden'){S.gear.weapon={key:'warden_shield',rarity:'common',stats:{def:1},cardLvl:1};delete S.gear.shield}
   if(k==='arcanist'){S.gear.weapon={key:'apprentice_wand',rarity:'common',stats:{mcost:1}};const e=S.deck.find(c=>CARDS[c.key].cat==='elem');S.affinity=e?e.key:rnd(ELEMS)}
   recalc&&recalc();S.toast=`You set out as ${/^[AEIOU]/.test(C.name)?'an':'a'} ${C.name}.${k==='arcanist'?` Your affinity is ${TYPENAME[S.affinity]}.`:''}`;choosePath()}
 function classHTML(){return `<div class="path-layer class-layer"><div class="path-head"><div class="eyebrow">A new journey</div><h2>Choose your class</h2></div>
