@@ -107,3 +107,15 @@
     if(!knFull(P)){ctx.globalCompositeOperation='lighter';ctx.globalAlpha=(1-a)*.8;ctx.drawImage(knImg,fi*KNF.w,0,KNF.w,KNF.h,Math.round(-w/2),Math.round(-h+KNF.pad*sc),Math.round(w),Math.round(h))}
     if(now-P.flash<170){ctx.globalCompositeOperation='source-atop';ctx.globalAlpha=.55;ctx.fillStyle=P.flashColor||'#ffffff';ctx.fillRect(-w/2,-h,w,h)}
     ctx.restore();return h}
+  // ---- Hero idle sprite (4 frames) replaces the stickman while standing still
+  const idImg=new Image();idImg.src=ASSET.heroIdle;const IDF={w:44,h:98,n:4,seq:[0,1,0,3,0,1,2,1],ms:190,hr:[37,66],hl:[7,66]};
+  function idleSpriteOn(P,hf){return!!(hf.n==='idle'&&!P.dead&&idImg.complete&&idImg.naturalWidth)}
+  function drawIdleSprite(now,P,feet,ox,oy,px){const sc=st.H*.25*1.02/IDF.h,fi=IDF.seq[Math.floor(now/IDF.ms)%IDF.seq.length],w=IDF.w*sc,h=IDF.h*sc,X=v=>(v-IDF.w/2)*sc,Y=v=>(v-IDF.h)*sc;
+    const wpn=S&&S.gear&&S.gear.weapon,offS=S&&S.gear&&S.gear.shield,bob=fi===2?2*sc:0,ready=itemsImg.complete&&itemsImg.naturalWidth;
+    const icon=(key,x,y,sz,rot)=>{const ii=ITEM_ATLAS.idx[key];if(ii==null||!ready)return;const c=ITEM_ATLAS.cols;ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.drawImage(itemsImg,(ii%c)*64,Math.floor(ii/c)*64,64,64,-sz/2,-sz/2,sz,sz);ctx.restore()};
+    ctx.save();ctx.imageSmoothingEnabled=false;
+    if(offS)icon(offS.key,X(IDF.hl[0])-2*sc,Y(IDF.hl[1])+bob,20*sc,0);
+    ctx.drawImage(idImg,fi*IDF.w,0,IDF.w,IDF.h,Math.round(-w/2),Math.round(-h),Math.round(w),Math.round(h));
+    if(now-P.flash<170){ctx.globalCompositeOperation='source-atop';ctx.globalAlpha=.55;ctx.fillStyle=P.flashColor||'#ffffff';ctx.fillRect(-w/2,-h,w,h);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1}
+    if(wpn){const shW=ITEMS[wpn.key]&&ITEMS[wpn.key].slot==='shield';if(shW)icon(wpn.key,X(IDF.hr[0])+3*sc,Y(IDF.hr[1])+bob,20*sc,0);else icon(wpn.key,X(IDF.hr[0])+5*sc,Y(IDF.hr[1])-6*sc+bob,26*sc,-.35)}
+    ctx.restore();P.topY=feet+oy-h*.96;P.handPt={x:px+ox+X(IDF.hr[0]),y:feet+oy+Y(IDF.hr[1])};return h}
