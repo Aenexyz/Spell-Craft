@@ -108,26 +108,32 @@
     if(now-P.flash<170){ctx.globalCompositeOperation='source-atop';ctx.globalAlpha=.55;ctx.fillStyle=P.flashColor||'#ffffff';ctx.fillRect(-w/2,-h,w,h)}
     ctx.restore();return h}
   // ---- Hero idle sprite (4 frames) replaces the stickman while standing still
-  const idImg=new Image();idImg.src=ASSET.heroIdle;const IDF={w:44,h:98,n:4,seq:[0,1,0,3,0,1,2,1],ms:190,hr:[37,66],hl:[7,66]};
+  const idImg=new Image();idImg.src=ASSET.heroIdle;const IDF={w:44,h:98,n:4,seq:[0,1,0,3,0,1,2,1],ms:190,hr:[37,66],hl:[7,66],HL:[[6.8,67],[8.1,64],[9.1,67],[7.8,68]],HR:[[36.5,66.5],[36.5,64],[35.9,65.5],[36.5,67.5]]};
+  // shield art: front face (item atlas) for the right hand, back face (straps) for the left hand
+  const shbImg=new Image();shbImg.src=ASSET.shieldBack;const SHB={warden_shield:0,kite_shield:1,tower_shield:2,thorn_buckler:3,mirror_aegis:4,ember_heater:5,spiked_shield:6,knight_shield:7,explosion_orb:8};
+  function shieldBack(key,x,y,sz){const i=SHB[key];if(i==null||!shbImg.complete||!shbImg.naturalWidth)return false;ctx.save();ctx.imageSmoothingEnabled=true;ctx.drawImage(shbImg,i*64,0,64,64,Math.round(x-sz/2),Math.round(y-sz/2),Math.round(sz),Math.round(sz));ctx.restore();return true}
+  function isShieldItem(key){return!!(ITEMS[key]&&ITEMS[key].slot==='shield')}
   function idleSpriteOn(P,hf){return!!(hf.n==='idle'&&!P.dead&&idImg.complete&&idImg.naturalWidth)}
   function drawIdleSprite(now,P,feet,ox,oy,px){const sc=st.H*.25*1.02/IDF.h,fi=IDF.seq[Math.floor(now/IDF.ms)%IDF.seq.length],w=IDF.w*sc,h=IDF.h*sc,X=v=>(v-IDF.w/2)*sc,Y=v=>(v-IDF.h)*sc;
     const wpn=S&&S.gear&&S.gear.weapon,offS=S&&S.gear&&S.gear.shield,bob=fi===2?2*sc:0,ready=itemsImg.complete&&itemsImg.naturalWidth;
-    const icon=(key,x,y,sz,rot)=>{const ii=ITEM_ATLAS.idx[key];if(ii==null||!ready)return;const c=ITEM_ATLAS.cols;ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.drawImage(itemsImg,(ii%c)*64,Math.floor(ii/c)*64,64,64,-sz/2,-sz/2,sz,sz);ctx.restore()};
+    const icon=(key,x,y,sz,rot)=>{const ii=ITEM_ATLAS.idx[key];if(ii==null||!ready)return;const c=ITEM_ATLAS.cols;ctx.save();ctx.imageSmoothingEnabled=true;ctx.translate(x,y);ctx.rotate(rot);ctx.drawImage(itemsImg,(ii%c)*64,Math.floor(ii/c)*64,64,64,-sz/2,-sz/2,sz,sz);ctx.restore()};
     ctx.save();ctx.imageSmoothingEnabled=false;
-    if(offS)icon(offS.key,X(IDF.hl[0])-2*sc,Y(IDF.hl[1])+bob,20*sc,0);
+    const hl=IDF.HL[fi],hr=IDF.HR[fi],SZ=25*sc;
+    if(offS){if(!shieldBack(offS.key,X(hl[0]),Y(hl[1]),SZ))icon(offS.key,X(hl[0]),Y(hl[1]),SZ,0)}
     ctx.drawImage(idImg,fi*IDF.w,0,IDF.w,IDF.h,Math.round(-w/2),Math.round(-h),Math.round(w),Math.round(h));
     if(now-P.flash<170){ctx.globalCompositeOperation='source-atop';ctx.globalAlpha=.55;ctx.fillStyle=P.flashColor||'#ffffff';ctx.fillRect(-w/2,-h,w,h);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1}
-    if(wpn){const shW=ITEMS[wpn.key]&&ITEMS[wpn.key].slot==='shield';if(shW)icon(wpn.key,X(IDF.hr[0])+3*sc,Y(IDF.hr[1])+bob,20*sc,0);else icon(wpn.key,X(IDF.hr[0])+5*sc,Y(IDF.hr[1])-6*sc+bob,26*sc,-.35)}
-    ctx.restore();P.topY=feet+oy-h*.96;P.handPt={x:px+ox+X(IDF.hr[0]),y:feet+oy+Y(IDF.hr[1])};return h}
+    if(wpn){if(isShieldItem(wpn.key))icon(wpn.key,X(hr[0]),Y(hr[1]),SZ,0);else icon(wpn.key,X(hr[0])+5*sc,Y(hr[1])-6*sc,26*sc,-.35)}
+    ctx.restore();P.topY=feet+oy-h*.96;P.handPt={x:px+ox+X(IDF.HR[fi][0]),y:feet+oy+Y(IDF.HR[fi][1])};return h}
   // ---- Hero running sprite (8 frames) replaces the stickman's walk
-  const rnImg=new Image();rnImg.src=ASSET.heroRun;const RNF={w:56,h:100,n:8,ms:85,hr:[36,62],hl:[16,62]};
+  const rnImg=new Image();rnImg.src=ASSET.heroRun;const RNF={w:56,h:100,n:8,ms:85,hr:[36,62],hl:[16,62],HL:[[11.6,68],[14.6,68],[9.9,64],[11,66],[11.8,66],[10,65.5],[3.4,59],[6.1,59]],HR:[[42.5,67.5],[38.2,66.5],[43.5,65],[40.9,63],[43.1,65],[35,66.5],[36.6,56],[38,54]]};
   function runSpriteOn(P,hf){return!!(hf.n==='walk'&&!P.dead&&rnImg.complete&&rnImg.naturalWidth)}
   function drawRunSprite(now,P,feet,ox,oy,px){const sc=st.H*.25*1.02/98,fi=Math.floor(now/RNF.ms)%RNF.n,w=RNF.w*sc,h=RNF.h*sc,X=v=>(v-RNF.w/2)*sc,Y=v=>(v-RNF.h)*sc;
     const wpn=S&&S.gear&&S.gear.weapon,offS=S&&S.gear&&S.gear.shield,ready=itemsImg.complete&&itemsImg.naturalWidth,sw=Math.sin(fi/RNF.n*6.283)*2*sc;
-    const icon=(key,x,y,sz,rot)=>{const ii=ITEM_ATLAS.idx[key];if(ii==null||!ready)return;const c=ITEM_ATLAS.cols;ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.drawImage(itemsImg,(ii%c)*64,Math.floor(ii/c)*64,64,64,-sz/2,-sz/2,sz,sz);ctx.restore()};
+    const icon=(key,x,y,sz,rot)=>{const ii=ITEM_ATLAS.idx[key];if(ii==null||!ready)return;const c=ITEM_ATLAS.cols;ctx.save();ctx.imageSmoothingEnabled=true;ctx.translate(x,y);ctx.rotate(rot);ctx.drawImage(itemsImg,(ii%c)*64,Math.floor(ii/c)*64,64,64,-sz/2,-sz/2,sz,sz);ctx.restore()};
     ctx.save();ctx.imageSmoothingEnabled=false;
-    if(offS)icon(offS.key,X(RNF.hl[0])-sw,Y(RNF.hl[1]),20*sc,0);
+    const hl=RNF.HL[fi],hr=RNF.HR[fi],SZ=25*sc;
+    if(offS){if(!shieldBack(offS.key,X(hl[0]),Y(hl[1]),SZ))icon(offS.key,X(hl[0]),Y(hl[1]),SZ,0)}
     ctx.drawImage(rnImg,fi*RNF.w,0,RNF.w,RNF.h,Math.round(-w/2),Math.round(-h),Math.round(w),Math.round(h));
     if(now-P.flash<170){ctx.globalCompositeOperation='source-atop';ctx.globalAlpha=.55;ctx.fillStyle=P.flashColor||'#ffffff';ctx.fillRect(-w/2,-h,w,h);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1}
-    if(wpn){const shW=ITEMS[wpn.key]&&ITEMS[wpn.key].slot==='shield';if(shW)icon(wpn.key,X(RNF.hr[0])+sw,Y(RNF.hr[1]),20*sc,0);else icon(wpn.key,X(RNF.hr[0])+sw,Y(RNF.hr[1])-6*sc,26*sc,.5)}
-    ctx.restore();P.topY=feet+oy-h*.95;P.handPt={x:px+ox+X(RNF.hr[0]),y:feet+oy+Y(RNF.hr[1])};return h}
+    if(wpn){if(isShieldItem(wpn.key))icon(wpn.key,X(hr[0]),Y(hr[1]),SZ,0);else icon(wpn.key,X(hr[0]),Y(hr[1])-6*sc,26*sc,.5)}
+    ctx.restore();P.topY=feet+oy-h*.95;P.handPt={x:px+ox+X(RNF.HR[fi][0]),y:feet+oy+Y(RNF.HR[fi][1])};return h}
