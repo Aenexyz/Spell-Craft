@@ -119,3 +119,15 @@
     if(now-P.flash<170){ctx.globalCompositeOperation='source-atop';ctx.globalAlpha=.55;ctx.fillStyle=P.flashColor||'#ffffff';ctx.fillRect(-w/2,-h,w,h);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1}
     if(wpn){const shW=ITEMS[wpn.key]&&ITEMS[wpn.key].slot==='shield';if(shW)icon(wpn.key,X(IDF.hr[0])+3*sc,Y(IDF.hr[1])+bob,20*sc,0);else icon(wpn.key,X(IDF.hr[0])+5*sc,Y(IDF.hr[1])-6*sc+bob,26*sc,-.35)}
     ctx.restore();P.topY=feet+oy-h*.96;P.handPt={x:px+ox+X(IDF.hr[0]),y:feet+oy+Y(IDF.hr[1])};return h}
+  // ---- Hero running sprite (8 frames) replaces the stickman's walk
+  const rnImg=new Image();rnImg.src=ASSET.heroRun;const RNF={w:56,h:100,n:8,ms:85,hr:[36,62],hl:[16,62]};
+  function runSpriteOn(P,hf){return!!(hf.n==='walk'&&!P.dead&&rnImg.complete&&rnImg.naturalWidth)}
+  function drawRunSprite(now,P,feet,ox,oy,px){const sc=st.H*.25*1.02/98,fi=Math.floor(now/RNF.ms)%RNF.n,w=RNF.w*sc,h=RNF.h*sc,X=v=>(v-RNF.w/2)*sc,Y=v=>(v-RNF.h)*sc;
+    const wpn=S&&S.gear&&S.gear.weapon,offS=S&&S.gear&&S.gear.shield,ready=itemsImg.complete&&itemsImg.naturalWidth,sw=Math.sin(fi/RNF.n*6.283)*2*sc;
+    const icon=(key,x,y,sz,rot)=>{const ii=ITEM_ATLAS.idx[key];if(ii==null||!ready)return;const c=ITEM_ATLAS.cols;ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.drawImage(itemsImg,(ii%c)*64,Math.floor(ii/c)*64,64,64,-sz/2,-sz/2,sz,sz);ctx.restore()};
+    ctx.save();ctx.imageSmoothingEnabled=false;
+    if(offS)icon(offS.key,X(RNF.hl[0])-sw,Y(RNF.hl[1]),20*sc,0);
+    ctx.drawImage(rnImg,fi*RNF.w,0,RNF.w,RNF.h,Math.round(-w/2),Math.round(-h),Math.round(w),Math.round(h));
+    if(now-P.flash<170){ctx.globalCompositeOperation='source-atop';ctx.globalAlpha=.55;ctx.fillStyle=P.flashColor||'#ffffff';ctx.fillRect(-w/2,-h,w,h);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1}
+    if(wpn){const shW=ITEMS[wpn.key]&&ITEMS[wpn.key].slot==='shield';if(shW)icon(wpn.key,X(RNF.hr[0])+sw,Y(RNF.hr[1]),20*sc,0);else icon(wpn.key,X(RNF.hr[0])+sw,Y(RNF.hr[1])-6*sc,26*sc,.5)}
+    ctx.restore();P.topY=feet+oy-h*.95;P.handPt={x:px+ox+X(RNF.hr[0]),y:feet+oy+Y(RNF.hr[1])};return h}

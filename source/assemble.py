@@ -616,8 +616,8 @@ R("      ctx.drawImage(hf.c,x0,y0,fw,fh);","      ctx.drawImage(hf.c,x0,y0,fw,fh
 
 R("      ctx.drawImage(hf.c,x0,y0,fw,fh);\n      {const offS=","      const knP=(S&&S.knightT>0)?1:(P.knightP||0);if(knP>0&&!knS&&hf.n!=='die'&&!P.dead)knightCape(hf,x0,y0,k,now,knP);\n      ctx.drawImage(hf.c,x0,y0,fw,fh);\n      if(knP>0&&!knS&&hf.n!=='die'&&!P.dead)knightArmor(hf,x0,y0,k,now,knP);\n      {const offS=")
 
-R("      const x0=-hf.f.ax*k,y0=-(hf.f.fy||hf.c.height)*k;\n","      const x0=-hf.f.ax*k,y0=-(hf.f.fy||hf.c.height)*k;\n      const knS=knSpriteOn(P,hf);let knH=0;const idS=!knS&&idleSpriteOn(P,hf);\n      if((!knS||!knFull(P))&&!idS){\n")
-R("      ctx.restore();ctx.imageSmoothingEnabled=false;\n      ptop=feet-H*.25;","      }\n      if(idS)drawIdleSprite(now,P,feet,ox,oy,px);\n      if(knS)knH=drawKnightSprite(now,k,P,hf,walking||!!P.act||!!(P.mv&&now-P.mv.t0<=P.mv.dur));\n      if(knS&&knFull(P)){P.topY=feet+oy-knH*.92;P.handPt={x:px+ox+knH*.3,y:feet+oy-knH*.5}}\n      ctx.restore();ctx.imageSmoothingEnabled=false;\n      ptop=feet-H*.25;")
+R("      const x0=-hf.f.ax*k,y0=-(hf.f.fy||hf.c.height)*k;\n","      const x0=-hf.f.ax*k,y0=-(hf.f.fy||hf.c.height)*k;\n      const knS=knSpriteOn(P,hf);let knH=0;const idS=!knS&&idleSpriteOn(P,hf),rnS=!knS&&!idS&&runSpriteOn(P,hf);\n      if((!knS||!knFull(P))&&!idS&&!rnS){\n")
+R("      ctx.restore();ctx.imageSmoothingEnabled=false;\n      ptop=feet-H*.25;","      }\n      if(idS)drawIdleSprite(now,P,feet,ox,oy,px);\n      if(rnS)drawRunSprite(now,P,feet,ox,oy,px);\n      if(knS)knH=drawKnightSprite(now,k,P,hf,walking||!!P.act||!!(P.mv&&now-P.mv.t0<=P.mv.dur));\n      if(knS&&knFull(P)){P.topY=feet+oy-knH*.92;P.handPt={x:px+ox+knH*.3,y:feet+oy-knH*.5}}\n      ctx.restore();ctx.imageSmoothingEnabled=false;\n      ptop=feet-H*.25;")
 
 css_add="""
 .item-ic{image-rendering:pixelated}
