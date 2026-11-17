@@ -118,7 +118,7 @@
     const wpn=S&&S.gear&&S.gear.weapon,offS=S&&S.gear&&S.gear.shield,bob=fi===2?2*sc:0,ready=itemsImg.complete&&itemsImg.naturalWidth;
     const icon=(key,x,y,sz,rot)=>{const ii=ITEM_ATLAS.idx[key];if(ii==null||!ready)return;const c=ITEM_ATLAS.cols;ctx.save();ctx.imageSmoothingEnabled=true;ctx.translate(x,y);ctx.rotate(rot);ctx.drawImage(itemsImg,(ii%c)*64,Math.floor(ii/c)*64,64,64,-sz/2,-sz/2,sz,sz);ctx.restore()};
     ctx.save();ctx.imageSmoothingEnabled=false;
-    const hl=IDF.HL[fi],hr=IDF.HR[fi],SZ=25*sc;
+    const hl=IDF.HL[fi],hr=IDF.HR[fi],SZ=31.25*sc;
     const wSh=wpn&&isShieldItem(wpn.key);
     if(wSh){if(!shieldBack(wpn.key,X(hr[0]+3),Y(hr[1]-1),SZ))icon(wpn.key,X(hr[0]),Y(hr[1]),SZ,0)}
     ctx.drawImage(idImg,fi*IDF.w,0,IDF.w,IDF.h,Math.round(-w/2),Math.round(-h),Math.round(w),Math.round(h));
@@ -133,7 +133,7 @@
     const wpn=S&&S.gear&&S.gear.weapon,offS=S&&S.gear&&S.gear.shield,ready=itemsImg.complete&&itemsImg.naturalWidth,sw=Math.sin(fi/RNF.n*6.283)*2*sc;
     const icon=(key,x,y,sz,rot)=>{const ii=ITEM_ATLAS.idx[key];if(ii==null||!ready)return;const c=ITEM_ATLAS.cols;ctx.save();ctx.imageSmoothingEnabled=true;ctx.translate(x,y);ctx.rotate(rot);ctx.drawImage(itemsImg,(ii%c)*64,Math.floor(ii/c)*64,64,64,-sz/2,-sz/2,sz,sz);ctx.restore()};
     ctx.save();ctx.imageSmoothingEnabled=false;
-    const hl=RNF.HL[fi],hr=RNF.HR[fi],SZ=25*sc;
+    const hl=RNF.HL[fi],hr=RNF.HR[fi],SZ=31.25*sc;
     const wSh=wpn&&isShieldItem(wpn.key);
     if(wSh){if(!shieldBack(wpn.key,X(hr[0]+3),Y(hr[1]-1),SZ))icon(wpn.key,X(hr[0]),Y(hr[1]),SZ,0)}
     ctx.drawImage(rnImg,fi*RNF.w,0,RNF.w,RNF.h,Math.round(-w/2),Math.round(-h),Math.round(w),Math.round(h));
