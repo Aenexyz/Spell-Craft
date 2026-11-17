@@ -216,9 +216,18 @@ function itemIcon(key,size){
   return `<span class="item-ic" role="img" aria-label="${ITEMS[key].name}" style="width:${size}px;height:${size}px;background-size:${c*size}px ${r*size}px;background-position:-${(i%c)*size}px -${Math.floor(i/c)*size}px"></span>`;
 }
 function curLoot(){return (S.phase==='event'||S.phase==='chest')?S.ev&&S.ev.loot:null}
-function useLoot(given){
+let HANDQ=null;
+function needHand(L){return !!(L&&S.cls==='warden'&&ITEMS[L.key]&&ITEMS[L.key].slot==='shield')}
+function askHand(L,given,after){HANDQ={L,given,after,S};render()}
+function handPick(sl){const q=HANDQ;if(!q||q.S!==S)return;HANDQ=null;useLoot(q.given||undefined,sl);if(q.after)q.after();else render()}
+function handHTML(){const q=HANDQ;if(!q)return'';if(q.S!==S){HANDQ=null;return''}const L=q.L,it=ITEMS[L.key];
+  const opt=(sl,title,how)=>{const cur=S.gear[sl];return`<button type="button" class="opt hand-opt" data-act="hand" data-sl="${sl}"><span class="hand-ic">${cur?itemIcon(cur.key,40):'<i class="hand-empty">empty</i>'}</span><span class="hand-tx"><b>${title}</b><span>${how}</span><span class="hand-cur">${cur?`Replaces your ${ITEMS[cur.key].name}`:'Nothing held yet'}</span></span></button>`};
+  return `<div class="modal"><div class="modal-box acq hand-box" role="dialog" aria-label="Choose a hand">
+    <div class="eyebrow">Aegis Warden · two shields</div><div class="hand-head">${itemIcon(L.key,64)}<div><h3>${it.name}</h3><p>Which hand should hold it?</p></div></div>
+    <div class="options">${opt('shield','Right hand','Shield face turned outward, held over the arm.')}${opt('weapon','Left hand','Strapped to the forearm, back of the shield showing.')}</div></div></div>`}
+function useLoot(given,hand){
   const L=given||curLoot();if(!L||L.done)return;const it=ITEMS[L.key];
-  if(it.slot){let sl=it.slot;if(S.cls==='warden'&&sl==='shield'){const w=S.gear.weapon,sv=g=>g?Object.values(g.stats||{}).reduce((a,v)=>a+(typeof v==='number'?v:0),0)+(g.key==='warden_shield'?-99:0):-999;if(!w)sl='weapon';else if(S.gear.shield&&(ITEMS[w.key].slot!=='shield'||sv(w)<=sv(S.gear.shield)))sl='weapon'}const old=S.gear[sl];S.gear[sl]={key:L.key,rarity:L.rarity,stats:L.stats,cardLvl:1};recalc();
+  if(it.slot){let sl=it.slot;if(hand)sl=hand;else if(S.cls==='warden'&&sl==='shield'){const w=S.gear.weapon,sv=g=>g?Object.values(g.stats||{}).reduce((a,v)=>a+(typeof v==='number'?v:0),0)+(g.key==='warden_shield'?-99:0):-999;if(!w)sl='weapon';else if(S.gear.shield&&(ITEMS[w.key].slot!=='shield'||sv(w)<=sv(S.gear.shield)))sl='weapon'}const old=S.gear[sl];S.gear[sl]={key:L.key,rarity:L.rarity,stats:L.stats,cardLvl:1};recalc();
     L.msg=`You equip the ${it.name}${old?` and stow the ${ITEMS[old.key].name}`:''}.${it.grant?` The ${CARDS[it.grant].name} card joins your deck.`:''}`;Stage.playerBurst(RARITY_GLOW[L.rarity])}
   else{const st=L.stats;
     if(st.heal){const h=Math.min(st.heal,S.maxHp-S.hp);S.hp+=h;L.msg=`You drink the ${it.name} and recover ${h} HP.`;Stage.float('player',`+${h}`,'#7fe08a','HEAL')}
@@ -574,6 +583,7 @@ function finishDrop(){const t=S.drop&&S.drop.then;if(S.drop)S.drop.taken=true;if
 function dropPick(i){
   const D=S.drop;if(!D||D.taken)return;const o=D.offers[i];D.taken=true;
   if(o.type==='skill')offerCard(o.key,D.then==='stay'?'none':D.then);
+  else if(needHand(o.loot))askHand(o.loot,o.loot,()=>{S.toast=o.loot.msg;finishDrop()});
   else{useLoot(o.loot);S.toast=o.loot.msg;finishDrop()}
 }
 function advance(){
@@ -597,6 +607,7 @@ function buyShop(kind,i){const sh=S.ev&&S.ev.shop;if(!sh)return;const o=kind==='
   if(kind==='cards'&&S.deck.some(c=>c.key===o.key)){S.ev.dup={key:o.key,lvl:o.lvl};render();return}
   if(kind==='cards'&&S.deck.length>=MAX_CARDS){Stage.playerBurst('#ffd36b');offerCard(o.key,'none');return}
   if(kind==='cards'){addCard(o.key);const c=S.deck[S.deck.length-1];c.lvl=o.lvl;S.toast=`Bought ${CARDS[o.key].name} (level ${o.lvl}).`}
+  else if(kind==='items'&&needHand(o.loot)){Stage.playerBurst('#ffd36b');askHand(o.loot,o.loot,()=>{S.toast=`Bought it! ${o.loot.msg}`;render()});return}
   else if(kind==='items'){useLoot(o.loot);S.toast=`Bought it! ${o.loot.msg}`}
   else{const h=Math.min(25,S.maxHp-S.hp);S.hp+=h;S.toast=`You drink the potion and recover ${h} HP.`;Stage.float('player',`+${h}`,'#7fe08a','HEAL')}
   Stage.playerBurst('#ffd36b');render()}
@@ -1049,7 +1060,7 @@ function render(){
   const dh=dropHTML()||eventLayerHTML()||(ph==='path'?pathHTML():ph==='class'?classHTML():ph==='title'?startHTML():'');document.body.classList.toggle('mob',MOB);const toDock=(MOB&&ph!=='path'&&ph!=='class'&&ph!=='title')||dh.includes('ev-layer shop');$dock.classList.toggle('shopdock',!MOB&&toDock);if(toDock){$drop.innerHTML='';$dock.innerHTML=dh}else{$dock.innerHTML='';$drop.innerHTML=dh}
   document.querySelector('.stage-wrap').classList.toggle('in-battle',ph==='battle');
   document.querySelector('.stage-wrap').classList.toggle('in-drop',!!dh&&!toDock);
-  $modal.innerHTML=acqHTML()||charHTML()||codexHTML();
+  $modal.innerHTML=handHTML()||acqHTML()||charHTML()||codexHTML();
   const n=curNode();
   $label.textContent=ph==='title'?'':ph==='win'?'Adventure complete':(ph==='travel'||ph==='path'||ph==='class')?`Level ${S.level+1} · ${LEVELS[S.level].name}`:nodeName(n);
   const cur=$top.querySelector('.node.cur');if(cur)cur.scrollIntoView({block:'nearest',inline:'center'});
@@ -1079,7 +1090,7 @@ document.getElementById('app').addEventListener('click',e=>{
     case 'fuse':doFuse();break;
     case 'skipturn':skipTurn();break;
     case 'reward':offerCard(b.dataset.key,S.reward.boss?'nextlevel':'advance');break;
-    case 'rewarditem':{const o=S.reward.offers[+b.dataset.i];useLoot(o.loot);S.toast=o.loot.msg;if(S.reward.boss)nextLevel();else advance();break}
+    case 'rewarditem':{const o=S.reward.offers[+b.dataset.i];if(needHand(o.loot)){askHand(o.loot,o.loot,()=>{S.toast=o.loot.msg;if(S.reward.boss)nextLevel();else advance()});break}useLoot(o.loot);S.toast=o.loot.msg;if(S.reward.boss)nextLevel();else advance();break}
     case 'skip':if(S.reward.boss)nextLevel();else advance();break;
     case 'evopt':evOption(+b.dataset.i);break;
     case 'evoffer':S.ev.offer=b.dataset.key;S.ev.step='give';render();break;
@@ -1092,7 +1103,8 @@ document.getElementById('app').addEventListener('click',e=>{
     case 'continue':advance();break;
     case 'droppick':dropPick(+b.dataset.i);break;
     case 'dropskip':finishDrop();break;
-    case 'lootuse':useLoot();break;
+    case 'lootuse':{const L=curLoot();if(L&&!L.done&&needHand(L))askHand(L,null,null);else useLoot();break}
+    case 'hand':handPick(b.dataset.sl);break;
     case 'lootleave':leaveLoot();break;
     case 'char':S.charOpen=true;render();break;
     case 'closechar':S.charOpen=false;render();break;

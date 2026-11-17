@@ -960,6 +960,7 @@ body.mob .start-btn{font-size:24px;padding:16px 30px}
 .icard-face .card-icon{flex:0 0 auto}
 .icard-face .card-name{flex:0 0 auto}
 .icard-face .card-desc{flex:0 0 auto}
+.hand-box{max-width:520px}.hand-head{display:flex;gap:14px;align-items:center;margin:6px 0 12px}.hand-head h3{margin:0 0 2px}.hand-head p{margin:0;color:var(--muted)}.hand-opt{display:flex!important;flex-direction:row!important;gap:12px;align-items:center;text-align:left}.hand-ic{flex:0 0 44px;display:grid;place-items:center;width:44px;height:44px;border-radius:8px;background:#0006}.hand-empty{font-size:11px;color:var(--muted);font-style:normal}.hand-tx{display:flex;flex-direction:column;gap:2px;min-width:0}.hand-cur{font-size:12px;opacity:.8}
 """
 head2='<meta charset="utf-8">\n'+head.replace('</style>',css_add+'</style>').replace('<title>Fusebound</title>','<title>SpellCraft</title>')
 body_skel=body_skel.replace('<div class="stage-label" id="stageLabel"></div>','<div class="stage-label" id="stageLabel"></div><div id="hudLayer"></div><div id="resultLayer"></div><div id="dropLayer"></div>')
