@@ -127,7 +127,7 @@
     if(wpn&&!wSh){icon(wpn.key,X(hr[0])+5*sc,Y(hr[1])-6*sc,26*sc,-.35)}
     ctx.restore();P.topY=feet+oy-h*.96;P.handPt={x:px+ox+X(IDF.HR[fi][0]),y:feet+oy+Y(IDF.HR[fi][1])};return h}
   // ---- Hero running sprite (8 frames) replaces the stickman's walk
-  const rnImg=new Image();rnImg.src=ASSET.heroRun;const RNF={w:56,h:100,n:8,ms:85,hr:[36,62],hl:[16,62],HL:[[11.6,68],[14.6,68],[9.9,64],[11,66],[11.8,66],[10,65.5],[3.4,59],[6.1,59]],HR:[[42.5,67.5],[38.2,66.5],[43.5,65],[40.9,63],[43.1,65],[35,66.5],[36.6,56],[38,54]]};
+  const rnImg=new Image();rnImg.src=ASSET.heroRun;const RNF={w:56,h:100,n:8,ms:85,hr:[36,62],hl:[16,62],HL:[[13.2,68],[16.3,68],[12.1,65],[12.8,66],[13.5,66.5],[11.6,65.5],[6.4,59],[7.8,59]],HR:[[41,67.5],[37.5,67.5],[43.7,64.7],[39.6,63],[41.7,65.5],[34.5,67.5],[36.2,56],[36.8,55]]};
   function runSpriteOn(P,hf){return!!(hf.n==='walk'&&!P.dead&&rnImg.complete&&rnImg.naturalWidth)}
   function drawRunSprite(now,P,feet,ox,oy,px){const sc=st.H*.25*1.02/98,fi=Math.floor(now/RNF.ms)%RNF.n,w=RNF.w*sc,h=RNF.h*sc,X=v=>(v-RNF.w/2)*sc,Y=v=>(v-RNF.h)*sc;
     const wpn=S&&S.gear&&S.gear.weapon,offS=S&&S.gear&&S.gear.shield,ready=itemsImg.complete&&itemsImg.naturalWidth,sw=Math.sin(fi/RNF.n*6.283)*2*sc;
