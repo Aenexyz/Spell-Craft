@@ -2653,7 +2653,8 @@ window.__cardArt=cardArt;
   const shbImg=new Image();shbImg.src=ASSET.shieldBack;const SHB={warden_shield:0,kite_shield:1,tower_shield:2,thorn_buckler:3,mirror_aegis:4,ember_heater:5,spiked_shield:6,knight_shield:7,explosion_orb:8};
   function shieldBack(key,x,y,sz){const i=SHB[key];if(i==null||!shbImg.complete||!shbImg.naturalWidth)return false;ctx.save();ctx.imageSmoothingEnabled=true;ctx.drawImage(shbImg,i*64,0,64,64,Math.round(x-sz/2),Math.round(y-sz/2),Math.round(sz),Math.round(sz));ctx.restore();return true}
   function isShieldItem(key){return!!(ITEMS[key]&&ITEMS[key].slot==='shield')}
-  function idleSpriteOn(P,hf){return!!(hf.n==='idle'&&!P.dead&&idImg.complete&&idImg.naturalWidth)}
+  const HERO_SPRITES=false;
+  function idleSpriteOn(P,hf){return!!(HERO_SPRITES&&hf.n==='idle'&&!P.dead&&idImg.complete&&idImg.naturalWidth)}
   function drawIdleSprite(now,P,feet,ox,oy,px){const sc=st.H*.25*1.02/IDF.h,fi=IDF.seq[Math.floor(now/IDF.ms)%IDF.seq.length],w=IDF.w*sc,h=IDF.h*sc,X=v=>(v-IDF.w/2)*sc,Y=v=>(v-IDF.h)*sc;
     const wpn=S&&S.gear&&S.gear.weapon,offS=S&&S.gear&&S.gear.shield,bob=fi===2?2*sc:0,ready=itemsImg.complete&&itemsImg.naturalWidth;
     const icon=(key,x,y,sz,rot)=>{const ii=ITEM_ATLAS.idx[key];if(ii==null||!ready)return;const c=ITEM_ATLAS.cols;ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(x,y);ctx.rotate(rot);ctx.drawImage(itemsImg,(ii%c)*64,Math.floor(ii/c)*64,64,64,-sz/2,-sz/2,sz,sz);ctx.restore()};
@@ -2668,7 +2669,7 @@ window.__cardArt=cardArt;
     ctx.restore();P.topY=feet+oy-h*.96;P.handPt={x:px+ox+X(IDF.HR[fi][0]),y:feet+oy+Y(IDF.HR[fi][1])};return h}
   // ---- Hero running sprite (8 frames) replaces the stickman's walk
   const rnImg=new Image();rnImg.src=ASSET.heroRun;const RNF={w:56,h:100,n:8,ms:85,hr:[36,62],hl:[16,62],HL:[[13.2,68],[16.3,68],[12.1,65],[12.8,66],[13.5,66.5],[11.6,65.5],[6.4,59],[7.8,59]],HR:[[41,67.5],[37.5,67.5],[43.7,64.7],[39.6,63],[41.7,65.5],[34.5,67.5],[36.2,56],[36.8,55]]};
-  function runSpriteOn(P,hf){return!!(hf.n==='walk'&&!P.dead&&rnImg.complete&&rnImg.naturalWidth)}
+  function runSpriteOn(P,hf){return!!(HERO_SPRITES&&hf.n==='walk'&&!P.dead&&rnImg.complete&&rnImg.naturalWidth)}
   function drawRunSprite(now,P,feet,ox,oy,px){const sc=st.H*.25*1.02/98,fi=Math.floor(now/RNF.ms)%RNF.n,w=RNF.w*sc,h=RNF.h*sc,X=v=>(v-RNF.w/2)*sc,Y=v=>(v-RNF.h)*sc;
     const wpn=S&&S.gear&&S.gear.weapon,offS=S&&S.gear&&S.gear.shield,ready=itemsImg.complete&&itemsImg.naturalWidth,sw=Math.sin(fi/RNF.n*6.283)*2*sc;
     const icon=(key,x,y,sz,rot)=>{const ii=ITEM_ATLAS.idx[key];if(ii==null||!ready)return;const c=ITEM_ATLAS.cols;ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(x,y);ctx.rotate(rot);ctx.drawImage(itemsImg,(ii%c)*64,Math.floor(ii/c)*64,64,64,-sz/2,-sz/2,sz,sz);ctx.restore()};
